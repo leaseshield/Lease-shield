@@ -297,7 +297,19 @@ const RealEstateAgentPage = () => {
           >
             <ListItemIcon>
               {isImage ? (
-                <img src={file.preview} alt={file.name} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '4px' }} />
+                <img 
+                  src={file.preview} 
+                  alt={file.name} 
+                  loading="lazy"
+                  width={40}
+                  height={40}
+                  style={{ 
+                    width: 40, 
+                    height: 40, 
+                    objectFit: 'cover', 
+                    borderRadius: '4px' 
+                  }} 
+                />
               ) : (
                  // Could use different icons based on file.type
                  <DescriptionIcon /> 
