@@ -64,7 +64,6 @@ const LandingPage = () => {
   const { user } = useAuthState();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [showVideo, setShowVideo] = useState(false);
 
   // Testimonials data
   const testimonials = [
@@ -455,79 +454,29 @@ const LandingPage = () => {
                        mx: 'auto',
                      }}
                    >
-                     {!showVideo ? (
-                       <Box
-                         sx={{
-                           width: '100%',
-                           height: '100%',
-                           display: 'flex',
-                           alignItems: 'center',
-                           justifyContent: 'center',
-                           position: 'relative',
-                           cursor: 'pointer',
-                         }}
-                         onClick={() => setShowVideo(true)}
-                         aria-label="Play Lease Shield AI product video"
-                       >
-                         <img
-                           src="/video-poster.jpg"
-                           alt="Lease Shield AI product preview"
-                           style={{
-                             width: '100%',
-                             height: '100%',
-                             objectFit: 'cover',
-                             borderRadius: 20,
-                             display: 'block',
-                           }}
-                           width={600}
-                           height={400}
-                         />
-                         <Box
-                           sx={{
-                             position: 'absolute',
-                             top: '50%',
-                             left: '50%',
-                             transform: 'translate(-50%, -50%)',
-                             bgcolor: 'rgba(0,0,0,0.5)',
-                             borderRadius: '50%',
-                             width: 64,
-                             height: 64,
-                             display: 'flex',
-                             alignItems: 'center',
-                             justifyContent: 'center',
-                           }}
-                         >
-                           <svg width="40" height="40" viewBox="0 0 40 40" fill="white" aria-hidden="true">
-                             <circle cx="20" cy="20" r="20" fill="rgba(0,0,0,0.3)" />
-                             <polygon points="16,12 30,20 16,28" fill="white" />
-                           </svg>
-                         </Box>
-                       </Box>
-                     ) : (
-                       <video
-                         width="100%"
-                         height="100%"
-                         controls
-                         autoPlay
-                         muted
-                         loop
-                         playsInline
-                         preload="metadata"
-                         poster="/video-poster.jpg"
-                         style={{ objectFit: 'cover', borderRadius: '20px' }}
-                         aria-label="Lease Shield AI product demonstration video"
-                       >
-                         <source src="/Product Launch Video.mp4" type="video/mp4" />
-                         <track 
-                           kind="captions" 
-                           src="/captions.vtt" 
-                           srcLang="en" 
-                           label="English" 
-                           default 
-                         />
-                         Your browser does not support the video tag.
-                       </video>
-                     )}
+                     <video
+                       width="100%"
+                       height="100%"
+                       controls
+                       autoPlay
+                       muted
+                       loop
+                       playsInline
+                       preload="auto"
+                       poster="/video-poster.jpg"
+                       style={{ objectFit: 'cover', borderRadius: '20px' }}
+                       aria-label="Lease Shield AI product demonstration video"
+                     >
+                       <source src="/Product Launch Video.mp4" type="video/mp4" />
+                       <track 
+                         kind="captions" 
+                         src="/captions.vtt" 
+                         srcLang="en" 
+                         label="English" 
+                         default 
+                       />
+                       Your browser does not support the video tag.
+                     </video>
                    </Box>
                  </Zoom>
               </Grid>
