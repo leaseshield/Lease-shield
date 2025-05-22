@@ -9,13 +9,21 @@
       name="description"
       content="Lease Shield AI - Analyze your lease agreements with the power of AI."
     />
+    <meta name="robots" content="index, follow" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Lease Shield AI" />
+    
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link rel="icon" href="%PUBLIC_URL%/logo192.png" />
     
-    <!-- Preconnect to Google Fonts -->
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
     
     <!-- Load Google Fonts with display swap -->
     <link
@@ -25,8 +33,21 @@
     
     <!-- Preload critical assets -->
     <link rel="preload" href="%PUBLIC_URL%/video-poster.jpg" as="image" />
+    <link rel="preload" href="%PUBLIC_URL%/logo192.png" as="image" />
+    
+    <!-- DNS prefetch for external domains -->
+    <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
+    
+    <!-- Resource hints -->
+    <link rel="prefetch" href="%PUBLIC_URL%/manifest.json" />
     
     <title>Lease Shield AI</title>
+    
+    <!-- Performance optimization meta tags -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="HandheldFriendly" content="true" />
+    <meta name="MobileOptimized" content="width" />
+    <meta name="apple-touch-fullscreen" content="yes" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
