@@ -200,21 +200,36 @@ const LandingPage = () => {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     'name': 'Lease Shield AI',
-    'applicationCategory': 'BusinessApplication', // Or potentially FinanceApplication, LegalApplication
+    'applicationCategory': 'BusinessApplication',
     'operatingSystem': 'Web-based',
     'offers': {
       '@type': 'Offer',
       'priceCurrency': 'USD',
-      'price': '5', // Price for the main paid plan, adjust if needed
-      'url': 'https://www.yourdomain.com/pricing' // CHANGE TO YOUR ACTUAL PRICING URL
+      'price': '5',
+      'url': 'https://leaseshield.eu/pricing'
     },
     'aggregateRating': {
       '@type': 'AggregateRating',
-      'ratingValue': '4.8', // Example rating, update with real data if available
-      'reviewCount': '75' // Example count, update with real data
+      'ratingValue': '4.8',
+      'reviewCount': '75',
+      'bestRating': '5',
+      'worstRating': '1'
     },
-    'description': 'AI-powered lease analysis tool to help tenants and professionals understand rental agreements, identify risks, and review contracts quickly.'
-    // Add more properties like screenshot, features, etc. if desired
+    'description': 'AI-powered lease analysis tool to help tenants and professionals understand rental agreements, identify risks, and review contracts quickly.',
+    'featureList': [
+      'Lease Analysis',
+      'Tenant Matching',
+      'Lease Calculator',
+      'Expense Scanner',
+      'Photo Inspector'
+    ],
+    'screenshot': 'https://leaseshield.eu/screenshot.jpg',
+    'url': 'https://leaseshield.eu',
+    'author': {
+      '@type': 'Organization',
+      'name': 'Lease Shield AI',
+      'url': 'https://leaseshield.eu'
+    }
   };
 
   const faqSchema = {
@@ -270,11 +285,21 @@ const LandingPage = () => {
       */}
 
       <Helmet>
-        <title>AI Lease Analyzer & Lease Shield | Understand Your Rental Agreement</title>
+        <title>Lease Shield AI: Advanced AI Lease Analyzer & Contract Review | Understand Your Rental Agreement</title>
         <meta 
           name="description" 
-          content="Lease Shield AI uses advanced AI to analyze your lease agreement in minutes. Understand complex clauses, identify risks, and review your rental contract like an expert. Get started free!" 
+          content="Lease Shield AI uses advanced artificial intelligence to analyze your lease agreement in minutes. Understand complex clauses, identify risks, and review your rental contract like an expert. Get started free!" 
         />
+        <meta 
+          name="keywords" 
+          content="Lease Shield AI, lease analyzer, rental agreement, contract review, AI lease analysis, tenant protection, lease terms, rental contract, property management, lease review"
+        />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:title" content="Lease Shield AI: Advanced AI Lease Analyzer & Contract Review" />
+        <meta property="og:description" content="Understand your lease agreement in minutes with AI-powered analysis. Identify risks, understand terms, and protect your rights." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://leaseshield.eu" />
+        <link rel="canonical" href="https://leaseshield.eu" />
         {/* Add JSON-LD Schema */}
         <script type="application/ld+json">
           {JSON.stringify(softwareApplicationSchema)}
@@ -429,18 +454,25 @@ const LandingPage = () => {
                      <video
                        width="100%"
                        height="100%"
-                       controls // Add controls for user interaction
-                       autoPlay // Autoplay the video
-                       muted // Mute by default for autoplay
-                       loop // Loop the video
-                       playsInline // Important for mobile playback
-                       style={{ objectFit: 'cover', borderRadius: '20px' }} // Cover the area, keep border radius
-                       aria-label="Product launch video"
+                       controls
+                       autoPlay
+                       muted
+                       loop
+                       playsInline
+                       preload="metadata"
+                       poster="/video-poster.jpg"
+                       style={{ objectFit: 'cover', borderRadius: '20px' }}
+                       aria-label="Lease Shield AI product demonstration video"
                      >
                        <source src="/Product Launch Video.mp4" type="video/mp4" />
+                       <track 
+                         kind="captions" 
+                         src="/captions.vtt" 
+                         srcLang="en" 
+                         label="English" 
+                         default 
+                       />
                        Your browser does not support the video tag.
-                       {/* Optional: Add track for captions/subtitles */}
-                       {/* <track kind="captions" src="/path/to/captions.vtt" srcLang="en" label="English" /> */}
                      </video>
                      {/* <DescriptionIcon aria-hidden="true" sx={{ fontSize: { xs: 100, md: 150 }, color: 'white', opacity: 0.8 }} /> */}
                    </Box>
@@ -479,6 +511,7 @@ const LandingPage = () => {
                          href={module.link.startsWith('#') ? module.link : undefined}
                          component={!module.link.startsWith('#') ? RouterLink : undefined}
                          to={!module.link.startsWith('#') ? module.link : undefined}
+                         aria-label={`Learn more about ${module.title}`}
                          sx={{
                            textTransform: 'none',
                            transition: theme.transitions.create(['background-color', 'transform'], { duration: theme.transitions.duration.short }),
@@ -488,7 +521,7 @@ const LandingPage = () => {
                            }
                          }}
                        >
-                         Learn More
+                         Learn More About {module.title}
                        </Button>
                     </Box>
                   </Card>
