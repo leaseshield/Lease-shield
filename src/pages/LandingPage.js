@@ -352,7 +352,7 @@ const LandingPage = () => {
                   paragraph
                   sx={{
                     opacity: 0.85,
-                    mb: 4,
+                    mb: 3,
                     fontWeight: 'medium',
                     fontSize: { xs: '0.9rem', md: '1.1rem' }
                   }}
@@ -413,7 +413,7 @@ const LandingPage = () => {
                     View Blog
                   </Button>
                 </Stack>
-                <Box sx={{ mt: 4, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ mt: 3, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   <Chip 
                      icon={<DescriptionIcon fontSize="small" />} 
                      label="Handles long leases (~700 pages)" 
@@ -509,6 +509,8 @@ const LandingPage = () => {
                     </CardContent>
                     <Box sx={{ p: 2, pt: 0, textAlign: 'center' }}>
                        <Button 
+                         variant="outlined"
+                         color="primary"
                          size="small" 
                          href={module.link.startsWith('#') ? module.link : undefined}
                          component={!module.link.startsWith('#') ? RouterLink : undefined}
@@ -598,7 +600,7 @@ const LandingPage = () => {
               <Zoom in={true} timeout={700}>
                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 3 }}>
                    {/* Placeholder for a graph or illustrative image - using an icon for now */}
-                   <AutoGraphIcon sx={{ fontSize: { xs: 150, md: 250 }, color: 'secondary.main', /* Changed color */ opacity: 0.8 }} />
+                   <PersonSearchIcon sx={{ fontSize: { xs: 150, md: 250 }, color: 'secondary.main', /* Changed color */ opacity: 0.8 }} />
                  </Box>
               </Zoom>
             </Grid>
@@ -608,7 +610,7 @@ const LandingPage = () => {
       {/* END NEW SECTION */}
 
       {/* NEW: Landlord Efficiency Comparison Graph */}
-      <Box sx={{ py: { xs: 6, md: 8 }, bgcolor: 'alternate.main' /* Or background.default */ }}>
+      <Box sx={{ py: { xs: 6, md: 8 }, bgcolor: 'background.paper' /* Or background.default */ }}>
         <Container maxWidth="lg">
            <Typography variant="h4" component="h3" align="center" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
              Faster, More Accurate Tenant Matching
@@ -690,7 +692,14 @@ const LandingPage = () => {
            ].map((step, index) => (
              <Grid item xs={12} md={4} key={step.title}>
                <Zoom in={true} style={{ transitionDelay: `${200 * index}ms` }}>
-                 <Card elevation={0} sx={{ height: '100%', borderRadius: 3, textAlign: 'center', p: 3, bgcolor: 'transparent' }}>
+                 <Card elevation={0} sx={{ 
+                    height: '100%', 
+                    borderRadius: 3, 
+                    textAlign: 'center', 
+                    p: 3, 
+                    bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[800], // Subtle background
+                    border: `1px solid ${theme.palette.divider}` // Subtle border
+                  }}>
                     <Avatar sx={{ bgcolor: 'primary.main', width: 60, height: 60, margin: '0 auto 16px auto' }}>
                       {step.icon}
                     </Avatar>
@@ -831,7 +840,7 @@ const LandingPage = () => {
       {/* --- END: Tenant Matcher Detail Section --- */}
 
       {/* --- Accuracy Comparison Section --- */}
-      <Box sx={{ bgcolor: 'alternate.main', py: { xs: 6, md: 8 } }}> { /* Use a slightly different background */}
+      <Box sx={{ bgcolor: 'background.paper', py: { xs: 6, md: 8 } }}> { /* Use a slightly different background */}
         <Container maxWidth="lg">
           <Typography variant="h3" component="h2" gutterBottom sx={{ mb: 5, textAlign: 'center' }}>
             Leading Accuracy in Lease Analysis
@@ -904,7 +913,7 @@ const LandingPage = () => {
             sx={{
                p: { xs: 2, sm: 3 }, 
                borderRadius: 3, 
-               bgcolor: 'secondary.lighter',  /* Use a distinct background */
+               bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[800],  /* Use a distinct background */
                display: 'flex', 
                alignItems: 'center', 
                gap: 2 
