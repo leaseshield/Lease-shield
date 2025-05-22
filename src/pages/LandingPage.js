@@ -224,11 +224,11 @@ const LandingPage = () => {
       'Photo Inspector'
     ],
     'screenshot': 'https://leaseshield.eu/screenshot.jpg',
-    'url': 'https://leaseshield.eu',
+    'url': 'https://leaseshield.eu/',
     'author': {
       '@type': 'Organization',
       'name': 'Lease Shield AI',
-      'url': 'https://leaseshield.eu'
+      'url': 'https://leaseshield.eu/'
     }
   };
 
@@ -290,10 +290,6 @@ const LandingPage = () => {
           name="description" 
           content="Lease Shield AI uses advanced artificial intelligence to analyze your lease agreement in minutes. Understand complex clauses, identify risks, and review your rental contract like an expert. Get started free!" 
         />
-        <meta 
-          name="keywords" 
-          content="Lease Shield AI, lease analyzer, rental agreement, contract review, AI lease analysis, tenant protection, lease terms, rental contract, property management, lease review"
-        />
         <meta name="robots" content="index, follow" />
         <meta property="og:title" content="Lease Shield AI: Advanced AI Lease Analyzer & Contract Review" />
         <meta property="og:description" content="Understand your lease agreement in minutes with AI-powered analysis. Identify risks, understand terms, and protect your rights." />
@@ -306,6 +302,29 @@ const LandingPage = () => {
         </script>
         <script type="application/ld+json">
           {JSON.stringify(faqSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "VideoObject",
+            "name": "Lease Shield AI Product Demonstration",
+            "description": "See how Lease Shield AI uses artificial intelligence to analyze lease agreements, identify risks, and help you understand complex legal documents quickly.",
+            "thumbnailUrl": "https://leaseshield.eu/video-poster.jpg",
+            "uploadDate": "2023-10-26T08:00:00+00:00", // Change to the actual upload date
+            "duration": "PT1M30S", // Change to the actual video duration (e.g., PT1M30S for 1 minute 30 seconds)
+            "contentUrl": "https://leaseshield.eu/Product Launch Video.mp4",
+            "embedUrl": "https://leaseshield.eu/Product Launch Video.mp4", // Or the URL of a page where the video is embedded if different
+            "publisher": {
+              "@type": "Organization",
+              "name": "Lease Shield AI",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://leaseshield.eu/logo512.png"
+              }
+            }
+            // Potentially add transcript if available
+            // "transcript": "Your video transcript here..."
+          })}
         </script>
       </Helmet>
 
