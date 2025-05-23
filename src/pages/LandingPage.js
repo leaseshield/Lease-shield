@@ -629,7 +629,11 @@ const LandingPage = () => {
       {/* END NEW SECTION */}
 
       {/* NEW: Landlord Efficiency Comparison Graph */}
-      <Box sx={{ py: { xs: 6, md: 8 }, bgcolor: 'background.paper' /* Or background.default */ }}>
+      <Box sx={{ 
+        py: { xs: 6, md: 8 }, 
+        bgcolor: 'background.paper', /* Or background.default */
+        borderRadius: theme.shape.borderRadius * 2 // Added this line
+      }}>
         <Container maxWidth="lg">
            <Typography variant="h4" component="h3" align="center" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
              Faster, More Accurate Tenant Matching
@@ -734,7 +738,14 @@ const LandingPage = () => {
       </Container>
 
       {/* --- START: New Lease Analysis Detail Section --- */}
-      <Box id="lease-analysis-detail" sx={{ py: { xs: 6, md: 10 }, bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900] }}>
+      <Box 
+        id="lease-analysis-detail" 
+        sx={{ 
+          py: { xs: 6, md: 10 }, 
+          bgcolor: theme.palette.mode === 'light' ? theme.palette.primary.light + '33' : theme.palette.primary.dark + '33', // Light tint of primary
+          borderRadius: '20px' // Added this line
+        }}
+      >
         <Container maxWidth="lg">
           <Grid container spacing={6} alignItems="center">
              {/* Image/Mockup Placeholder (Left Side) - Now using an icon */}
@@ -859,7 +870,11 @@ const LandingPage = () => {
       {/* --- END: Tenant Matcher Detail Section --- */}
 
       {/* --- Accuracy Comparison Section --- */}
-      <Box sx={{ bgcolor: 'background.paper', py: { xs: 6, md: 8 } }}> { /* Use a slightly different background */}
+      <Box sx={{ 
+        bgcolor: 'background.paper', 
+        py: { xs: 6, md: 8 },
+        borderRadius: 3 // Added this line
+      }}> { /* Use a slightly different background */}
         <Container maxWidth="lg">
           <Typography variant="h3" component="h2" gutterBottom sx={{ mb: 5, textAlign: 'center' }}>
             Leading Accuracy in Lease Analysis
