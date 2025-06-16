@@ -323,6 +323,12 @@ def get_or_create_user_profile(user_id):
             profile_data['dailyScansUsed'] = 0
         if 'lastScanDate' not in profile_data:
             profile_data['lastScanDate'] = None # Or a default past date string like '1970-01-01'
+        if 'lastMonthlyScan' not in profile_data:
+            profile_data['lastMonthlyScan'] = datetime.date.today().strftime('%Y-%m')
+            try:
+                user_ref.update({'lastMonthlyScan': profile_data['lastMonthlyScan']})
+            except Exception as e:
+                print(f"Warning: could not backfill lastMonthlyScan for {user_id}: {e}")
         return profile_data
     else:
         print(f"Creating default free profile for user: {user_id}")
@@ -333,7 +339,8 @@ def get_or_create_user_profile(user_id):
             'maxAllowedScans': 3, # Default for free tier
             'dailyScansUsed': 0,
             'lastScanDate': None, # Initialize as None
-            'createdAt': firestore.SERVER_TIMESTAMP
+            'createdAt': firestore.SERVER_TIMESTAMP,
+            'lastMonthlyScan': datetime.date.today().strftime('%Y-%m')
         }
         try:
             user_ref.set(default_profile)
@@ -352,7 +359,10 @@ def increment_scan_counts(user_id, tier):
         
         # Increment monthly count for limited tiers (free, commercial, premium)
         if tier in ['free', 'commercial', 'premium']:
-            user_ref.update({'freeScansUsed': firestore.Increment(1)})
+            user_ref.update({
+                'freeScansUsed': firestore.Increment(1),
+                'lastMonthlyScan': today_str[:7]  # Store YYYY-MM of current month
+            })
             print(f"Incremented monthly scan count for user {user_id} (tier: {tier})")
 
         # Handle daily count for premium tier
@@ -644,6 +654,20 @@ def analyze_document():
     user_profile = get_or_create_user_profile(user_id)
     if not user_profile:
          return jsonify({'error': 'Could not retrieve or create user profile.'}), 500
+
+    # --- Monthly Scan Reset Logic ---
+    current_month_str = datetime.date.today().strftime('%Y-%m')
+    if user_profile.get('lastMonthlyScan') != current_month_str:
+        try:
+            db.collection('users').document(user_id).update({
+                'freeScansUsed': 0,
+                'lastMonthlyScan': current_month_str
+            })
+            user_profile['freeScansUsed'] = 0
+            user_profile['lastMonthlyScan'] = current_month_str
+            print(f"Monthly scan count reset for user {user_id} for new month {current_month_str}")
+        except Exception as e:
+            print(f"Error resetting monthly scans for {user_id}: {e}")
 
     can_analyze = False
     should_increment = False # Unified flag
@@ -1050,7 +1074,8 @@ def create_commercial_user():
                 'subscriptionTier': 'commercial', # Assign specific tier
                 'maxAllowedScans': scan_limit,
                 'freeScansUsed': 0, # Start with 0 used
-                'createdAt': firestore.SERVER_TIMESTAMP
+                'createdAt': firestore.SERVER_TIMESTAMP,
+                'lastMonthlyScan': datetime.date.today().strftime('%Y-%m')
             }
             user_ref.set(profile_data)
             print(f"Created Firestore profile for commercial user {email} ({new_user_uid}) with scan limit {scan_limit}")
@@ -1657,6 +1682,20 @@ def analyze_image_route():
     user_profile = get_or_create_user_profile(user_id)
     if not user_profile:
          return jsonify({'error': 'Could not retrieve or create user profile.'}), 500
+
+    # --- Monthly Scan Reset Logic ---
+    current_month_str = datetime.date.today().strftime('%Y-%m')
+    if user_profile.get('lastMonthlyScan') != current_month_str:
+        try:
+            db.collection('users').document(user_id).update({
+                'freeScansUsed': 0,
+                'lastMonthlyScan': current_month_str
+            })
+            user_profile['freeScansUsed'] = 0
+            user_profile['lastMonthlyScan'] = current_month_str
+            print(f"Monthly scan count reset for user {user_id} for new month {current_month_str}")
+        except Exception as e:
+            print(f"Error resetting monthly scans for {user_id}: {e}")
 
     can_analyze = False
     should_increment = False # Unified flag
