@@ -57,12 +57,15 @@ app = Flask(__name__)
 CORS(app, 
      origins=[
          "https://lease-shield-frontend.onrender.com", 
-         "http://localhost:3000"
+         "http://localhost:3000",
+         "https://leaseshield.eu",
+         "https://leasesheild.eu",
+         "https://2026-05-22.leaseshield.eu",
+         "https://340d.leaseshield.eu"
      ], 
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], # Explicitly allow methods
-     headers=["Content-Type", "Authorization"],       # Explicitly allow headers
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     headers=["Content-Type", "Authorization"],
      supports_credentials=True,
-     # expose_headers=["Content-Length"] # Optional: Add if frontend needs specific headers
 )
 
 # --- Initialize Firebase Admin SDK (Handles Local and Deployed) ---
