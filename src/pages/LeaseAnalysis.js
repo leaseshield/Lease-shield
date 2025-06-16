@@ -274,50 +274,73 @@ const LeaseAnalysis = ({ showSnackbar }) => {
         throw new Error('Invalid analysis type');
       }
 
-      clearInterval(progressTimer); // Ensure timer stops just before final state updates
-
-      if (!response.ok) {
-        setAnalysisProgress(0); // Reset progress on fetch error
-        const errorData = await response.json().catch(() => ({ error: `Analysis failed with status: ${response.status}` }));
-         if (response.status === 402 && errorData.upgradeRequired) {
-            return { success: false, error: errorData.error, upgradeRequired: true }; 
-         } else {
-           return { success: false, error: errorData.error || 'Failed to analyze lease' }; 
-         }
-      }
+      clearInterval(progressTimer);
+      setAnalysisProgress(100);
 
       const result = await response.json();
 
-      if (!result.success || !result.analysis) {
-        setAnalysisProgress(0); // Reset progress on result error
-        throw new Error(result.error || 'Analysis failed to return expected data.');
+      if (!response.ok) {
+        throw new Error(result.error || `Analysis failed with status ${response.status}`);
+      }
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Analysis failed to return a successful result.');
       }
 
-      // Calculate score
-      let calculatedScore = 0;
-      if (result.analysis.score !== undefined) {
-        calculatedScore = result.analysis.score;
-      } else if (result.analysis.risks) {
-        const riskCount = result.analysis.risks.length;
-        calculatedScore = Math.max(0, 100 - (riskCount * 10));
+      // --- NEW: Robust Content Parsing ---
+      const parseAnalysisContent = (analysis) => {
+          if (!analysis) return { error: 'Empty analysis content received.' };
+          
+          // Case 1: Analysis is already a valid object (Gemini returned clean JSON)
+          if (typeof analysis === 'object' && analysis.extracted_data) {
+              return analysis;
+          }
+
+          // Case 2: Analysis is a string that needs to be parsed
+          if (typeof analysis === 'string') {
+              try {
+                  // Clean up potential markdown code fences
+                  const cleaned = analysis.replace(/^```json\s*|```\s*$/g, '');
+                  return JSON.parse(cleaned);
+              } catch (e) {
+                  console.warn("JSON parsing failed, treating as raw text.");
+                  // Return a structured object with the raw text for display
+                  return { raw_analysis: analysis, error_message: 'Result was not valid JSON.' };
+              }
+          }
+          
+          // Fallback for unexpected types
+          return { raw_analysis: JSON.stringify(analysis), error_message: 'Unexpected content format.' };
+      };
+      
+      const parsedAnalysis = parseAnalysisContent(result.analysis);
+      
+      if (parsedAnalysis.error_message) {
+          console.error("Analysis content error:", parsedAnalysis.error_message);
+          // Return the partially parsed data for display
+          return { 
+              success: true, // The API call itself was successful
+              analysis: parsedAnalysis, 
+              score: 0, // No score available
+              leaseId: result.leaseId 
+          };
       }
-      
-      setAnalysisProgress(100); // Set to 100 ONLY on final success
-      
-      // Return success object
+
+      const finalScore = parsedAnalysis.score !== undefined ? parsedAnalysis.score : (100 - (parsedAnalysis.risks?.length || 0) * 10);
+
       return {
-         success: true,
-         analysis: result.analysis,
-         score: calculatedScore,
-         leaseId: result.leaseId || null // Include leaseId if returned
+          success: true,
+          analysis: parsedAnalysis,
+          score: finalScore,
+          leaseId: result.leaseId
       };
 
     } catch (err) {
-      if (progressTimer) clearInterval(progressTimer); // Ensure timer stops on any catch
-      setAnalysisProgress(0); // Reset progress on error
-      console.error('Analysis error:', err);
-      // Return error object
-      return { success: false, error: err.message };
+      clearInterval(progressTimer);
+      setAnalysisProgress(100);
+      console.error('Error during analysis:', err);
+      // Return a structured error object
+      return { success: false, error: err.message || 'An unknown error occurred' };
     }
   };
 
