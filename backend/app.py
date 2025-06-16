@@ -1398,10 +1398,25 @@ def scan_expense_documents():
             mime_type = mimetypes.guess_type(file.filename)[0] or 'application/octet-stream'
             
             text_content = None
+            image_fallback_bytes = None  # If we need to send an image instead of text
             if mime_type == 'application/pdf':
+                # First attempt to extract text (including OCR)
                 text_content = extract_pdf_rich_content(io.BytesIO(file_bytes))
-                if not text_content:
-                    raise ValueError("Failed to extract readable text from PDF.")
+                # If no meaningful text, fall back to image conversion for the first page
+                if not text_content or len(text_content.strip()) < 40:
+                    try:
+                        from pdf2image import convert_from_bytes
+                        images = convert_from_bytes(file_bytes, first_page=1, last_page=1)
+                        if images:
+                            img_io = io.BytesIO()
+                            images[0].save(img_io, format='PNG')
+                            image_fallback_bytes = img_io.getvalue()
+                            mime_type = 'image/png'  # Treat as image for downstream logic
+                            print(f"Falling back to image analysis for {file.filename} (first page converted to PNG).")
+                        else:
+                            raise ValueError("PDF to image conversion produced no pages.")
+                    except Exception as img_err:
+                        raise ValueError(f"Failed both text extraction and image fallback: {img_err}")
             elif mime_type.startswith('image/'):
                 # This is handled later by sending the image data directly
                 pass
@@ -1437,7 +1452,9 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                     genai.configure(api_key=api_key)
                     model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
                     if mime_type.startswith('image/'):
-                        document_part = {"mime_type": mime_type, "data": file_bytes}
+                        # Use fallback image bytes if we created one, otherwise use original bytes
+                        img_bytes = image_fallback_bytes or file_bytes
+                        document_part = {"mime_type": mime_type, "data": img_bytes}
                         response = model.generate_content([prompt, document_part])
                     else:
                         response = model.generate_content(prompt)
