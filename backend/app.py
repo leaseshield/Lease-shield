@@ -228,7 +228,7 @@ def analyze_lease(text):
             # Configure GenAI with the current key for this attempt
             genai.configure(api_key=api_key)
             # Initialize the model (consider model name from env var if needed)
-            model = genai.GenerativeModel('gemini-1.5-flash') 
+            model = genai.GenerativeModel('') 
             
             response = model.generate_content(prompt)
             
@@ -1516,7 +1516,7 @@ def calculate_lease_costs():
 gemini_models = {}
 current_key_index = 0
 
-def get_gemini_model(model_name="gemini-1.5-pro"):
+def get_gemini_model(model_name="gemini-2.5-flash-preview-04-17"):
     global current_key_index
     global gemini_models
     global gemini_api_keys
@@ -1564,7 +1564,7 @@ def get_gemini_model(model_name="gemini-1.5-pro"):
 
 # --- Analyze Image with Gemini ---
 def analyze_image(image_file_storage):
-    """Analyzes an uploaded image file using Gemini 1.5 Pro."""
+    """Analyzes an uploaded image file using Gemini 2.5 Flash Preview."""
     if not Image:
          raise ImportError("Pillow library is required for image analysis.")
          
@@ -1602,11 +1602,11 @@ def analyze_image(image_file_storage):
              image_parts[0] # Embed the image data directly in the prompt list
         ]
 
-        # Get the Gemini 1.5 Pro model (using the key rotation logic)
-        model = get_gemini_model(model_name="gemini-1.5-pro") # Explicitly use 1.5 Pro
+        # Get the Gemini 2.5 Flash Preview model (using the key rotation logic)
+        model = get_gemini_model(model_name="gemini-2.5-flash-preview-04-17") # Updated model name
 
         # Generate content
-        print(f"Sending image ({image_parts[0]['mime_type']}) to Gemini 1.5 Pro for analysis...")
+        print(f"Sending image ({image_parts[0]['mime_type']}) to Gemini 2.5 Flash Preview for analysis...")
         response = model.generate_content(prompt)
 
         # Check for response and valid text part
