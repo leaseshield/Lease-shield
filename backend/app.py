@@ -1447,6 +1447,9 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
 
                     cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
                     analysis_result_json = json.loads(cleaned_text)
+                    # Treat an empty JSON object (i.e. {}) as a failure so we can retry with the next key
+                    if isinstance(analysis_result_json, dict) and len(analysis_result_json) == 0:
+                        raise ValueError("The AI model returned an empty JSON object (no data extracted).")
                     print(f"Expense Analysis successful for {file.filename}")
                     last_error = None
                     break
