@@ -19,6 +19,7 @@ import uuid # For unique order ID
 from google.api_core.exceptions import PermissionDenied, GoogleAPIError 
 import datetime # Needed for daily scan logic
 import calendar # Added for days in month calculation
+import traceback # Import traceback for detailed error logging
 # Add imports for file handling if needed (os is already imported)
 from PIL import Image # Potentially needed for image processing/validation
 import mimetypes # To determine image MIME type
@@ -1847,6 +1848,34 @@ def analyze_image_route():
         import traceback
         traceback.print_exc() 
         return jsonify({'error': 'An unexpected server error occurred during image analysis.'}), 500
+
+# --- Global Error Handler ---
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Log the full traceback for any unhandled exception
+    tb_str = traceback.format_exc()
+    print(f"--- UNHANDLED EXCEPTION ---")
+    print(tb_str)
+    print(f"---------------------------")
+    
+    # In a production environment, you might want to return a more generic error.
+    # For debugging, we can return the error type and a reference.
+    response = {
+        "error": "A critical and unexpected server error occurred. The technical details have been logged.",
+        "error_type": type(e).__name__,
+        "message": "Please report this issue to support."
+    }
+    return jsonify(response), 500
+
+# --- End Global Error Handler ---
+
+# --- App Health / Ping Endpoint ---
+@app.route('/api/ping', methods=['GET'])
+def ping():
+    """Simple endpoint to keep the backend alive."""
+    # No auth needed, just return success
+    return jsonify({'status': 'pong'}), 200
+# --- End App Health / Ping Endpoint ---
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8081))
