@@ -1280,7 +1280,7 @@ def allowed_finance_file(filename):
 def scan_expense_documents(): # Renamed function
     if db is None:
         return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
-        
+
     # --- Authorization --- 
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
@@ -1303,73 +1303,66 @@ def scan_expense_documents(): # Renamed function
     processing_errors = []
 
     for file in uploaded_files:
-        if not file or not allowed_finance_file(file.filename):
-            print(f"Skipped invalid file type: {file.filename}")
-            processing_errors.append({"fileName": file.filename, "error": "Invalid file type."})
-            continue
-
-        print(f"Processing expense document: {file.filename}")
-        
-        extracted_data = None
-        last_error = None
-        analysis_input = None
-        input_type = None
-        analysis_result_json = None
-
         try:
-            file_content_type = file.content_type
-            file_stream = io.BytesIO(file.read())
+            if not file or not allowed_finance_file(file.filename):
+                print(f"Skipped invalid file type: {file.filename}")
+                processing_errors.append({"fileName": file.filename, "error": "Invalid file type."})
+                continue
 
-            if file_content_type == 'application/pdf':
-                extracted_text = extract_pdf_text(file_stream)
-                if extracted_text is None:
-                    raise ValueError('Failed to extract text from PDF')
-                if len(extracted_text) > MAX_TEXT_LENGTH:
-                    raise ValueError(f'Extracted PDF text exceeds the maximum length of {MAX_TEXT_LENGTH} characters.')
-                analysis_input = extracted_text
-                input_type = 'text'
-            elif file_content_type in ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/heif']:
-                image_bytes = file_stream.getvalue()
-                analysis_input = {
-                    "mime_type": file_content_type,
-                    "data": image_bytes
-                }
-                input_type = 'image'
-            else:
-                raise ValueError('Unsupported file type for expense analysis. Use PDF, PNG, JPG, JPEG, WEBP, HEIC, HEIF.')
-                
-            prompt = f"""Analyze the provided financial document ({'text content' if input_type == 'text' else 'image'}). 
-            Identify and extract all key financial details present, such as vendor/merchant name, date(s), currency, line items (with descriptions and amounts), subtotals, taxes, payment terms, invoice numbers, etc. 
+            print(f"Processing expense document: {file.filename}")
             
-            **Crucially, you MUST identify and extract the main numerical total amount (e.g., Total Due, Amount Paid, Balance).** 
-            Extract only the numerical value. If possible, use the key `total_amount` for this value in the output JSON.
+            analysis_result_json = None
+            last_error = None
             
-            Format the output ONLY as a single JSON object containing all the extracted information. Use descriptive keys for the data found. 
-            If specific details like line items are present, represent them accurately within the JSON.
-            If no relevant financial details can be reliably extracted, return an empty JSON object: {{}}
-            
-            Do not include any text before or after the JSON object (e.g., no ```json markdown).
-            
-            Document Content:
-            --- START --- 
-            {analysis_input if input_type == 'text' else '[IMAGE DATA PROVIDED]'} 
-            --- END --- 
-            
-            Output ONLY the JSON object.
-            """
+            # This logic can be simplified as Gemini 1.5 Pro can handle multiple mime-types
+            # We just need the bytes and the mime-type.
+            file.seek(0)
+            file_bytes = file.read()
+            file.seek(0)
+            mime_type = mimetypes.guess_type(file.filename)[0] or 'application/octet-stream'
+
+
+            prompt = """Analyze the provided financial document (e.g., receipt, invoice).
+Extract all key financial details. The output MUST be a single JSON object.
+Key details to extract include:
+- `vendor`: The merchant or store name.
+- `transaction_date`: The date of the transaction (YYYY-MM-DD).
+- `line_items`: An array of objects, each with `description` and `amount`.
+- `subtotal`: The total before tax.
+- `tax`: The total tax amount.
+- `total`: The final total amount.
+- `category`: A suggested expense category (e.g., "Office Supplies", "Meals", "Travel").
+
+If a field is not present, omit it from the JSON. For line items, if there's only one item, the `line_items` array should still be used.
+The final `total` is the most important field.
+
+Example Response:
+{
+  "vendor": "Office Depot",
+  "transaction_date": "2024-03-15",
+  "line_items": [
+    { "description": "Printer Paper", "amount": 15.99 },
+    { "description": "Pens (Box)", "amount": 8.49 }
+  ],
+  "subtotal": 24.48,
+  "tax": 2.02,
+  "total": 26.50,
+  "category": "Office Supplies"
+}
+
+Return ONLY the JSON object. Do not include ```json markdown or any other text.
+If the document is not a receipt/invoice or is unreadable, return an empty JSON object: {}
+"""
             
             # Iterate through API keys
             for i, api_key in enumerate(gemini_api_keys):
                 print(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
                 try:
                     genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
+                    model = genai.GenerativeModel('gemini-1.5-pro-preview-0514')
                     
-                    content_to_send = [prompt]
-                    if input_type == 'image':
-                        content_to_send.append(analysis_input)
-                    
-                    response = model.generate_content(content_to_send)
+                    document_part = {"mime_type": mime_type, "data": file_bytes}
+                    response = model.generate_content([prompt, document_part])
                     
                     if not response.text:
                         raise ValueError("The AI model returned an empty response.")
@@ -1377,61 +1370,42 @@ def scan_expense_documents(): # Renamed function
                     cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
                     analysis_result_json = json.loads(cleaned_text)
                     print(f"Expense Analysis successful with API key #{i+1} for {file.filename}")
-                    last_error = None # Clear last error on success
-                    break # Success
+                    last_error = None
+                    break 
 
                 except json.JSONDecodeError as json_err:
                     raw_response = response.text if 'response' in locals() and hasattr(response, 'text') else 'N/A'
-                    error_detail = f"The AI model returned a malformed response that could not be read. Raw response: '{raw_response}'"
+                    error_detail = f"AI response is not valid JSON. Raw: '{raw_response}'"
                     print(f"JSON Decode Error (key #{i+1}) for {file.filename}: {json_err}")
                     last_error = error_detail
                     analysis_result_json = None
                     continue
 
-                except (PermissionDenied, GoogleAPIError) as api_err:
-                    error_detail = str(api_err)
-                    if "API key not valid" in error_detail:
-                        last_error = f"API Key #{i+1} is invalid or expired. Please check your .env configuration."
-                    elif "quota" in error_detail.lower():
-                        last_error = f"API Key #{i+1} has exceeded its usage quota for the day."
-                    elif "model" in error_detail.lower() and "permission" in error_detail.lower():
-                         last_error = f"API Key #{i+1} does not have permission to use the model 'gemini-2.5-flash-preview-05-20'."
-                    else:
-                        last_error = f"A Google API error occurred with key #{i+1}: {error_detail}"
-                    
-                    print(f"Gemini API Error (key #{i+1}) for {file.filename}: {api_err}")
-                    analysis_result_json = None
-                    continue # Try next key
-                
                 except Exception as e:
                     error_detail = str(e)
                     print(f"Unexpected Error during Expense analysis (key #{i+1}) for {file.filename}: {e}")
                     last_error = f"An unexpected server error occurred during analysis: {error_detail}"
                     analysis_result_json = None
-                    continue # Try next key
+                    continue
 
             # Process results for this file
             if analysis_result_json:
-                extracted_data = analysis_result_json
-                extracted_data['fileName'] = file.filename
-                all_extracted_data.append(extracted_data)
+                # Add filename for reference
+                analysis_result_json['fileName'] = file.filename
+                all_extracted_data.append(analysis_result_json)
             else:
-                # If analysis failed after trying all keys, use the last captured error.
-                if last_error:
-                    error_message = last_error
-                else:
-                    # This case should be rare, but as a fallback.
-                    error_message = f"AI analysis failed for {file.filename} after trying all available API keys. Cause unknown."
-                
+                error_message = last_error or f"Analysis failed for {file.filename} after trying all keys."
                 print(f"Final error for {file.filename}: {error_message}")
                 processing_errors.append({"fileName": file.filename, "error": error_message})
 
         except Exception as processing_err:
-            # This catches errors outside the API loop, e.g., file reading issues.
             error_detail = str(processing_err)
-            print(f"Error processing expense file {file.filename}: {error_detail}")
-            processing_errors.append({"fileName": file.filename, "error": f"A critical error occurred while processing the file: {error_detail}"})
+            print(f"!!! CRITICAL FAILURE processing file {file.filename}: {processing_err}")
+            import traceback
+            traceback.print_exc()
+            processing_errors.append({"fileName": file.filename, "error": f"A critical server error occurred: {error_detail}"})
 
+    # --- Save to Firestore ---
     saved_expense_ids = []
     if all_extracted_data:
         print(f"Saving {len(all_extracted_data)} successfully extracted expense documents.")
@@ -1451,21 +1425,24 @@ def scan_expense_documents(): # Renamed function
                 print(f"Firestore saving error for expense (user {user_id}, file: {data.get('fileName', 'Unknown')}): {db_error}")
                 processing_errors.append({"fileName": data.get('fileName', 'Unknown'), "error": f"Database save failed: {db_error}"})
 
+    # --- Final Response ---
     response_payload = {
-        'success': len(all_extracted_data) > 0,
+        'success': len(all_extracted_data) > 0 and len(processing_errors) == 0,
         'extractedDataList': all_extracted_data,
         'errors': processing_errors,
         'savedExpenseIds': saved_expense_ids
     }
 
     status_code = 200
-    if not all_extracted_data and processing_errors:
-        status_code = 500
-    elif processing_errors:
+    # If there were some successes and some failures, it's a "Multi-Status"
+    if processing_errors and all_extracted_data:
         status_code = 207
+    # If every file failed, it's a server error or bad request, depending on why.
+    # For simplicity, we'll call it a 500 if any critical errors happened.
+    elif processing_errors and not all_extracted_data:
+        status_code = 500 # Internal Server Error as no files could be processed.
 
     return jsonify(response_payload), status_code
-        
 # --- End Finance Analysis Endpoint ---
 # --- End Expense Scanning Endpoint --- # Corrected closing comment
 
