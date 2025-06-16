@@ -1359,6 +1359,7 @@ def scan_expense_documents(): # Renamed function
             Output ONLY the JSON object.
             """
             
+            # Iterate through API keys
             for i, api_key in enumerate(gemini_api_keys):
                 print(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
                 try:
@@ -1371,37 +1372,66 @@ def scan_expense_documents(): # Renamed function
                     
                     response = model.generate_content(content_to_send)
                     
+                    if not response.text:
+                        raise ValueError("The AI model returned an empty response.")
+
                     cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
                     analysis_result_json = json.loads(cleaned_text)
                     print(f"Expense Analysis successful with API key #{i+1} for {file.filename}")
-                    last_error = None
-                    break
+                    last_error = None # Clear last error on success
+                    break # Success
+
                 except json.JSONDecodeError as json_err:
+                    raw_response = response.text if 'response' in locals() and hasattr(response, 'text') else 'N/A'
+                    error_detail = f"The AI model returned a malformed response that could not be read. Raw response: '{raw_response}'"
                     print(f"JSON Decode Error (key #{i+1}) for {file.filename}: {json_err}")
-                    print(f"Raw Gemini Response: {response.text if 'response' in locals() else 'N/A'}")
-                    last_error = json_err
+                    last_error = error_detail
                     analysis_result_json = None
                     continue
-                except Exception as e:
-                    print(f"Error during Expense analysis (key #{i+1}) for {file.filename}: {e}")
-                    last_error = e
-                    analysis_result_json = None
-                    break
 
+                except (PermissionDenied, GoogleAPIError) as api_err:
+                    error_detail = str(api_err)
+                    if "API key not valid" in error_detail:
+                        last_error = f"API Key #{i+1} is invalid or expired. Please check your .env configuration."
+                    elif "quota" in error_detail.lower():
+                        last_error = f"API Key #{i+1} has exceeded its usage quota for the day."
+                    elif "model" in error_detail.lower() and "permission" in error_detail.lower():
+                         last_error = f"API Key #{i+1} does not have permission to use the model 'gemini-2.5-flash-preview-05-20'."
+                    else:
+                        last_error = f"A Google API error occurred with key #{i+1}: {error_detail}"
+                    
+                    print(f"Gemini API Error (key #{i+1}) for {file.filename}: {api_err}")
+                    analysis_result_json = None
+                    continue # Try next key
+                
+                except Exception as e:
+                    error_detail = str(e)
+                    print(f"Unexpected Error during Expense analysis (key #{i+1}) for {file.filename}: {e}")
+                    last_error = f"An unexpected server error occurred during analysis: {error_detail}"
+                    analysis_result_json = None
+                    continue # Try next key
+
+            # Process results for this file
             if analysis_result_json:
                 extracted_data = analysis_result_json
                 extracted_data['fileName'] = file.filename
                 all_extracted_data.append(extracted_data)
             else:
-                error_message = f"AI analysis failed for {file.filename}."
+                # If analysis failed after trying all keys, use the last captured error.
                 if last_error:
-                    error_message += f" Last error: {last_error}"
-                print(error_message)
+                    error_message = last_error
+                else:
+                    # This case should be rare, but as a fallback.
+                    error_message = f"AI analysis failed for {file.filename} after trying all available API keys. Cause unknown."
+                
+                print(f"Final error for {file.filename}: {error_message}")
                 processing_errors.append({"fileName": file.filename, "error": error_message})
 
         except Exception as processing_err:
-            print(f"Error processing expense file {file.filename}: {processing_err}")
-            processing_errors.append({"fileName": file.filename, "error": f"File processing failed: {processing_err}"})
+            # This catches errors outside the API loop, e.g., file reading issues.
+            error_detail = str(processing_err)
+            print(f"Error processing expense file {file.filename}: {error_detail}")
+            processing_errors.append({"fileName": file.filename, "error": f"A critical error occurred while processing the file: {error_detail}"})
 
     saved_expense_ids = []
     if all_extracted_data:
