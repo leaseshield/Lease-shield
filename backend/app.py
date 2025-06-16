@@ -1171,7 +1171,7 @@ def inspect_photos():
                 try:
                     genai.configure(api_key=api_key)
                     # Use a model that supports vision, e.g., gemini-pro-vision or 1.5 flash/pro
-                    model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17') 
+                    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20') 
                     
                     # Generate content with prompt and image
                     response = model.generate_content([prompt, image_part])
@@ -1360,9 +1360,22 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                 try:
                     genai.configure(api_key=api_key)
                     # Use the same model as photo inspection to improve consistency/availability
-                    model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
-                    document_part = {"mime_type": mime_type, "data": file_bytes}
-                    response = model.generate_content([prompt, document_part])
+                    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
+                    if mime_type == 'application/pdf':
+                        # Extract text from PDF for analysis instead of sending raw bytes (better support)
+                        try:
+                            text_content = extract_pdf_text(io.BytesIO(file_bytes))
+                        except Exception as pdf_err:
+                            print(f"PDF extraction error for {file.filename}: {pdf_err}")
+                            text_content = None
+
+                        if not text_content:
+                            raise ValueError("Failed to extract text from PDF or PDF is empty.")
+
+                        response = model.generate_content(prompt + "\n\n" + text_content[:MAX_TEXT_LENGTH])
+                    else:
+                        document_part = {"mime_type": mime_type, "data": file_bytes}
+                        response = model.generate_content([prompt, document_part])
 
                     if not response.text:
                         raise ValueError("The AI model returned an empty response.")
@@ -1541,7 +1554,7 @@ def calculate_lease_costs():
 gemini_models = {}
 current_key_index = 0
 
-def get_gemini_model(model_name="gemini-2.5-flash-preview-04-17"):
+def get_gemini_model(model_name="gemini-2.5-flash-preview-05-20"):
     global current_key_index
     global gemini_models
     global gemini_api_keys
@@ -1628,7 +1641,7 @@ def analyze_image(image_file_storage):
         ]
 
         # Get the Gemini 2.5 Flash Preview model (using the key rotation logic)
-        model = get_gemini_model(model_name="gemini-2.5-flash-preview-04-17") # Updated model name
+        model = get_gemini_model(model_name="gemini-2.5-flash-preview-05-20") # Updated model name
 
         # Generate content
         print(f"Sending image ({image_parts[0]['mime_type']}) to Gemini 2.5 Flash Preview for analysis...")
