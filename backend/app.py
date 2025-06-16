@@ -390,11 +390,9 @@ def increment_scan_counts(user_id, tier):
 # --- End Firestore User Helpers --- 
 
 # --- Ping Endpoint --- 
-@app.route('/api/ping', methods=['GET'])
-def ping():
-    """Simple endpoint to keep the backend alive."""
-    # No auth needed, just return success
-    return jsonify({'status': 'pong'}), 200
+@app.route('/api/ping_old', methods=['GET'])
+def ping_old():
+    return jsonify(status="ok"), 200
 # --- End Ping Endpoint ---
 
 # --- Maxelpay Checkout Route ---
