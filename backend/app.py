@@ -57,7 +57,9 @@ app = Flask(__name__)
 CORS(app, 
      origins=[
          "https://lease-shield-frontend.onrender.com", 
-         "http://localhost:3000"
+         "http://localhost:3000",
+         "https://leaseshield.eu",
+         "https://leasesheild.eu"
      ], 
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], # Explicitly allow methods
      headers=["Content-Type", "Authorization"],       # Explicitly allow headers
