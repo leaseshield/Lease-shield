@@ -1334,7 +1334,8 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                 print(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
                 try:
                     genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-1.5-pro-preview-0514')
+                    # Use the same model as photo inspection to improve consistency/availability
+                    model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
                     document_part = {"mime_type": mime_type, "data": file_bytes}
                     response = model.generate_content([prompt, document_part])
 
