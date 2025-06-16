@@ -288,7 +288,8 @@ def analyze_lease(text):
             # Configure GenAI with the current key for this attempt
             genai.configure(api_key=api_key)
             # Initialize the model (consider model name from env var if needed)
-            model = genai.GenerativeModel('') 
+            # Use a valid Gemini model name (defaulting to the same one as get_gemini_model)
+            model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20') 
             
             response = model.generate_content(prompt)
             
