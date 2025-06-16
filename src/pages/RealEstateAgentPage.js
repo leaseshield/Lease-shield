@@ -262,38 +262,28 @@ const RealEstateAgentPage = () => {
 
         if (analysisType === 'text') {
             endpoint = '/api/analyze';
-            fileKey = 'leaseFile'; // Key expected by the text analysis endpoint
+            fileKey = 'leaseFile';
             formData.append(fileKey, fileToSubmit, fileToSubmit.name);
             console.log(`Appending ${fileToSubmit.name} (${fileToSubmit.type}) for TEXT analysis.`);
         } else if (analysisType === 'image') {
-            endpoint = '/api/analyze-image'; // Hypothetical endpoint for image analysis
-            fileKey = 'imageFile'; // Choose a key for the image endpoint, e.g., 'imageFile'
+            endpoint = '/api/analyze-image';
+            fileKey = 'imageFile';
             formData.append(fileKey, fileToSubmit, fileToSubmit.name);
             console.log(`Appending ${fileToSubmit.name} (${fileToSubmit.type}) for IMAGE analysis.`);
         } else {
-            // Handle case where only preferences are submitted (if supported by backend)
-            // For now, we assume an endpoint is needed if isLoading is true
-            // Or, perhaps call a different endpoint like '/api/save-preferences'
             console.log("Submitting preferences only (no file analysis).");
-             // If you have a dedicated endpoint for saving preferences without files:
-             // endpoint = '/api/save-preferences';
-             // Or adjust logic if submitting without files isn't intended to hit an API here.
-             // Let's assume for now we only proceed if there's a file to analyze:
-             if (!fileToSubmit) {
-                 // Example: Save preferences locally or call a specific preferences endpoint
-                 // For demo, let's just stop loading and show success message (needs backend alignment)
-                 console.log("Simulating preference save without backend call.");
-                 setExtractedInfo("Preferences noted (no document/image analyzed)."); // Placeholder feedback
-                 setIsLoading(false);
-                 return; // Exit early if only preferences and no dedicated endpoint call needed here
-             }
+            if (!fileToSubmit) {
+                console.log("Simulating preference save without backend call.");
+                setExtractedInfo("Preferences noted (no document/image analyzed).");
+                setIsLoading(false);
+                return;
+            }
         }
 
         if (!endpoint) {
-             // Should not happen if logic above is correct, but safety check
-              throw new Error("Could not determine the correct API endpoint.");
+            // Should not happen if logic above is correct, but safety check
+            throw new Error("Could not determine the correct API endpoint.");
         }
-
 
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081';
         console.log(`Calling API URL: ${apiUrl}${endpoint}`);

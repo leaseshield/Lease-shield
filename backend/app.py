@@ -1147,7 +1147,7 @@ def inspect_photos():
                 try:
                     genai.configure(api_key=api_key)
                     # Use a model that supports vision, e.g., gemini-pro-vision or 1.5 flash/pro
-                    model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17') 
+                    model = genai.GenerativeModel('gemini-1.5-pro') 
                     
                     # Generate content with prompt and image
                     response = model.generate_content([prompt, image_part])
