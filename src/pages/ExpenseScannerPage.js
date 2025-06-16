@@ -186,22 +186,30 @@ const ExpenseScannerPage = () => {
       const result = await response.json();
 
       // Handle successful (200) or partially successful (207) responses
-      if (response.ok || response.status === 207) {
-        if (result.extractedDataList && result.extractedDataList.length > 0) {
-            setExtractedResults(result.extractedDataList);
-            setSuccessMessage(`${result.extractedDataList.length} document(s) processed successfully.`);
+      if (response.ok) { // This now covers 200 and 207
+        const successes = result.extractedDataList || [];
+        const failures = result.errors || [];
+
+        if (successes.length > 0) {
+            setExtractedResults(successes);
+            setSuccessMessage(`${successes.length} document(s) processed successfully.`);
         }
-        if (result.errors && result.errors.length > 0) {
-            setScanErrors(result.errors);
-            // If there were also successes, the main error message can be more nuanced
-            if (result.extractedDataList && result.extractedDataList.length > 0) {
+
+        if (failures.length > 0) {
+            setScanErrors(failures);
+            if (successes.length > 0) {
                 setError(`Some files could not be processed. See details below.`);
             } else {
-                setError(`Could not process any of the documents. Please see errors below.`);
+                setError(`Could not process any of the uploaded documents. Please see details below.`);
             }
         }
+        
+        if (successes.length === 0 && failures.length === 0) {
+            setError("The server returned an empty response. Please check the uploaded files.");
+        }
+
       } else {
-        // Handle actual errors (4xx, 5xx)
+        // Handle actual network or server errors (4xx, 5xx)
         const errorMessage = result.error || result.message || `Scan request failed with status ${response.status}`;
         throw new Error(errorMessage);
       }

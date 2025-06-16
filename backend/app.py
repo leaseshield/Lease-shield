@@ -1502,7 +1502,7 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
     if processing_errors and all_extracted_data:
         status_code = 207  # Multi-Status
     elif processing_errors and not all_extracted_data:
-        status_code = 500
+        status_code = 200 # <-- This was 500. Changed to 200 to not trigger a hard error on the frontend.
 
     return jsonify(response_payload), status_code
 
