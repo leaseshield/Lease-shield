@@ -22,6 +22,34 @@ import calendar # Added for days in month calculation
 # Add imports for file handling if needed (os is already imported)
 from PIL import Image # Potentially needed for image processing/validation
 import mimetypes # To determine image MIME type
+
+# --- Optional OCR and Error Tracking ---
+try:
+    from pdf2image import convert_from_bytes
+    import pytesseract
+except ImportError:
+    convert_from_bytes = None
+    pytesseract = None
+    print("Warning: pdf2image or pytesseract not available – rich PDF extraction will be limited to text only.")
+
+# Sentry for error tracking
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+    SENTRY_DSN = os.environ.get('SENTRY_DSN')
+    if SENTRY_DSN:
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=0.2,
+        )
+        print("Sentry initialised for error tracking.")
+    else:
+        print("Sentry DSN not set; error tracking disabled.")
+except ImportError:
+    print("Warning: sentry_sdk not installed – error tracking disabled.")
+# --- End imports ---
+
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'heic', 'heif'}
 ALLOWED_FINANCE_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 
@@ -166,6 +194,39 @@ def is_admin(user_id):
     except Exception as e:
         print(f"Error checking admin status for {user_id}: {e}")
         return False
+
+def extract_pdf_rich_content(file_stream):
+    """
+    Extracts text from a PDF, using OCR as a fallback for scanned images.
+    """
+    text = ""
+    # Try extracting text directly
+    try:
+        file_stream.seek(0)
+        reader = PyPDF2.PdfReader(file_stream)
+        for page in reader.pages:
+            text += page.extract_text() or ""
+    except Exception as e:
+        print(f"PyPDF2 error: {e}. Might be a scanned PDF.")
+
+    # If no text, or if OCR libraries are available, try OCR
+    if not text.strip() and convert_from_bytes and pytesseract:
+        print("Falling back to OCR for PDF content.")
+        try:
+            file_stream.seek(0)
+            images = convert_from_bytes(file_stream.read())
+            for image in images:
+                text += pytesseract.image_to_string(image) + "\n"
+        except Exception as ocr_error:
+            print(f"OCR processing failed: {ocr_error}")
+            # Potentially return a specific error message if OCR fails
+            return None
+            
+    if not text.strip():
+        print("Warning: PDF appears to be empty or unreadable.")
+        return None
+        
+    return text
 
 # Modified to accept a file stream/object instead of path
 def extract_pdf_text(file_stream):
@@ -755,7 +816,7 @@ def analyze_document():
         if file_content_type == 'application/pdf':
             # Read file stream into memory for PyPDF2
             file_stream = io.BytesIO(file.read())
-            text = extract_pdf_text(file_stream)
+            text = extract_pdf_rich_content(file_stream) # Use the new rich content extractor
             if text is None:
                  return jsonify({'error': 'Failed to extract text from PDF'}), 500
         elif file_content_type == 'text/plain':
@@ -1335,6 +1396,16 @@ def scan_expense_documents():
             file.seek(0)
             file_bytes = file.read()
             mime_type = mimetypes.guess_type(file.filename)[0] or 'application/octet-stream'
+            
+            text_content = None
+            if mime_type == 'application/pdf':
+                text_content = extract_pdf_rich_content(io.BytesIO(file_bytes))
+            elif mime_type.startswith('image/'):
+                # For images, we will use a vision model, similar to photo inspection
+                pass # Placeholder for vision model logic
+            else:
+                # For other text-based files if any
+                text_content = file_bytes.decode('utf-8')
 
             prompt = """Analyze the provided financial document (e.g., receipt, invoice).
 Extract all key financial details. The output MUST be a single JSON object.
@@ -1352,6 +1423,9 @@ The final `total` is the most important field.
 Return ONLY the JSON object. Do not include ```json markdown or any other text.
 If the document is not a receipt/invoice or is unreadable, return an empty JSON object: {}
 """
+            if text_content:
+                prompt += "\n\n" + text_content[:MAX_TEXT_LENGTH]
+
             analysis_result_json = None
             last_error = None
 
@@ -1359,23 +1433,12 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                 print(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
                 try:
                     genai.configure(api_key=api_key)
-                    # Use the same model as photo inspection to improve consistency/availability
-                    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
-                    if mime_type == 'application/pdf':
-                        # Extract text from PDF for analysis instead of sending raw bytes (better support)
-                        try:
-                            text_content = extract_pdf_text(io.BytesIO(file_bytes))
-                        except Exception as pdf_err:
-                            print(f"PDF extraction error for {file.filename}: {pdf_err}")
-                            text_content = None
-
-                        if not text_content:
-                            raise ValueError("Failed to extract text from PDF or PDF is empty.")
-
-                        response = model.generate_content(prompt + "\n\n" + text_content[:MAX_TEXT_LENGTH])
-                    else:
+                    model = genai.GenerativeModel('gemini-1.5-pro-preview-0514')
+                    if mime_type.startswith('image/'):
                         document_part = {"mime_type": mime_type, "data": file_bytes}
                         response = model.generate_content([prompt, document_part])
+                    else:
+                        response = model.generate_content(prompt)
 
                     if not response.text:
                         raise ValueError("The AI model returned an empty response.")
@@ -1839,3 +1902,12 @@ def analyze_image_route():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8081))
     app.run(host='0.0.0.0', port=port, debug=True) # Added debug=True for development 
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(e):
+    """Catches any unhandled exception."""
+    sentry_sdk.capture_exception(e)
+    return jsonify({
+        'error': 'An unexpected server error occurred.',
+        'error_id': sentry_sdk.last_event_id()
+    }), 500
