@@ -1147,7 +1147,7 @@ def inspect_photos():
                 try:
                     genai.configure(api_key=api_key)
                     # Use a model that supports vision, e.g., gemini-pro-vision or 1.5 flash/pro
-                    model = genai.GenerativeModel('gemini-1.5-pro') 
+                    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20') 
                     
                     # Generate content with prompt and image
                     response = model.generate_content([prompt, image_part])
@@ -1292,16 +1292,16 @@ def scan_expense_documents(): # Renamed function
         return jsonify({'error': 'Invalid token'}), 401
         
     # --- File Handling (Modified for multiple files) ---
-    if 'documents' not in request.files: # Changed key to 'documents'
+    if 'documents' not in request.files:
         return jsonify({'error': 'No document files provided'}), 400
         
-    uploaded_files = request.files.getlist('documents') # Use getlist for multiple files
+    uploaded_files = request.files.getlist('documents')
     
     if not uploaded_files or uploaded_files[0].filename == '':
         return jsonify({'error': 'No files selected for upload'}), 400
         
-    all_extracted_data = [] # List to store results for each file
-    processing_errors = [] # List to store errors for specific files
+    all_extracted_data = []
+    processing_errors = []
 
     for file in uploaded_files:
         if not file or not allowed_finance_file(file.filename):
@@ -1313,41 +1313,33 @@ def scan_expense_documents(): # Renamed function
         
         extracted_data = None
         last_error = None
-        analysis_input = None # Will be either text or image part
-        input_type = None # 'text' or 'image'
-        analysis_result_json = None # Define outside try block
+        analysis_input = None
+        input_type = None
+        analysis_result_json = None
 
         try:
-            # --- Determine Input Type and Prepare --- 
             file_content_type = file.content_type
-            # Read into memory once
             file_stream = io.BytesIO(file.read())
-            # file.seek(0) # No longer needed as we read into BytesIO
 
             if file_content_type == 'application/pdf':
-                # Pass the stream directly
-                extracted_text = extract_pdf_text(file_stream) 
+                extracted_text = extract_pdf_text(file_stream)
                 if extracted_text is None:
                     raise ValueError('Failed to extract text from PDF')
-                if len(extracted_text) > MAX_TEXT_LENGTH: # Check text length
-                     raise ValueError(f'Extracted PDF text exceeds the maximum length of {MAX_TEXT_LENGTH} characters.')
+                if len(extracted_text) > MAX_TEXT_LENGTH:
+                    raise ValueError(f'Extracted PDF text exceeds the maximum length of {MAX_TEXT_LENGTH} characters.')
                 analysis_input = extracted_text
                 input_type = 'text'
-            elif file_content_type in ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/heif']: # Added more types
-                 # Prepare image part for Gemini Vision
-                 image_bytes = file_stream.getvalue() # Get bytes from BytesIO
-                 analysis_input = {
+            elif file_content_type in ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/heif']:
+                image_bytes = file_stream.getvalue()
+                analysis_input = {
                     "mime_type": file_content_type,
                     "data": image_bytes
-                 }
-                 input_type = 'image'
+                }
+                input_type = 'image'
             else:
-                 raise ValueError('Unsupported file type for expense analysis. Use PDF, PNG, JPG, JPEG, WEBP, HEIC, HEIF.')
-                 
-            # --- Gemini Analysis --- 
-            # Construct Prompt (Open-ended but emphasizing total amount)
-            prompt = f"""\\
-            Analyze the provided financial document ({'text content' if input_type == 'text' else 'image'}). 
+                raise ValueError('Unsupported file type for expense analysis. Use PDF, PNG, JPG, JPEG, WEBP, HEIC, HEIF.')
+                
+            prompt = f"""Analyze the provided financial document ({'text content' if input_type == 'text' else 'image'}). 
             Identify and extract all key financial details present, such as vendor/merchant name, date(s), currency, line items (with descriptions and amounts), subtotals, taxes, payment terms, invoice numbers, etc. 
             
             **Crucially, you MUST identify and extract the main numerical total amount (e.g., Total Due, Amount Paid, Balance).** 
@@ -1367,114 +1359,81 @@ def scan_expense_documents(): # Renamed function
             Output ONLY the JSON object.
             """
             
-            # Iterate through API keys
             for i, api_key in enumerate(gemini_api_keys):
                 print(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
                 try:
                     genai.configure(api_key=api_key)
-                    # Use a model capable of vision if needed
-                    model_name = 'gemini-2.5-flash-preview-04-17' # Changed model to match inspect-photos
-                    model = genai.GenerativeModel(model_name) 
+                    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
                     
-                    # Send appropriate content type
                     content_to_send = [prompt]
                     if input_type == 'image':
-                        content_to_send.append(analysis_input) # Add image part
-                    # Text is already in the prompt for text input
+                        content_to_send.append(analysis_input)
                     
                     response = model.generate_content(content_to_send)
                     
                     cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
                     analysis_result_json = json.loads(cleaned_text)
                     print(f"Expense Analysis successful with API key #{i+1} for {file.filename}")
-                    last_error = None # Clear last error on success
-                    break # Success
+                    last_error = None
+                    break
                 except json.JSONDecodeError as json_err:
                     print(f"JSON Decode Error (key #{i+1}) for {file.filename}: {json_err}")
                     print(f"Raw Gemini Response: {response.text if 'response' in locals() else 'N/A'}")
                     last_error = json_err
-                    analysis_result_json = None # Ensure no partial result
+                    analysis_result_json = None
                     continue
-                except PermissionDenied as e:
-                    analysis_result_json = None
-                    if "API key not valid" in str(e) or "invalid" in str(e).lower():
-                        print(f"Warning: Gemini API key #{i+1} failed (Invalid Key): {e}")
-                        last_error = e
-                        continue
-                    else:
-                        print(f"Gemini API Permission Error (key #{i+1}) for {file.filename}: {e}")
-                        last_error = e
-                        break
-                except GoogleAPIError as e: 
-                    analysis_result_json = None
-                    print(f"Gemini API Error (key #{i+1}) for {file.filename}: {e}")
-                    last_error = e
-                    break
                 except Exception as e:
-                    analysis_result_json = None
-                    print(f"Unexpected Error during Expense analysis (key #{i+1}) for {file.filename}: {e}")
+                    print(f"Error during Expense analysis (key #{i+1}) for {file.filename}: {e}")
                     last_error = e
+                    analysis_result_json = None
                     break
 
-            # Process results for this file
-            if analysis_result_json and 'extracted_data' in analysis_result_json:
-                extracted_data = analysis_result_json['extracted_data']
-                # Add filename back for reference
-                extracted_data['fileName'] = file.filename 
-                all_extracted_data.append(extracted_data) # Add successful result to list
+            if analysis_result_json:
+                extracted_data = analysis_result_json
+                extracted_data['fileName'] = file.filename
+                all_extracted_data.append(extracted_data)
             else:
                 error_message = f"AI analysis failed for {file.filename}."
                 if last_error:
-                     error_message += f" Last error: {last_error}"
+                    error_message += f" Last error: {last_error}"
                 print(error_message)
                 processing_errors.append({"fileName": file.filename, "error": error_message})
 
         except Exception as processing_err:
             print(f"Error processing expense file {file.filename}: {processing_err}")
             processing_errors.append({"fileName": file.filename, "error": f"File processing failed: {processing_err}"})
-            # Ensure file stream is handled correctly even on error if needed
 
-    # --- Combine Results and Save ---
-    # Decide if we should save partial results or only if all succeed.
-    # For now, let's save successfully processed ones even if others failed.
-    
     saved_expense_ids = []
-    if all_extracted_data: # Only save if at least one document was processed successfully
+    if all_extracted_data:
         print(f"Saving {len(all_extracted_data)} successfully extracted expense documents.")
         for data in all_extracted_data:
-            expense_id = None
             try:
-                # Create a unique document for each processed file
                 expense_ref = db.collection('expenses').add({
                     'userId': user_id,
                     'fileName': data.get('fileName', 'Unknown'),
-                    'status': 'complete', 
-                    'extractedData': data, # Save the data extracted by Gemini for this file
+                    'status': 'complete',
+                    'extractedData': data,
                     'createdAt': firestore.SERVER_TIMESTAMP
                 })
                 expense_id = expense_ref[1].id
                 saved_expense_ids.append(expense_id)
                 print(f"Saved expense {expense_id} for user {user_id} (File: {data.get('fileName', 'Unknown')})")
             except Exception as db_error:
-                 print(f"Firestore saving error for expense (user {user_id}, file: {data.get('fileName', 'Unknown')}): {db_error}")
-                 # Add error info for this specific file save
-                 processing_errors.append({"fileName": data.get('fileName', 'Unknown'), "error": f"Database save failed: {db_error}"})
+                print(f"Firestore saving error for expense (user {user_id}, file: {data.get('fileName', 'Unknown')}): {db_error}")
+                processing_errors.append({"fileName": data.get('fileName', 'Unknown'), "error": f"Database save failed: {db_error}"})
 
-    # --- Final Response ---
-    # Return successfully extracted data and any errors encountered
     response_payload = {
-        'success': len(all_extracted_data) > 0, # Indicate overall success if at least one worked
-        'extractedDataList': all_extracted_data, # List of successfully extracted data objects
-        'errors': processing_errors, # List of errors encountered
-        'savedExpenseIds': saved_expense_ids # IDs of records saved to Firestore
+        'success': len(all_extracted_data) > 0,
+        'extractedDataList': all_extracted_data,
+        'errors': processing_errors,
+        'savedExpenseIds': saved_expense_ids
     }
 
-    # Determine appropriate status code
-    status_code = 200 
+    status_code = 200
     if not all_extracted_data and processing_errors:
-        status_code = 500 # If nothing was successful and there were errors
+        status_code = 500
     elif processing_errors:
-         status_code = 207 # Multi-Status - partial success
+        status_code = 207
 
     return jsonify(response_payload), status_code
         
@@ -1678,7 +1637,7 @@ def analyze_image(image_file_storage):
         ]
 
         # Get the Gemini 1.5 Pro model (using the key rotation logic)
-        model = get_gemini_model(model_name="gemini-1.5-pro") # Explicitly use 1.5 Pro
+        model = get_gemini_model(model_name="gemini-2.5-flash-preview-05-20")
 
         # Generate content
         print(f"Sending image ({image_parts[0]['mime_type']}) to Gemini 1.5 Pro for analysis...")

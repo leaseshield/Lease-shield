@@ -153,83 +153,57 @@ const ExpenseScannerPage = () => {
       setError('Please upload at least one invoice or receipt file.');
       return;
     }
-    setIsScanning(true); // Use specific state
+    setIsScanning(true);
     setError('');
     setSuccessMessage('');
-    setExtractedResults([]); // Clear previous results
-    setScanErrors([]); // Clear previous API errors
+    setExtractedResults([]);
+    setScanErrors([]);
 
     try {
-      // Optional: Get user token if API requires authentication
       const user = auth.currentUser;
       let token = null;
       if (user) {
-           token = await user.getIdToken();
+        token = await user.getIdToken();
       }
-      // else {
-      //   // Handle case where user is not logged in if endpoint is protected
-      //   throw new Error('User not authenticated.');
-      // }
 
       const formData = new FormData();
-      
-      // Append files
       files.forEach((file) => {
-        // Use a consistent field name for the backend
-        formData.append('documents', file, file.name); 
+        formData.append('documents', file, file.name);
       });
 
-      // --- IMPORTANT: Replace with actual API call ---
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081'; 
-      // Define the SPECIFIC endpoint for expense scanning
-      const scanEndpoint = `${apiUrl}/api/scan-expense`; 
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081';
+      const scanEndpoint = `${apiUrl}/api/scan-expense`;
       console.log('Scanning Endpoint:', scanEndpoint);
 
       const response = await fetch(scanEndpoint, {
-          method: 'POST',
-          headers: {
-              // Include auth token if required by the backend
-              ...(token && { 'Authorization': `Bearer ${token}` }), 
-              // No 'Content-Type': 'multipart/form-data', Fetch API sets it automatically for FormData
-          },
-          body: formData,
+        method: 'POST',
+        headers: {
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: formData,
       });
 
-       const result = await response.json(); // Assuming backend sends JSON
+      const result = await response.json();
 
-      // --- End IMPORTANT Section ---
-
-      // Updated check: Look for extractedDataList and handle API errors
-      if (!response.ok) { // Check response status first
-           throw new Error(result.error || result.message || `Scan request failed with status ${response.status}`);
-      }
-      
-      // Store both successful results and any errors reported by the API
-      setExtractedResults(result.extractedDataList || []);
-      setScanErrors(result.errors || []);
-
-      if (result.extractedDataList && result.extractedDataList.length > 0) {
-           // Optionally set a success message if needed, maybe based on errors list?
-           if (result.errors && result.errors.length > 0) {
-               setSuccessMessage(`Scan partially successful. ${result.extractedDataList.length} item(s) extracted. See errors below.`);
-           } else {
-               setSuccessMessage(`Scan successful! ${result.extractedDataList.length} item(s) extracted.`);
-           }
-      } else if (result.errors && result.errors.length > 0) {
-          // Handle case where API call was ok, but all files failed processing
-          setError("Scan complete, but failed to extract data from any documents. See errors below.");
-      } else if (!result.extractedDataList || result.extractedDataList.length === 0) {
-          // Handle case where API is OK, returns success:true but empty list and no errors (unlikely but possible)
-          setError("Scan complete, but no data could be extracted.");
+      if (!response.ok) {
+        throw new Error(result.error || result.message || `Scan request failed with status ${response.status}`);
       }
 
-    } catch (apiError) {
-      console.error("Error processing scan request:", apiError);
-      setError(`Failed to process scan: ${apiError.message}`);
-      setExtractedResults([]); // Clear results on error
-      setScanErrors([]); // Clear errors on error
+      // Handle successful response
+      if (result.success) {
+        setExtractedResults(result.extractedDataList || []);
+        if (result.errors && result.errors.length > 0) {
+          setScanErrors(result.errors);
+        }
+        setSuccessMessage('Documents processed successfully!');
+      } else {
+        throw new Error('Failed to process documents');
+      }
+    } catch (error) {
+      console.error('Error processing scan request:', error);
+      setError(error.message || 'An error occurred while processing the documents');
     } finally {
-      setIsScanning(false); // Use specific state
+      setIsScanning(false);
     }
   };
   // --- End API Submission Logic ---
