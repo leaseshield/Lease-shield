@@ -29,7 +29,8 @@ import {
     Description as DescriptionIcon,
     ReceiptLong as ReceiptIcon, // Icon for receipts/invoices
     BarChart as BarChartIcon, // Icon for charts
-    Calculate as CalculateIcon // Icon for calculations
+    Calculate as CalculateIcon, // Icon for calculations
+    ErrorOutline
 } from '@mui/icons-material';
 
 // Placeholder function - replace with actual API call logic
@@ -369,6 +370,24 @@ const ExpenseScannerPage = () => {
                  <Typography color="text.secondary" sx={{ textAlign: 'center', minHeight: 150, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                      Scan results will appear here after processing.
                  </Typography>
+              )}
+              {scanErrors.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" color="error">Processing Errors:</Typography>
+                  <List dense>
+                    {scanErrors.map((e, index) => (
+                      <ListItem key={index}>
+                        <ListItemIcon>
+                          <ErrorOutline color="error" />
+                        </ListItemIcon>
+                        <ListItemText 
+                          primary={e.fileName || 'Unknown File'}
+                          secondary={e.error || 'An unknown error occurred.'}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
               )}
               {extractedResults.length > 0 && (
                  <Box>
