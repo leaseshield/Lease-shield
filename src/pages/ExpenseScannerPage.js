@@ -185,19 +185,25 @@ const ExpenseScannerPage = () => {
 
       const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || result.message || `Scan request failed with status ${response.status}`);
-      }
-
-      // Handle successful response
-      if (result.success) {
-        setExtractedResults(result.extractedDataList || []);
-        if (result.errors && result.errors.length > 0) {
-          setScanErrors(result.errors);
+      // Handle successful (200) or partially successful (207) responses
+      if (response.ok || response.status === 207) {
+        if (result.extractedDataList && result.extractedDataList.length > 0) {
+            setExtractedResults(result.extractedDataList);
+            setSuccessMessage(`${result.extractedDataList.length} document(s) processed successfully.`);
         }
-        setSuccessMessage('Documents processed successfully!');
+        if (result.errors && result.errors.length > 0) {
+            setScanErrors(result.errors);
+            // If there were also successes, the main error message can be more nuanced
+            if (result.extractedDataList && result.extractedDataList.length > 0) {
+                setError(`Some files could not be processed. See details below.`);
+            } else {
+                setError(`Could not process any of the documents. Please see errors below.`);
+            }
+        }
       } else {
-        throw new Error('Failed to process documents');
+        // Handle actual errors (4xx, 5xx)
+        const errorMessage = result.error || result.message || `Scan request failed with status ${response.status}`;
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error processing scan request:', error);

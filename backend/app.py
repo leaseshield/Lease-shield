@@ -19,7 +19,6 @@ import uuid # For unique order ID
 from google.api_core.exceptions import PermissionDenied, GoogleAPIError 
 import datetime # Needed for daily scan logic
 import calendar # Added for days in month calculation
-import traceback # Import traceback for detailed error logging
 # Add imports for file handling if needed (os is already imported)
 from PIL import Image # Potentially needed for image processing/validation
 import mimetypes # To determine image MIME type
@@ -58,15 +57,12 @@ app = Flask(__name__)
 CORS(app, 
      origins=[
          "https://lease-shield-frontend.onrender.com", 
-         "http://localhost:3000",
-         "https://leaseshield.eu",
-         "https://leasesheild.eu",
-         "https://2026-05-22.leaseshield.eu",
-         "https://340d.leaseshield.eu"
+         "http://localhost:3000"
      ], 
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-     headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], # Explicitly allow methods
+     headers=["Content-Type", "Authorization"],       # Explicitly allow headers
      supports_credentials=True,
+     # expose_headers=["Content-Length"] # Optional: Add if frontend needs specific headers
 )
 
 # --- Initialize Firebase Admin SDK (Handles Local and Deployed) ---
@@ -390,9 +386,11 @@ def increment_scan_counts(user_id, tier):
 # --- End Firestore User Helpers --- 
 
 # --- Ping Endpoint --- 
-@app.route('/api/ping_old', methods=['GET'])
-def ping_old():
-    return jsonify(status="ok"), 200
+@app.route('/api/ping', methods=['GET'])
+def ping():
+    """Simple endpoint to keep the backend alive."""
+    # No auth needed, just return success
+    return jsonify({'status': 'pong'}), 200
 # --- End Ping Endpoint ---
 
 # --- Maxelpay Checkout Route ---
@@ -1146,7 +1144,7 @@ def inspect_photos():
                 try:
                     genai.configure(api_key=api_key)
                     # Use a model that supports vision, e.g., gemini-pro-vision or 1.5 flash/pro
-                    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20') 
+                    model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17') 
                     
                     # Generate content with prompt and image
                     response = model.generate_content([prompt, image_part])
@@ -1275,13 +1273,12 @@ def allowed_finance_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_FINANCE_EXTENSIONS
 
-# Rename route and function, update to handle multiple files
-@app.route('/api/scan-expense', methods=['POST']) # Renamed route
-def scan_expense_documents(): # Renamed function
+@app.route('/api/scan-expense', methods=['POST'])
+def scan_expense_documents():
     if db is None:
         return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
 
-    # --- Authorization --- 
+    # --- Authorization ---
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return jsonify({'error': 'Unauthorized'}), 401
@@ -1289,16 +1286,15 @@ def scan_expense_documents(): # Renamed function
     user_id = verify_token(token)
     if not user_id:
         return jsonify({'error': 'Invalid token'}), 401
-        
-    # --- File Handling (Modified for multiple files) ---
+
+    # --- File Handling ---
     if 'documents' not in request.files:
         return jsonify({'error': 'No document files provided'}), 400
-        
+
     uploaded_files = request.files.getlist('documents')
-    
     if not uploaded_files or uploaded_files[0].filename == '':
         return jsonify({'error': 'No files selected for upload'}), 400
-        
+
     all_extracted_data = []
     processing_errors = []
 
@@ -1306,21 +1302,12 @@ def scan_expense_documents(): # Renamed function
         try:
             if not file or not allowed_finance_file(file.filename):
                 print(f"Skipped invalid file type: {file.filename}")
-                processing_errors.append({"fileName": file.filename, "error": "Invalid file type."})
                 continue
 
             print(f"Processing expense document: {file.filename}")
-            
-            analysis_result_json = None
-            last_error = None
-            
-            # This logic can be simplified as Gemini 1.5 Pro can handle multiple mime-types
-            # We just need the bytes and the mime-type.
             file.seek(0)
             file_bytes = file.read()
-            file.seek(0)
             mime_type = mimetypes.guess_type(file.filename)[0] or 'application/octet-stream'
-
 
             prompt = """Analyze the provided financial document (e.g., receipt, invoice).
 Extract all key financial details. The output MUST be a single JSON object.
@@ -1333,77 +1320,51 @@ Key details to extract include:
 - `total`: The final total amount.
 - `category`: A suggested expense category (e.g., "Office Supplies", "Meals", "Travel").
 
-If a field is not present, omit it from the JSON. For line items, if there's only one item, the `line_items` array should still be used.
+If a field is not present, omit it from the JSON.
 The final `total` is the most important field.
-
-Example Response:
-{
-  "vendor": "Office Depot",
-  "transaction_date": "2024-03-15",
-  "line_items": [
-    { "description": "Printer Paper", "amount": 15.99 },
-    { "description": "Pens (Box)", "amount": 8.49 }
-  ],
-  "subtotal": 24.48,
-  "tax": 2.02,
-  "total": 26.50,
-  "category": "Office Supplies"
-}
-
 Return ONLY the JSON object. Do not include ```json markdown or any other text.
 If the document is not a receipt/invoice or is unreadable, return an empty JSON object: {}
 """
-            
-            # Iterate through API keys
+            analysis_result_json = None
+            last_error = None
+
             for i, api_key in enumerate(gemini_api_keys):
                 print(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
                 try:
                     genai.configure(api_key=api_key)
                     model = genai.GenerativeModel('gemini-1.5-pro-preview-0514')
-                    
                     document_part = {"mime_type": mime_type, "data": file_bytes}
                     response = model.generate_content([prompt, document_part])
-                    
+
                     if not response.text:
                         raise ValueError("The AI model returned an empty response.")
 
                     cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
                     analysis_result_json = json.loads(cleaned_text)
-                    print(f"Expense Analysis successful with API key #{i+1} for {file.filename}")
+                    print(f"Expense Analysis successful for {file.filename}")
                     last_error = None
-                    break 
-
-                except json.JSONDecodeError as json_err:
-                    raw_response = response.text if 'response' in locals() and hasattr(response, 'text') else 'N/A'
-                    error_detail = f"AI response is not valid JSON. Raw: '{raw_response}'"
-                    print(f"JSON Decode Error (key #{i+1}) for {file.filename}: {json_err}")
-                    last_error = error_detail
-                    analysis_result_json = None
-                    continue
-
+                    break
                 except Exception as e:
-                    error_detail = str(e)
-                    print(f"Unexpected Error during Expense analysis (key #{i+1}) for {file.filename}: {e}")
-                    last_error = f"An unexpected server error occurred during analysis: {error_detail}"
-                    analysis_result_json = None
+                    last_error = e
+                    print(f"Error with API key #{i+1} for {file.filename}: {e}")
                     continue
 
-            # Process results for this file
             if analysis_result_json:
-                # Add filename for reference
                 analysis_result_json['fileName'] = file.filename
                 all_extracted_data.append(analysis_result_json)
             else:
-                error_message = last_error or f"Analysis failed for {file.filename} after trying all keys."
-                print(f"Final error for {file.filename}: {error_message}")
-                processing_errors.append({"fileName": file.filename, "error": error_message})
+                error_message = f"Analysis failed for {file.filename}. Last error: {last_error}"
+                print(error_message)
+                processing_errors.append({"fileName": file.filename, "error": str(last_error)})
 
-        except Exception as processing_err:
-            error_detail = str(processing_err)
-            print(f"!!! CRITICAL FAILURE processing file {file.filename}: {processing_err}")
-            import traceback
-            traceback.print_exc()
-            processing_errors.append({"fileName": file.filename, "error": f"A critical server error occurred: {error_detail}"})
+        except Exception as file_proc_err:
+             print(f"Error processing file {file.filename}: {file_proc_err}")
+             import traceback
+             traceback.print_exc()
+             processing_errors.append({
+                "fileName": file.filename,
+                "error": f"Critical error processing file: {file_proc_err}"
+             })
 
     # --- Save to Firestore ---
     saved_expense_ids = []
@@ -1420,30 +1381,26 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                 })
                 expense_id = expense_ref[1].id
                 saved_expense_ids.append(expense_id)
-                print(f"Saved expense {expense_id} for user {user_id} (File: {data.get('fileName', 'Unknown')})")
             except Exception as db_error:
-                print(f"Firestore saving error for expense (user {user_id}, file: {data.get('fileName', 'Unknown')}): {db_error}")
+                print(f"Firestore saving error for expense: {db_error}")
                 processing_errors.append({"fileName": data.get('fileName', 'Unknown'), "error": f"Database save failed: {db_error}"})
 
     # --- Final Response ---
     response_payload = {
-        'success': len(all_extracted_data) > 0 and len(processing_errors) == 0,
+        'success': len(all_extracted_data) > 0,
         'extractedDataList': all_extracted_data,
         'errors': processing_errors,
         'savedExpenseIds': saved_expense_ids
     }
 
     status_code = 200
-    # If there were some successes and some failures, it's a "Multi-Status"
     if processing_errors and all_extracted_data:
-        status_code = 207
-    # If every file failed, it's a server error or bad request, depending on why.
-    # For simplicity, we'll call it a 500 if any critical errors happened.
+        status_code = 207  # Multi-Status
     elif processing_errors and not all_extracted_data:
-        status_code = 500 # Internal Server Error as no files could be processed.
+        status_code = 500
 
     return jsonify(response_payload), status_code
-# --- End Finance Analysis Endpoint ---
+
 # --- End Expense Scanning Endpoint --- # Corrected closing comment
 
 # --- NEW: Lease Calculator Endpoint ---
@@ -1643,7 +1600,7 @@ def analyze_image(image_file_storage):
         ]
 
         # Get the Gemini 1.5 Pro model (using the key rotation logic)
-        model = get_gemini_model(model_name="gemini-2.5-flash-preview-05-20")
+        model = get_gemini_model(model_name="gemini-1.5-pro") # Explicitly use 1.5 Pro
 
         # Generate content
         print(f"Sending image ({image_parts[0]['mime_type']}) to Gemini 1.5 Pro for analysis...")
@@ -1823,34 +1780,6 @@ def analyze_image_route():
         import traceback
         traceback.print_exc() 
         return jsonify({'error': 'An unexpected server error occurred during image analysis.'}), 500
-
-# --- Global Error Handler ---
-@app.errorhandler(Exception)
-def handle_exception(e):
-    # Log the full traceback for any unhandled exception
-    tb_str = traceback.format_exc()
-    print(f"--- UNHANDLED EXCEPTION ---")
-    print(tb_str)
-    print(f"---------------------------")
-    
-    # In a production environment, you might want to return a more generic error.
-    # For debugging, we can return the error type and a reference.
-    response = {
-        "error": "A critical and unexpected server error occurred. The technical details have been logged.",
-        "error_type": type(e).__name__,
-        "message": "Please report this issue to support."
-    }
-    return jsonify(response), 500
-
-# --- End Global Error Handler ---
-
-# --- App Health / Ping Endpoint ---
-@app.route('/api/ping', methods=['GET'])
-def ping():
-    """Simple endpoint to keep the backend alive."""
-    # No auth needed, just return success
-    return jsonify({'status': 'pong'}), 200
-# --- End App Health / Ping Endpoint ---
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8081))
