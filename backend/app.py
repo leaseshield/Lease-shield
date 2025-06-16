@@ -74,6 +74,7 @@ gemini_api_keys = [
     ] if key
 ]
 #this is for the gemini api key
+#just to confirm this is the chatgpt
 if not gemini_api_keys:
     print("CRITICAL ERROR: No Gemini API keys found in environment variables (GEMINI_API_KEY_1, _2, _3, or GEMINI_API_KEY).")
     # Depending on policy, you might exit or let it fail later.
@@ -168,9 +169,7 @@ if db is None:
     # Optional: exit the application if Firebase is absolutely required
     # sys.exit(1) 
 
-# --- Remove global Gemini Init --- 
-# genai.configure(api_key=os.environ.get('GEMINI_API_KEY')) # REMOVED
-# model = genai.GenerativeModel('gemini-1.5-flash') # REMOVED
+
 
 # Max characters for pasted text analysis
 MAX_TEXT_LENGTH = 50000 # Approx 10-15 pages
@@ -1400,9 +1399,11 @@ def scan_expense_documents():
             text_content = None
             if mime_type == 'application/pdf':
                 text_content = extract_pdf_rich_content(io.BytesIO(file_bytes))
+                if not text_content:
+                    raise ValueError("Failed to extract readable text from PDF.")
             elif mime_type.startswith('image/'):
-                # For images, we will use a vision model, similar to photo inspection
-                pass # Placeholder for vision model logic
+                # This is handled later by sending the image data directly
+                pass
             else:
                 # For other text-based files if any
                 text_content = file_bytes.decode('utf-8')
@@ -1433,7 +1434,7 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                 print(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
                 try:
                     genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-1.5-pro-preview-0514')
+                    model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
                     if mime_type.startswith('image/'):
                         document_part = {"mime_type": mime_type, "data": file_bytes}
                         response = model.generate_content([prompt, document_part])
@@ -1899,15 +1900,30 @@ def analyze_image_route():
         traceback.print_exc() 
         return jsonify({'error': 'An unexpected server error occurred during image analysis.'}), 500
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8081))
-    app.run(host='0.0.0.0', port=port, debug=True) # Added debug=True for development 
-
 @app.errorhandler(Exception)
 def handle_unexpected_error(e):
     """Catches any unhandled exception."""
-    sentry_sdk.capture_exception(e)
-    return jsonify({
-        'error': 'An unexpected server error occurred.',
-        'error_id': sentry_sdk.last_event_id()
-    }), 500
+    try:
+        import sentry_sdk
+        event_id = sentry_sdk.capture_exception(e)
+        print(f"Unhandled error caught. Sentry Event ID: {event_id}")
+        # Also log the traceback for local debugging
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': 'An unexpected server error occurred.',
+            'sentry_event_id': event_id
+        }), 500
+    except Exception as sentry_error:
+        # If Sentry itself fails, log to console and return a basic 500
+        import traceback
+        print("--- CRITICAL: Sentry logging failed ---")
+        traceback.print_exc()
+        print("--- ORIGINAL EXCEPTION ---")
+        traceback.print_exc()
+        print("------------------------------------")
+        return jsonify({'error': 'An unexpected server error occurred and the error logging facility failed.'}), 500
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8081))
+    app.run(host='0.0.0.0', port=port, debug=True) # Added debug=True for development 
