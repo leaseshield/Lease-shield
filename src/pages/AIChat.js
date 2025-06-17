@@ -37,9 +37,9 @@ const placeholderPrompts = [
 ];
 
 const modelGroups = {
-  "Generation 3.5+ / 3.7": [
+  "Generation 3.7": [
     {
-      label: 'Geoclaud',
+      label: '3',
       value: 'geoclaud-locked',
       description: 'Combines Claude 4.0, O3, O4, Gemini 2.5 Pro, 2.5 Flash Lite, Veo 3, Imagen 4, with native audio generation support. Uses the max pass system.',
       trueModel: 'locked',
@@ -208,7 +208,7 @@ const AIChat = () => {
 
                 if (opt.locked) {
                   return (
-                    <Tooltip title="This model is not yet available." placement="right" key={opt.value}>
+                    <Tooltip title="For access please reach out to leaseshieldai@gmail.com" placement="right" key={opt.value}>
                       <span>{menuItem}</span>
                     </Tooltip>
                   );
