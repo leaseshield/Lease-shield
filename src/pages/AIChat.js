@@ -26,6 +26,11 @@ import {
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { auth } from '../firebase/config';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 // --- Configuration ---
 
@@ -236,7 +241,19 @@ const AIChat = () => {
           {messages.map((msg, idx) => (
             <ListItem key={idx} sx={{ justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
                 <Paper elevation={msg.sender === 'system' ? 0 : 2} sx={{ p: 1.5, borderRadius: 3, bgcolor: msg.sender === 'user' ? 'primary.main' : (msg.sender === 'system' ? 'transparent' : 'background.paper'), color: msg.sender === 'user' ? 'primary.contrastText' : 'text.primary', maxWidth: '80%', textAlign: msg.sender === 'system' ? 'center' : 'left' }}>
-                    <ListItemText primary={msg.text} primaryTypographyProps={{ sx: { whiteSpace: 'pre-wrap' } }} />
+                    <ListItemText
+                      primary={
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm, remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                          components={{
+                            p: ({ node, ...props }) => <Typography component="span" {...props} />,
+                          }}
+                        >
+                          {msg.text}
+                        </ReactMarkdown>
+                      }
+                    />
                     {msg.files?.map(file => <Avatar key={file.name} variant="rounded" src={file.preview} sx={{mt: 1}}/>)}
                 </Paper>
             </ListItem>
