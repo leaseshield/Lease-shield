@@ -548,17 +548,16 @@ def ai_chat():
     # Optional model selection from client
     requested_model = data.get('model')  # e.g., "gemini-2.5-flash-lite-preview-06-17"
 
-    # Whitelist of supported model IDs (update as needed)
-    SUPPORTED_MODELS = {
-        # Friendly label : underlying Gemini model id
-        'gemini-2.5-flash-preview-05-20': 'gemini-2.5-flash-preview-05-20',
-        'gemini-2.5-pro': 'gemini-2.5-flash-preview-05-20',  # Alias to same model for now
-        'gemini-2.5-flash': 'gemini-2.5-flash-preview-05-20',  # Alias
-        'gemini-2.5-flash-lite-preview-06-17': 'gemini-2.5-flash-lite-preview-06-17',
-        'gemini-2.0-flash': 'gemini-2.0-flash',
-    }
+    # Whitelist of true model IDs the backend will accept.
+    # Prevents client from requesting arbitrary models.
+    SUPPORTED_MODELS = [
+        'gemini-2.5-flash-preview-05-20',
+        'gemini-2.0-flash',
+    ]
 
-    model_id_to_use = SUPPORTED_MODELS.get(requested_model, 'gemini-2.5-flash-preview-05-20')
+    # Use the requested model only if it's in our supported list, otherwise default.
+    model_id_to_use = requested_model if requested_model in SUPPORTED_MODELS else 'gemini-2.5-flash-preview-05-20'
+    print(f"Chat request using model: {model_id_to_use}") # Add logging
 
     # Check global daily limit BEFORE processing
     if _is_chat_limit_reached():
