@@ -470,58 +470,51 @@ _CHAT_STATS_DOC_ID = 'chat_messages'
 _CHAT_STATS_COLLECTION = 'stats'
 _GLOBAL_CHAT_LIMIT = 500  # messages per UTC day
 
-def _is_chat_limit_reached(limit=_GLOBAL_CHAT_LIMIT):
-    """Returns True if today's global message count has reached the limit."""
-    try:
-        stats_ref = db.collection(_CHAT_STATS_COLLECTION).document(_CHAT_STATS_DOC_ID)
-        doc = stats_ref.get()
-        if doc.exists:
-            data = doc.to_dict()
-            is_reached = data.get('date') == _get_today_iso() and data.get('count', 0) >= limit
-            if is_reached:
-                print(f"Global chat limit reached (count={data.get('count')} / {limit}) on {data.get('date')}")
-            return is_reached
-        return False
-    except Exception as e:
-        # On any error, log and allow chat (fail-open) rather than block users.
-        print(f"Chat limit check failed: {e}")
-        return False
+def _increment_chat_count_if_not_limited(limit=_GLOBAL_CHAT_LIMIT):
+    """
+    Atomically checks the limit and increments the counter if not reached.
 
-def _increment_chat_count(limit=_GLOBAL_CHAT_LIMIT):
-    """Atomically increments today's chat counter. Returns True if succeeded, False if limit reached."""
+    Returns:
+        bool: True if the increment was successful, False if the limit had been reached.
+    """
     if db is None:
         print("Database not initialised; cannot track chat quota.")
-        return False
+        return False  # Fail open, but log it
 
     stats_ref = db.collection(_CHAT_STATS_COLLECTION).document(_CHAT_STATS_DOC_ID)
     today_str = _get_today_iso()
 
-    def tx_func(transaction: Transaction):
+    @firestore.transactional
+    def tx_func(transaction):
         snapshot = stats_ref.get(transaction=transaction)
+        
         if snapshot.exists:
             data = snapshot.to_dict()
             if data.get('date') == today_str:
-                current = data.get('count', 0)
-                if current >= limit:
-                    raise ValueError('limit_reached')
-                transaction.update(stats_ref, {'count': current + 1})
+                current_count = data.get('count', 0)
+                if current_count >= limit:
+                    # Limit is reached, do not increment. Signal failure.
+                    return False
+                # Limit not reached, increment the count.
+                transaction.update(stats_ref, {'count': firestore.Increment(1)})
             else:
-                # New day – reset counter
+                # It's a new day, reset the counter.
                 transaction.set(stats_ref, {'date': today_str, 'count': 1})
         else:
-            # First message ever
+            # The document doesn't exist, create it for the first message.
             transaction.set(stats_ref, {'date': today_str, 'count': 1})
+        
+        # If we get here, the increment was successful.
+        return True
 
     try:
-        db.run_transaction(tx_func)
-        return True
-    except ValueError as ve:
-        if str(ve) == 'limit_reached':
-            return False
-        raise
+        # run_transaction will return the value from the decorated function.
+        return db.run_transaction(tx_func)
     except Exception as e:
-        print(f"Failed to increment chat counter: {e}")
-        return False
+        print(f"CRITICAL: Chat counter transaction failed: {e}")
+        # Fail open to not block users, but this needs to be monitored.
+        return True
+
 # --- End Global Daily Chat Message Limit Helpers ---
 
 # --- Ping Endpoint --- 
@@ -537,58 +530,67 @@ def ping():
 def ai_chat():
     """Endpoint to handle real-time chat messages with a global 500-messages-per-day limit."""
     if db is None:
-        print("Error: Firestore database client not initialized.")
         return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
 
-    data = request.get_json() or {}
-    user_message = data.get('message', '').strip()
-    if not user_message:
-        return jsonify({'error': 'No message content provided.'}), 400
-
-    # Optional model selection from client
-    requested_model = data.get('model')  # e.g., "gemini-2.5-flash-lite-preview-06-17"
-
-    # Whitelist of true model IDs the backend will accept.
-    # Prevents client from requesting arbitrary models.
-    SUPPORTED_MODELS = [
-        'gemini-2.5-flash-preview-05-20',
-        'gemini-2.0-flash',
-    ]
-
-    # Use the requested model only if it's in our supported list, otherwise default.
-    model_id_to_use = requested_model if requested_model in SUPPORTED_MODELS else 'gemini-2.5-flash-preview-05-20'
-    print(f"Chat request using model: {model_id_to_use}") # Add logging
-
-    # Check global daily limit BEFORE processing
-    if _is_chat_limit_reached():
+    # --- Atomically Check & Increment Limit ---
+    if not _increment_chat_count_if_not_limited():
         return jsonify({'error': 'The daily message limit has been reached. Please check back tomorrow.', 'limitReached': True}), 429
 
-    # Generate AI response using Gemini
-    last_error = None
-    ai_response_text = None
-    for i, api_key in enumerate(gemini_api_keys):
+    # --- Form & File Parsing ---
+    try:
+        user_message = request.form.get('message', '').strip()
+        requested_model = request.form.get('model')
+        uploaded_files = request.files.getlist('files')
+
+        if not user_message and not uploaded_files:
+            return jsonify({'error': 'No message or files provided.'}), 400
+    except Exception as e:
+        return jsonify({'error': f'Error parsing request form: {e}'}), 400
+
+    # --- Model Selection ---
+    SUPPORTED_MODELS = [
+        'gemini-2.5-flash-preview-05-20',
+        'gemini-2.5-flash-lite-preview-06-17',
+        'gemini-2.0-flash'
+    ]
+    model_id_to_use = requested_model if requested_model in SUPPORTED_MODELS else 'gemini-2.5-flash-preview-05-20'
+    print(f"Chat request using model: {model_id_to_use}")
+
+    # --- Prompt Construction ---
+    prompt_parts = []
+    if user_message:
+        prompt_parts.append(user_message)
+
+    for file in uploaded_files:
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel(model_id_to_use)
-            # For a simple single-turn chat, we just send the user message.
-            response = model.generate_content(user_message)
-            ai_response_text = response.text.strip()
-            break  # Success
+            if file.mimetype.startswith('image/'):
+                image_part = {"mime_type": file.mimetype, "data": file.read()}
+                prompt_parts.append(image_part)
+            elif file.mimetype == 'application/pdf':
+                pdf_text = extract_pdf_rich_content(file.stream)
+                if pdf_text:
+                    prompt_parts.append(f"\\n--- PDF Content: {file.filename} ---\\n{pdf_text}")
+            # Add other file types here if needed
         except Exception as e:
-            print(f"Gemini chat error with key #{i+1}: {e}")
-            last_error = e
-            continue
+            print(f"Error processing file {file.filename}: {e}")
+            # Optionally append an error message to the prompt
+            prompt_parts.append(f"\\n[Could not process file: {file.filename}]")
 
-    if ai_response_text is None:
-        # AI failed – don't increment counter, return error
-        return jsonify({'error': 'Failed to generate AI response.', 'details': str(last_error)}), 500
+    if not prompt_parts:
+         return jsonify({'error': 'Could not construct a valid prompt from the provided input.'}), 500
 
-    # Attempt to increment the global counter AFTER successful generation
-    if not _increment_chat_count():
-        # Rare race: limit reached between check and increment – inform user but still return AI response
-        return jsonify({'error': 'The daily message limit has just been reached. Please check back tomorrow.', 'limitReached': True}), 429
+    # --- AI Generation ---
+    try:
+        model = get_gemini_model(model_name=model_id_to_use) # Use the key-rotating helper
+        response = model.generate_content(prompt_parts)
+        ai_response_text = response.text.strip()
+    except Exception as e:
+        print(f"Gemini chat error with model {model_id_to_use}: {e}")
+        return jsonify({'error': 'Failed to generate AI response.', 'details': str(e)}), 500
 
+    # The counter has already been incremented, so we just return the response.
     return jsonify({'response': ai_response_text})
+
 # --- End AI Chat Endpoint ---
 
 # --- Maxelpay Checkout Route ---
