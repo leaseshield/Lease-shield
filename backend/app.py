@@ -541,6 +541,21 @@ def ai_chat():
     if not user_message:
         return jsonify({'error': 'No message content provided.'}), 400
 
+    # Optional model selection from client
+    requested_model = data.get('model')  # e.g., "gemini-2.5-flash-lite-preview-06-17"
+
+    # Whitelist of supported model IDs (update as needed)
+    SUPPORTED_MODELS = {
+        # Friendly label : underlying Gemini model id
+        'gemini-2.5-flash-preview-05-20': 'gemini-2.5-flash-preview-05-20',
+        'gemini-2.5-pro': 'gemini-2.5-flash-preview-05-20',  # Alias to same model for now
+        'gemini-2.5-flash': 'gemini-2.5-flash-preview-05-20',  # Alias
+        'gemini-2.5-flash-lite-preview-06-17': 'gemini-2.5-flash-lite-preview-06-17',
+        'gemini-2.0-flash': 'gemini-2.0-flash',
+    }
+
+    model_id_to_use = SUPPORTED_MODELS.get(requested_model, 'gemini-2.5-flash-preview-05-20')
+
     # Check global daily limit BEFORE processing
     if _is_chat_limit_reached():
         return jsonify({'error': 'The daily message limit has been reached. Please check back tomorrow.', 'limitReached': True}), 429
@@ -551,7 +566,7 @@ def ai_chat():
     for i, api_key in enumerate(gemini_api_keys):
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
+            model = genai.GenerativeModel(model_id_to_use)
             # For a simple single-turn chat, we just send the user message.
             response = model.generate_content(user_message)
             ai_response_text = response.text.strip()
