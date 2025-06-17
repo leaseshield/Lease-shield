@@ -34,6 +34,7 @@ import RealEstateAgentPage from './pages/RealEstateAgentPage';
 import ExpenseScannerPage from './pages/ExpenseScannerPage';
 import PhotoInspectionPage from './pages/PhotoInspectionPage';
 import DashboardPage from './pages/DashboardPage';
+import AIChat from './pages/AIChat';
 
 // Create theme
 const theme = createTheme({
@@ -366,6 +367,13 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <PhotoInspectionPage />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/ai-chat" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AIChat />
                 </Layout>
               </ProtectedRoute>
             } />

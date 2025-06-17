@@ -458,6 +458,68 @@ def increment_scan_counts(user_id, tier):
 
 # --- End Firestore User Helpers --- 
 
+# --- Global Daily Chat Message Limit Helpers ---
+from google.cloud.firestore import Transaction  # Added for typing clarity but optional
+
+def _get_today_iso():
+    return datetime.date.today().isoformat()
+
+# Firestore document to store global chat stats
+_CHAT_STATS_DOC_ID = 'chat_messages'
+_CHAT_STATS_COLLECTION = 'stats'
+_GLOBAL_CHAT_LIMIT = 500  # messages per UTC day
+
+def _is_chat_limit_reached(limit=_GLOBAL_CHAT_LIMIT):
+    """Returns True if today's global message count has reached the limit."""
+    try:
+        stats_ref = db.collection(_CHAT_STATS_COLLECTION).document(_CHAT_STATS_DOC_ID)
+        doc = stats_ref.get()
+        if doc.exists:
+            data = doc.to_dict()
+            return data.get('date') == _get_today_iso() and data.get('count', 0) >= limit
+        return False
+    except Exception as e:
+        # On any error, log and allow chat (fail-open) rather than block users.
+        print(f"Chat limit check failed: {e}")
+        return False
+
+def _increment_chat_count(limit=_GLOBAL_CHAT_LIMIT):
+    """Atomically increments today's chat counter. Returns True if succeeded, False if limit reached."""
+    if db is None:
+        print("Database not initialised; cannot track chat quota.")
+        return False
+
+    stats_ref = db.collection(_CHAT_STATS_COLLECTION).document(_CHAT_STATS_DOC_ID)
+    today_str = _get_today_iso()
+
+    def tx_func(transaction: Transaction):
+        snapshot = stats_ref.get(transaction=transaction)
+        if snapshot.exists:
+            data = snapshot.to_dict()
+            if data.get('date') == today_str:
+                current = data.get('count', 0)
+                if current >= limit:
+                    raise ValueError('limit_reached')
+                transaction.update(stats_ref, {'count': current + 1})
+            else:
+                # New day – reset counter
+                transaction.set(stats_ref, {'date': today_str, 'count': 1})
+        else:
+            # First message ever
+            transaction.set(stats_ref, {'date': today_str, 'count': 1})
+
+    try:
+        db.run_transaction(tx_func)
+        return True
+    except ValueError as ve:
+        if str(ve) == 'limit_reached':
+            return False
+        raise
+    except Exception as e:
+        print(f"Failed to increment chat counter: {e}")
+        return False
+# --- End Global Daily Chat Message Limit Helpers ---
+
 # --- Ping Endpoint --- 
 @app.route('/api/ping', methods=['GET'])
 def ping():
@@ -465,6 +527,51 @@ def ping():
     # No auth needed, just return success
     return jsonify({'status': 'pong'}), 200
 # --- End Ping Endpoint ---
+
+# --- AI Chat Endpoint ---
+@app.route('/api/chat', methods=['POST'])
+def ai_chat():
+    """Endpoint to handle real-time chat messages with a global 500-messages-per-day limit."""
+    if db is None:
+        print("Error: Firestore database client not initialized.")
+        return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
+
+    data = request.get_json() or {}
+    user_message = data.get('message', '').strip()
+    if not user_message:
+        return jsonify({'error': 'No message content provided.'}), 400
+
+    # Check global daily limit BEFORE processing
+    if _is_chat_limit_reached():
+        return jsonify({'error': 'The daily message limit has been reached. Please check back tomorrow.', 'limitReached': True}), 429
+
+    # Generate AI response using Gemini
+    last_error = None
+    ai_response_text = None
+    for i, api_key in enumerate(gemini_api_keys):
+        try:
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
+            # For a simple single-turn chat, we just send the user message.
+            response = model.generate_content(user_message)
+            ai_response_text = response.text.strip()
+            break  # Success
+        except Exception as e:
+            print(f"Gemini chat error with key #{i+1}: {e}")
+            last_error = e
+            continue
+
+    if ai_response_text is None:
+        # AI failed – don't increment counter, return error
+        return jsonify({'error': 'Failed to generate AI response.', 'details': str(last_error)}), 500
+
+    # Attempt to increment the global counter AFTER successful generation
+    if not _increment_chat_count():
+        # Rare race: limit reached between check and increment – inform user but still return AI response
+        return jsonify({'error': 'The daily message limit has just been reached. Please check back tomorrow.', 'limitReached': True}), 429
+
+    return jsonify({'response': ai_response_text})
+# --- End AI Chat Endpoint ---
 
 # --- Maxelpay Checkout Route ---
 @app.route('/api/payid/create-checkout-session', methods=['POST']) # Keep route name consistent with frontend for now

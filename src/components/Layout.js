@@ -36,7 +36,8 @@ import {
   ChevronRight,
   HomeWork,
   ReceiptLong as ReceiptIcon,
-  CameraAlt as CameraAltIcon
+  CameraAlt as CameraAltIcon,
+  Chat as ChatIcon
 } from '@mui/icons-material';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
@@ -102,6 +103,7 @@ const Layout = ({ children, showAuthButtons = false }) => {
        items: [
          { text: 'Lease Analysis', icon: <Description />, path: '/analysis' },
          { text: 'Lease Calculator', icon: <Calculate />, path: '/calculator' },
+         { text: 'AI Chat', icon: <ChatIcon />, path: '/ai-chat' },
        ]
     },
     {
