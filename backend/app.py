@@ -462,7 +462,8 @@ def increment_scan_counts(user_id, tier):
 from google.cloud.firestore import Transaction  # Added for typing clarity but optional
 
 def _get_today_iso():
-    return datetime.date.today().isoformat()
+    # Use UTC date to ensure consistent daily reset regardless of server timezone
+    return datetime.datetime.utcnow().date().isoformat()
 
 # Firestore document to store global chat stats
 _CHAT_STATS_DOC_ID = 'chat_messages'
@@ -476,7 +477,10 @@ def _is_chat_limit_reached(limit=_GLOBAL_CHAT_LIMIT):
         doc = stats_ref.get()
         if doc.exists:
             data = doc.to_dict()
-            return data.get('date') == _get_today_iso() and data.get('count', 0) >= limit
+            is_reached = data.get('date') == _get_today_iso() and data.get('count', 0) >= limit
+            if is_reached:
+                print(f"Global chat limit reached (count={data.get('count')} / {limit}) on {data.get('date')}")
+            return is_reached
         return False
     except Exception as e:
         # On any error, log and allow chat (fail-open) rather than block users.
