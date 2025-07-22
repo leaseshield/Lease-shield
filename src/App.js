@@ -133,7 +133,9 @@ const ProtectedRoute = ({ children, requirePaid = false, requireAdmin = false })
          );
       }
       // Profile loaded, check tier
-      if (!profile || profile.subscriptionTier !== 'paid') {
+      // Accept any paid-level tier (legacy 'paid', new 'pro', or 'commercial')
+      const paidTiers = ['paid', 'pro', 'commercial'];
+      if (!profile || !paidTiers.includes(profile.subscriptionTier)) {
          console.log(`ProtectedRoute (${location.pathname}): Paid route, profile check failed (Tier: ${profile?.subscriptionTier}). Redirecting to /pricing.`);
          return <Navigate to="/pricing" replace />;
       }
