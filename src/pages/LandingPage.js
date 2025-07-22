@@ -26,6 +26,19 @@ import {
   Tooltip,
   Link
 } from '@mui/material';
+
+// Import our new premium components
+import { 
+  CustomCursor, 
+  AISandbox,
+  useScrollAnimation 
+} from '../components/InteractiveComponents';
+import InteractiveComparisonTable from '../components/InteractiveComparisonTable';
+import EnhancedTestimonials from '../components/EnhancedTestimonials';
+import ScrollytellingChart from '../components/ScrollytellingChart';
+import BentoFeaturesGrid from '../components/BentoFeaturesGrid';
+import JargonBuster, { JargonText } from '../components/JargonBuster';
+import { handleHapticClick } from '../utils/haptics';
 import {
   SecurityOutlined as SecurityIcon,
   SpeedOutlined as SpeedIcon,
@@ -328,6 +341,9 @@ const LandingPage = () => {
         </script>
       </Helmet>
 
+      {/* Custom Cursor */}
+      <CustomCursor />
+
       {/* Hero Section */}
       <Fade in={true} timeout={1000}>
         <Paper
@@ -335,54 +351,79 @@ const LandingPage = () => {
           sx={{
             p: { xs: 3, sm: 5, md: 8 },
             mb: { xs: 6, md: 10 },
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            background: theme.palette.primary.aurora,
             color: 'white',
             borderRadius: '30px',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <Container maxWidth="lg">
+          {/* Animated background elements */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%)',
+              animation: 'float 8s ease-in-out infinite',
+              '@keyframes float': {
+                '0%, 100%': { transform: 'translateY(0px) scale(1)' },
+                '50%': { transform: 'translateY(-10px) scale(1.02)' },
+              },
+            }}
+          />
+
+          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
             <Grid container spacing={{ xs: 3, md: 5 }} alignItems="center">
-              <Grid item xs={12} md={6} sx={{ borderRadius: 3 }}>
+              <Grid item xs={12} md={6}>
                 <Typography 
-                  variant="h2" 
+                  variant="h1" 
                   component="h1" 
                   gutterBottom 
                   sx={{ 
-                    fontWeight: 700, 
-                    fontSize: { xs: '2.2rem', sm: '2.8rem', md: '3.2rem' },
-                    lineHeight: 1.2
+                    fontWeight: 800, 
+                    fontSize: { xs: '2.2rem', sm: '2.8rem', md: '3.5rem' },
+                    lineHeight: 1.1,
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f0f3ff 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  Understand Your Lease in Minutes, Not Days
+                  Experience Effortless Intelligence
                 </Typography>
                 <Typography 
                   variant="h5" 
                   paragraph 
                   sx={{ 
-                    opacity: 0.9, 
+                    opacity: 0.95, 
                     mb: 4,
-                    fontSize: { xs: '1.1rem', md: '1.25rem' }
+                    fontSize: { xs: '1.1rem', md: '1.3rem' },
+                    lineHeight: 1.5
                   }}
                 >
-                  Lease Shield AI uses advanced artificial intelligence, specifically trained on legal documents, to analyze your rental agreement, identify potential issues, and explain complex terms in plain language.
+                  Transform complex <JargonBuster term="lease agreements" color="secondary">lease agreements</JargonBuster> into 
+                  clear insights. Our AI doesn't just analyze—it understands, explains, and protects your interests 
+                  with unprecedented accuracy.
                 </Typography>
                 <Typography
                   variant="subtitle1"
                   paragraph
                   sx={{
-                    opacity: 0.85,
+                    opacity: 0.9,
                     mb: 3,
                     fontWeight: 'medium',
-                    fontSize: { xs: '0.9rem', md: '1.1rem' }
+                    fontSize: { xs: '0.95rem', md: '1.1rem' }
                   }}
                 >
-                  All-in-One AI Suite: Lease Analysis • Tenant Matching • Lease Calculator • Expense Scanner • Photo Inspector
+                  🤖 AI Suite: Lease Analysis • Tenant Matching • Financial Calculator • Expense Scanner • Photo Inspector
                 </Typography>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-start">
                   <Button
                     variant="contained"
                     size="large"
-                    onClick={handleGetStartedClick}
+                    onClick={handleHapticClick(handleGetStartedClick, 'success')}
                     sx={{
                       bgcolor: 'white',
                       color: theme.palette.primary.main,
@@ -456,46 +497,10 @@ const LandingPage = () => {
                    />
                 </Box>
               </Grid>
-              <Grid item xs={12} md={6} sx={{ textAlign: 'center', position: 'relative' }}>
+              <Grid item xs={12} md={6}>
                  <Zoom in={true} style={{ transitionDelay: '300ms' }}>
-                   <Box
-                     sx={{
-                       bgcolor: 'rgba(255, 255, 255, 0.1)',
-                       height: { xs: 250, sm: 350, md: 400 },
-                       width: '100%',
-                       maxWidth: 600,
-                       borderRadius: '20px',
-                       display: 'flex',
-                       alignItems: 'center',
-                       justifyContent: 'center',
-                       overflow: 'hidden',
-                       position: 'relative',
-                       mx: 'auto',
-                     }}
-                   >
-                     <video
-                       width="100%"
-                       height="100%"
-                       controls
-                       autoPlay
-                       muted
-                       loop
-                       playsInline
-                       preload="auto"
-                       poster="/video-poster.jpg"
-                       style={{ objectFit: 'cover', borderRadius: '20px' }}
-                       aria-label="Lease Shield AI product demonstration video"
-                     >
-                       <source src="/Product Launch Video.mp4" type="video/mp4" />
-                       <track 
-                         kind="captions" 
-                         src="/captions.vtt" 
-                         srcLang="en" 
-                         label="English" 
-                         default 
-                       />
-                       Your browser does not support the video tag.
-                     </video>
+                   <Box sx={{ height: { xs: 350, md: 450 } }}>
+                     <AISandbox />
                    </Box>
                  </Zoom>
               </Grid>
@@ -504,54 +509,10 @@ const LandingPage = () => {
         </Paper>
       </Fade>
 
-      {/* UPDATED Features Section -> Core AI Modules */}
-      <Box id="features" sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
-        <Container maxWidth="lg">
-          <Typography variant={isMobile ? "h4" : "h3"} component="h2" align="center" gutterBottom sx={{ fontWeight: 'bold', mb: 6 }}>
-             Explore Our AI Modules
-          </Typography>
-          <Grid container spacing={isMobile ? 3 : 4} justifyContent="center">
-            {coreModules.map((module, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={2.4} key={index} sx={{ display: 'flex' }}>
-                <Fade in={true} timeout={500 * (index + 1)}>
-                  <Card elevation={2} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: 3, width: '100%', transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
-                    <CardContent sx={{ textAlign: 'center', flexGrow: 1, p: { xs: 2, md: 3 } }}>
-                      <Avatar sx={{ bgcolor: 'primary.light', mx: 'auto', mb: 2, width: 60, height: 60 }}>
-                         {module.icon}
-                      </Avatar>
-                      <Typography variant="h6" component="h3" gutterBottom sx={{ fontWeight: 'medium', fontSize: '1.1rem' }}>
-                        {module.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {module.description}
-                      </Typography>
-                    </CardContent>
-                    <Box sx={{ p: 2, pt: 0, textAlign: 'center' }}>
-                       <Button 
-                         variant="outlined"
-                         color="primary"
-                         size="small" 
-                         href={module.link.startsWith('#') ? module.link : undefined}
-                         component={!module.link.startsWith('#') ? RouterLink : undefined}
-                         to={!module.link.startsWith('#') ? module.link : undefined}
-                         aria-label={`Learn more about ${module.title}`}
-                         sx={{
-                           textTransform: 'none',
-                           transition: theme.transitions.create(['background-color', 'transform'], { duration: theme.transitions.duration.short }),
-                           '&:hover': {
-                             backgroundColor: theme.palette.action.hover,
-                             transform: 'scale(1.05)'
-                           }
-                         }}
-                       >
-                         Learn More About {module.title}
-                       </Button>
-                    </Box>
-                  </Card>
-                </Fade>
-              </Grid>
-            ))}
-          </Grid>
+      {/* Modern Bento Grid Features Section */}
+      <Box id="features" sx={{ bgcolor: 'background.default' }}>
+        <Container maxWidth="xl">
+          <BentoFeaturesGrid />
         </Container>
       </Box>
 
@@ -1064,115 +1025,19 @@ const LandingPage = () => {
         </Grid>
       </Container>
 
-      {/* Comparison Section */}
-       <Box sx={{ bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900], py: { xs: 6, md: 10 }, mb: { xs: 6, md: 10 } }}>
+      {/* Interactive Comparison Section */}
+      <Box sx={{ bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900] }}>
         <Container maxWidth="lg">
-          <Typography variant="h3" component="h2" gutterBottom sx={{ mb: 1, textAlign: 'center' }}>
-             A Smarter Alternative
-           </Typography>
-           <Typography variant="h6" color="text.secondary" gutterBottom sx={{ mb: 5, textAlign: 'center' }}>
-             See how Lease Shield AI compares to traditional manual review.
-           </Typography>
-          
-          <Fade in={true} timeout={1000} style={{ transitionDelay: '300ms' }}>
-            <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
-              <Grid container sx={{ display: { xs: 'none', md: 'flex' } }}>
-                <Grid item md={4} />
-                <Grid item md={4}>
-                  <Typography variant="subtitle1" fontWeight="bold" align="center" color="text.secondary">Traditional Review</Typography>
-                </Grid>
-                <Grid item md={4}>
-                  <Typography variant="subtitle1" fontWeight="bold" align="center" color="primary">Lease Shield AI</Typography>
-                </Grid>
-              </Grid>
-              
-              <Divider sx={{ my: 2, display: { xs: 'none', md: 'block' } }} />
-              
-              {comparisonData.map((row, index) => (
-                <React.Fragment key={index}>
-                  <Grid container sx={{ py: { xs: 2, md: 1.5 } }} alignItems="center">
-                    <Grid item xs={12} md={4}>
-                      <Typography variant="body1" sx={{ fontWeight: { xs: 'bold', md: 'normal' } }}>{row.feature}</Typography>
-                    </Grid>
-                    <Grid item xs={6} md={4} align="center">
-                      <Typography sx={{ display: { xs: 'block', md: 'none' }, fontSize: '0.8rem', color: 'text.secondary', mb: 0.5 }}>Traditional:</Typography>
-                      {typeof row.traditional === 'boolean' ? (
-                        row.traditional ? 
-                          <CheckIcon sx={{ color: 'success.light' }} /> : 
-                          <CloseIcon sx={{ color: 'error.light' }} />
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">{row.traditional}</Typography>
-                      )}
-                    </Grid>
-                     <Grid item xs={6} md={4} align="center">
-                       <Typography sx={{ display: { xs: 'block', md: 'none' }, fontSize: '0.8rem', color: 'text.secondary', mb: 0.5 }}>Lease Shield AI:</Typography>
-                       {typeof row.leaseShield === 'boolean' ? (
-                        row.leaseShield ? 
-                          <CheckIcon sx={{ color: 'success.main' }} /> : 
-                          <CloseIcon sx={{ color: 'error.main' }} />
-                      ) : (
-                        <Typography variant="body2" fontWeight="bold" color="primary">
-                          {row.leaseShield}
-                        </Typography>
-                      )}
-                    </Grid>
-                  </Grid>
-                  {index < comparisonData.length - 1 && <Divider />} 
-                </React.Fragment>
-              ))}
-            </Paper>
-          </Fade>
+          <InteractiveComparisonTable />
         </Container>
       </Box>
 
-      {/* Testimonials */}
-      <Container maxWidth="lg" sx={{ mb: { xs: 6, md: 10 } }}>
-        <Typography variant="h3" component="h2" gutterBottom sx={{ mb: 5, textAlign: 'center' }}>
-          Trusted by Renters & Professionals
-        </Typography>
-        <Grid container spacing={3}>
-          {testimonials.map((testimonial, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Fade in={true} timeout={800} style={{ transitionDelay: `${150 * index + 300}ms` }}>
-                <Card
-                  elevation={0}
-                  variant="outlined"
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: 3,
-                    borderColor: theme.palette.divider,
-                    p: 3,
-                    transition: theme.transitions.create(['border-color', 'box-shadow', 'background-color'], {
-                      duration: theme.transitions.duration.short,
-                      easing: theme.transitions.easing.easeInOut,
-                    }),
-                    '&:hover': {
-                      borderColor: theme.palette.secondary.light,
-                      boxShadow: theme.shadows[2],
-                      backgroundColor: theme.palette.action.hover
-                    }
-                  }}
-                >
-                  <CardContent sx={{ p: 0, flexGrow: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar sx={{ bgcolor: theme.palette.secondary.main, mr: 1.5 }}>{testimonial.avatar}</Avatar>
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="subtitle1" fontWeight="bold">{testimonial.name}</Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.3 }}>{testimonial.role}</Typography>
-                      </Box>
-                      {testimonial.icon}
-                    </Box>
-                    <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-                      "{testimonial.content}"
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Fade>
-            </Grid>
-          ))}
-        </Grid>
+      {/* Scrollytelling Accuracy Chart */}
+      <ScrollytellingChart />
+
+      {/* Enhanced Testimonials */}
+      <Container maxWidth="xl" sx={{ mb: { xs: 6, md: 10 } }}>
+        <EnhancedTestimonials />
       </Container>
 
       {/* CTA Section */}
@@ -1197,7 +1062,7 @@ const LandingPage = () => {
               <Button
                 variant="contained"
                 size="large"
-                onClick={handleGetStartedClick}
+                onClick={handleHapticClick(handleGetStartedClick, 'success')}
                 sx={{
                   bgcolor: 'white',
                   color: 'primary.main',
