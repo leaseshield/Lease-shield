@@ -41,42 +41,94 @@ const theme = createTheme({
   palette: {
     primary: {
       main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      aurora: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#10d9c4', // Electric teal accent
+      light: '#4eddcf',
+      dark: '#0bb5a3',
+    },
+    accent: {
+      electric: '#00ff88', // Vibrant green for CTAs
+      neon: '#ff006e', // Electric pink
     },
     background: {
-      default: '#f5f5f5',
+      default: '#f8fafc',
+      paper: '#ffffff',
+      aurora: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 50%, rgba(240, 147, 251, 0.05) 100%)',
+    },
+    text: {
+      primary: '#1a202c',
+      secondary: '#4a5568',
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
     h1: {
-      fontWeight: 700,
+      fontWeight: 800,
+      letterSpacing: '-0.025em',
+      lineHeight: 1.1,
     },
     h2: {
-      fontWeight: 600,
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+      lineHeight: 1.2,
     },
     h3: {
       fontWeight: 600,
+      letterSpacing: '-0.015em',
+      lineHeight: 1.3,
+    },
+    body1: {
+      lineHeight: 1.6,
+    },
+    button: {
+      fontWeight: 600,
+      textTransform: 'none',
     },
   },
   shape: {
-    borderRadius: 10,
+    borderRadius: 16,
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          textTransform: 'none',
+          borderRadius: 24,
+          padding: '12px 32px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+          },
+        },
+        contained: {
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+          },
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 20,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-8px)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
         },
       },
     },
