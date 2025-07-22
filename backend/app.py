@@ -336,7 +336,7 @@ def maxelpay_encryption(secret_key, payload_data):
   """Encrypts payload data for Maxelpay API using AES CBC."""
   try:
     # Convert to bytes
-    iv = secret_key[:16].encode("utf-8")
+    iv = os.urandom(16)
     secret_key_bytes = secret_key.encode("utf-8")  
     
     # Pad data to match the block size (AES block size is 128 bits / 16 bytes, but example used 256? Let's stick to AES standard 16)
@@ -363,7 +363,8 @@ def maxelpay_encryption(secret_key, payload_data):
     cipher = Cipher(algorithms.AES(secret_key_bytes), modes.CBC(iv), backend=backend) 
     encryptor = cipher.encryptor()
     encrypted_data = encryptor.update(padded_data) + encryptor.finalize() 
-    result = base64.b64encode(encrypted_data).decode("utf-8")
+    # Prepend IV so that it is available for decryption on the receiver side
+    result = base64.b64encode(iv + encrypted_data).decode("utf-8")
     return result
   except Exception as e:
       print(f"Maxelpay encryption error: {e}")
@@ -1697,7 +1698,7 @@ def calculate_lease_costs():
             else:
                  raise ValueError("Base rent and increase percentage must be positive for rent increase calculation.")
                  
-        elif calculation_type == 'prorated_rent':
+        elif calculation_type in ['prorated_rent', 'prorated']:
             # Requires move_in_date, first_payment_date, base_rent
             if not move_in_date_str or not first_payment_date_str or base_rent <= 0:
                  raise ValueError("Move-in date, first payment date, and base rent required for prorated calculation.")
@@ -1725,7 +1726,7 @@ def calculate_lease_costs():
                 'proratedRent': round(prorated_amount, 2)
             }
             
-        elif calculation_type == 'total_lease_cost':
+        elif calculation_type in ['total_lease_cost', 'total_cost']:
             # Requires start_date, end_date, base_rent
             if not start_date_str or not end_date_str or base_rent <= 0:
                  raise ValueError("Start date, end date, and base rent required for total cost calculation.")
