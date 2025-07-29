@@ -549,13 +549,26 @@ def ai_chat():
         return jsonify({'error': f'Error parsing request form: {e}'}), 400
 
     # --- Model Selection ---
-    SUPPORTED_MODELS = [
-        'gemini-2.5-flash-preview-05-20',
-        'gemini-2.5-flash-lite-preview-06-17',
-        'gemini-2.0-flash'
-    ]
-    model_id_to_use = requested_model if requested_model in SUPPORTED_MODELS else 'gemini-2.5-flash-preview-05-20'
-    print(f"Chat request using model: {model_id_to_use}")
+    MODEL_MAP = {
+        'gemini-2.5-flash': 'gemini-2.5-flash-preview-05-20',
+        'gemini-2.5-flash-lite': 'gemini-2.5-flash-lite-preview-06-17',
+        'gemini-2.5-pro': 'gemini-2.5-pro-latest'
+    }
+
+    # Determine base model (frontend may send refined aliases like gemini-2.5-fly)
+    base_model_key = requested_model
+    use_refinement = request.form.get('use_refinement', 'false').lower() == 'true'
+
+    # Map special refined aliases to their bases
+    if requested_model == 'gemini-2.5-fly':
+        base_model_key = 'gemini-2.5-flash-lite'
+        use_refinement = True
+    elif requested_model == 'gemini-2.5-ultra':
+        base_model_key = 'gemini-2.5-pro'
+        use_refinement = True
+
+    model_id_to_use = MODEL_MAP.get(base_model_key, 'gemini-2.5-flash-preview-05-20')
+    print(f"Chat request using model: {model_id_to_use} (alias {requested_model}), refinement={use_refinement}")
 
     # --- Prompt Construction ---
     prompt_parts = []

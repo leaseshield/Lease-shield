@@ -42,52 +42,47 @@ const placeholderPrompts = [
 ];
 
 const modelGroups = {
-  "Generation 3.7": [
+  'Generation 2.5': [
     {
-      label: '3',
-      value: 'geoclaud-locked',
-      description: 'Combines Claude 4.0, O3, O4, Gemini 2.5 Pro, 2.5 Flash Lite, Veo 3, Imagen 4, with native audio generation support. Uses the max pass system.',
-      trueModel: 'locked',
-      locked: true,
-    },
-  ],
-  "Generation 3.5 - Best frontier": [
-    {
-      label: '2.5 Pro (DeepThink)',
-      value: 'gemini-2.5-pro-deepthink',
-      description: 'An in-house replication for deep, multi-faceted analysis.',
-      trueModel: 'gemini-2.5-flash-preview-05-20',
-    },
-  ],
-  "Generation 3 - Frontier": [
-    {
-      label: '2.5 Fly',
-      value: 'gemini-2.5-fly',
-      description: 'Flash model with double pass system for speed and nuance.',
-      trueModel: 'gemini-2.5-flash-preview-05-20',
-    },
-    {
-      label: '2.5 Pro',
-      value: 'gemini-2.5-pro',
-      description: 'The most capable and versatile model.',
-      trueModel: 'gemini-2.5-flash-preview-05-20',
-    },
-  ],
-  "Generation 2.5": [
-    {
-      label: '2.5 Flash',
       value: 'gemini-2.5-flash',
+      label: '2.5 Flash',
       description: 'Fast and efficient for most tasks.',
-      trueModel: 'gemini-2.5-flash-preview-05-20',
+      refinement: false,
     },
     {
-      label: '2.5 Flash Lite',
       value: 'gemini-2.5-flash-lite',
+      label: '2.5 Flash Lite',
       description: 'Light & efficient for simple tasks.',
-      trueModel: 'gemini-2.5-flash-lite-preview-06-17',
+      refinement: false,
+    },
+  ],
+  'Generation 3': [
+    {
+      value: 'gemini-2.5-pro',
+      label: '2.5 Pro',
+      description: 'Standard 2.5 Pro model for deeper reasoning.',
+      refinement: false,
+    },
+    {
+      value: 'gemini-2.5-fly',
+      label: '2.5 Fly',
+      description: 'Double-pass refinement on Flash Lite for higher quality.',
+      refinement: true,
+      baseModel: 'gemini-2.5-flash-lite',
+    },
+  ],
+  'Generation 3.5': [
+    {
+      value: 'gemini-2.5-ultra',
+      label: '2.5 Ultra',
+      description: 'Double-pass refinement on 2.5 Pro for the best quality.',
+      refinement: true,
+      baseModel: 'gemini-2.5-pro',
     },
   ],
 };
+
+const flatModels = Object.values(modelGroups).flat();
 
 const passMarks = [
   { value: 0, label: 'Single' },
@@ -105,8 +100,7 @@ const AIChat = () => {
   const [isSending, setIsSending] = useState(false);
   const [limitReached, setLimitReached] = useState(false);
   const [currentPlaceholder, setCurrentPlaceholder] = useState(placeholderPrompts[0]);
-  const [selectedModel, setSelectedModel] = useState(modelGroups["Generation 3.5 - Best frontier"][0].value);
-  const [passValue, setPassValue] = useState(0);
+  const [selectedModel, setSelectedModel] = useState(flatModels[0].value);
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const bottomRef = useRef(null);
@@ -137,8 +131,7 @@ const AIChat = () => {
   const { getRootProps, isDragActive } = useDropzone({ onDrop, noClick: true });
 
   const handleSend = async () => {
-    const allModels = Object.values(modelGroups).flat();
-    const modelSpec = allModels.find(m => m.value === selectedModel);
+    const modelSpec = flatModels.find(m => m.value === selectedModel);
 
     if (!input.trim() || isSending || limitReached || !modelSpec) return;
 
@@ -150,17 +143,13 @@ const AIChat = () => {
 
     setIsSending(true);
 
-    if (passValue > 0) {
-      const delay = 1000 + (passValue * 1000); // 2s, 3s, 4s
-      setMessages(prev => [...prev, { sender: 'system', text: `Refining response (${passMarks[passValue].label} Pass)...` }]);
-      await new Promise(res => setTimeout(res, delay));
-    }
-
     try {
       const token = await auth.currentUser?.getIdToken();
       const formData = new FormData();
       formData.append('message', userText);
-      formData.append('model', modelSpec.trueModel);
+      const baseModel = modelSpec.baseModel || modelSpec.value;
+      formData.append('model', baseModel);
+      formData.append('use_refinement', modelSpec.refinement);
       uploadedFiles.forEach(file => formData.append('files', file));
       
       const resp = await fetch(`${apiUrl}/api/chat`, {
@@ -204,30 +193,15 @@ const AIChat = () => {
           <Select value={selectedModel} label="Model" onChange={(e) => setSelectedModel(e.target.value)}>
             {Object.entries(modelGroups).map(([groupName, models]) => [
               <ListSubheader key={groupName}>{groupName}</ListSubheader>,
-              ...models.map(opt => {
-                const menuItem = (
-                  <MenuItem key={opt.value} value={opt.value} disabled={opt.locked}>
-                    <ListItemText primary={opt.label} secondary={opt.description} />
-                  </MenuItem>
-                );
-
-                if (opt.locked) {
-                  return (
-                    <Tooltip title="For access please reach out to leaseshieldai@gmail.com" placement="right" key={opt.value}>
-                      <span>{menuItem}</span>
-                    </Tooltip>
-                  );
-                }
-                
-                return menuItem;
-              })
+              ...models.map(opt => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  <ListItemText primary={opt.label} secondary={opt.description} />
+                </MenuItem>
+              ))
             ])}
           </Select>
         </FormControl>
-        <Box sx={{ flexGrow: 1, px: 2 }}>
-            <Typography gutterBottom variant="caption">Processing Passes</Typography>
-            <Slider value={passValue} onChange={(e, val) => setPassValue(val)} step={1} marks={passMarks} min={0} max={3} />
-        </Box>
+        {/* Slider removed as passes are implicit in model selection */}
       </Box>
 
       {/* Message Area */}
