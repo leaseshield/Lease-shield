@@ -101,6 +101,14 @@ const LandingPage = () => {
       avatar: "D",
       icon: <CommercialIcon color="action"/>,
       content: "Analyzed my complex commercial lease quickly and flagged several important points for discussion with the landlord. Saved me potential headaches."
+    },
+    // NEW Sixth Testimonial
+    {
+      name: "Emily Watson",
+      role: "Real Estate Investor",
+      avatar: "E",
+      icon: <VerifiedIcon color="success"/>,
+      content: "Managing multiple properties means reviewing lots of leases. Lease Shield AI has become an essential part of my workflow, saving me hours every week."
     }
   ];
 
@@ -896,10 +904,15 @@ const LandingPage = () => {
                      <ListItemIcon sx={{ minWidth: 35, color: item.color }}>
                        <CheckIcon />
                      </ListItemIcon>
-                     <ListItemText 
-                        primary={<Typography variant="h6" component="span">{item.name}</Typography>}
-                        secondary={<Typography variant="h5" component="span" sx={{ fontWeight: 'bold', color: item.color }}>{item.score}</Typography>}
-                     />
+                     {/* Updated layout to keep name and score on a single line with a space */}
+                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                        <Typography variant="h6" component="span">
+                          {item.name}
+                        </Typography>
+                        <Typography variant="h5" component="span" sx={{ fontWeight: 'bold', color: item.color }}>
+                          {item.score}
+                        </Typography>
+                     </Box>
                   </ListItem>
                 ))}
               </List>
