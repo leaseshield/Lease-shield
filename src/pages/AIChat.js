@@ -42,18 +42,13 @@ const placeholderPrompts = [
 ];
 
 const modelGroups = {
-  'Generation 2.5': [
+  'Generation 3.5': [
     {
-      value: 'gemini-2.5-flash',
-      label: '2.5 Flash',
-      description: 'Fast and efficient for most tasks.',
-      refinement: false,
-    },
-    {
-      value: 'gemini-2.5-flash-lite',
-      label: '2.5 Flash Lite',
-      description: 'Light & efficient for simple tasks.',
-      refinement: false,
+      value: 'gemini-2.5-ultra',
+      label: '2.5 Ultra',
+      description: 'Double-pass refinement on 2.5 Pro for the best quality.',
+      refinement: true,
+      baseModel: 'gemini-2.5-pro',
     },
   ],
   'Generation 3': [
@@ -66,18 +61,23 @@ const modelGroups = {
     {
       value: 'gemini-2.5-fly',
       label: '2.5 Fly',
-      description: 'Double-pass refinement on Flash Lite for higher quality.',
+      description: 'Double-pass refinement on Flash for higher quality.',
       refinement: true,
-      baseModel: 'gemini-2.5-flash-lite',
+      baseModel: 'gemini-2.5-flash',
     },
   ],
-  'Generation 3.5': [
+  'Generation 2.5': [
     {
-      value: 'gemini-2.5-ultra',
-      label: '2.5 Ultra',
-      description: 'Double-pass refinement on 2.5 Pro for the best quality.',
-      refinement: true,
-      baseModel: 'gemini-2.5-pro',
+      value: 'gemini-2.5-flash',
+      label: '2.5 Flash',
+      description: 'Fast and efficient for most tasks.',
+      refinement: false,
+    },
+    {
+      value: 'gemini-2.5-flash-lite',
+      label: '2.5 Flash Lite',
+      description: 'Light & efficient for simple tasks.',
+      refinement: false,
     },
   ],
 };

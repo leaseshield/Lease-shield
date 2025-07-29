@@ -561,7 +561,7 @@ def ai_chat():
 
     # Map special refined aliases to their bases
     if requested_model == 'gemini-2.5-fly':
-        base_model_key = 'gemini-2.5-flash-lite'
+        base_model_key = 'gemini-2.5-flash'
         use_refinement = True
     elif requested_model == 'gemini-2.5-ultra':
         base_model_key = 'gemini-2.5-pro'
