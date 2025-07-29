@@ -107,51 +107,54 @@ try:
         firebase_sdk_config = json.loads(firebase_sdk_json_str)
         cred = credentials.Certificate(firebase_sdk_config)
         project_id = firebase_sdk_config.get('project_id')
+        # Initialize Firebase app when running with JSON content from env vars
+        firebase_admin.initialize_app(cred, {
+            'storageBucket': f"{project_id}.appspot.com"
+        })
+        print("Firebase Admin SDK initialized successfully.")
+        db = firestore.client()
     else:
         # Running Locally - Check for Render Secret File path OR local path
         render_secret_path = '/etc/secrets/firebase_key.json'
-        local_key_path = 'lease-shield-ai-firebase-admin-sdk.json' # Assuming file is in same dir as app.py
+        local_key_path = 'lease-shield-ai-firebase-admin-sdk.json'  # Assuming file is in same dir as app.py
 
         if os.path.exists(render_secret_path):
-             print(f"Using Firebase key from Render secret file: {render_secret_path}")
-             cred = credentials.Certificate(render_secret_path)
-             # We need project_id for storage bucket, get it from creds
-             # Note: This requires the service account to have roles/iam.serviceAccountViewer or similar
-             # If this fails, you might need to parse the JSON file manually here too
-             try:
-                 project_id = cred.project_id 
-             except Exception as cred_err:
-                  print(f"Warning: Could not get project_id from credential object: {cred_err}")
-                  # Attempt to parse the file to get project_id as fallback
-                  try:
-                       with open(render_secret_path, 'r') as f:
-                           key_data = json.load(f)
-                       project_id = key_data.get('project_id')
-                  except Exception as parse_err:
-                       print(f"Error parsing secret file for project_id: {parse_err}")
-                       project_id = None 
+            print(f"Using Firebase key from Render secret file: {render_secret_path}")
+            cred = credentials.Certificate(render_secret_path)
+            # Attempt to get project_id from credential object
+            try:
+                project_id = cred.project_id
+            except Exception as cred_err:
+                print(f"Warning: Could not get project_id from credential object: {cred_err}")
+                try:
+                    with open(render_secret_path, 'r') as f:
+                        key_data = json.load(f)
+                    project_id = key_data.get('project_id')
+                except Exception as parse_err:
+                    print(f"Error parsing secret file for project_id: {parse_err}")
+                    project_id = None
         elif os.path.exists(local_key_path):
             print(f"Using Firebase key from local file: {local_key_path}")
             cred = credentials.Certificate(local_key_path)
             # Attempt to parse the file to get project_id
             try:
-                 with open(local_key_path, 'r') as f:
-                     key_data = json.load(f)
-                 project_id = key_data.get('project_id')
+                with open(local_key_path, 'r') as f:
+                    key_data = json.load(f)
+                project_id = key_data.get('project_id')
             except Exception as parse_err:
-                 print(f"Error parsing local key file for project_id: {parse_err}")
-                 project_id = None 
+                print(f"Error parsing local key file for project_id: {parse_err}")
+                project_id = None
         else:
             raise FileNotFoundError(f"Firebase key file not found at {render_secret_path} or {local_key_path}")
 
         if not project_id:
             raise ValueError("Could not determine Firebase project ID from credentials.")
-        
+
         firebase_admin.initialize_app(cred, {
-            'storageBucket': project_id + '.appspot.com'
+            'storageBucket': f"{project_id}.appspot.com"
         })
         print("Firebase Admin SDK initialized successfully.")
-        db = firestore.client() # Assign db client ONLY on success
+        db = firestore.client()
 
 except FileNotFoundError as e:
     print(f"CRITICAL ERROR: Firebase Admin SDK JSON key file not found. {e}")
