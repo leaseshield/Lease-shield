@@ -894,29 +894,37 @@ const LandingPage = () => {
               <Typography variant="body1" paragraph>
                 On the Benchmark for identifying key lease clauses and risks:
               </Typography>
-              <List dense>
+              <Grid container spacing={2}>
                 {[ 
                    { name: 'Lease Shield AI', score: '98.5%', color: 'success.main' },
                    { name: 'Human Experts', score: '85%', color: 'warning.main' },
                    { name: 'ChatGPT-4', score: '17%', color: 'error.light' },
                    { name: 'Claude 3', score: '12%', color: 'error.dark' },
                 ].map((item) => (
-                  <ListItem key={item.name}>
-                     <ListItemIcon sx={{ minWidth: 35, color: item.color }}>
-                       <CheckIcon />
-                     </ListItemIcon>
-                     {/* Updated layout to keep name and score on a single line with a space */}
-                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                        <Typography variant="h6" component="span">
-                          {item.name}
-                        </Typography>
-                        <Typography variant="h5" component="span" sx={{ fontWeight: 'bold', color: item.color }}>
-                          {item.score}
-                        </Typography>
-                     </Box>
-                  </ListItem>
+                  <Grid key={item.name} item xs={12} sm={6}>
+                    <Paper
+                      elevation={0}
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        borderRadius: 3,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderColor: (theme) => theme.palette.divider,
+                        bgcolor: 'background.paper',
+                      }}
+                    >
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        {item.name}
+                      </Typography>
+                      <Typography variant="h5" fontWeight="bold" sx={{ color: item.color }}>
+                        {item.score}
+                      </Typography>
+                    </Paper>
+                  </Grid>
                 ))}
-              </List>
+              </Grid>
             </Grid>
 
             {/* Simple Graph Representation */}
