@@ -58,6 +58,7 @@ import {
   PersonSearch as PersonSearchIcon,
   Upcoming as UpcomingIcon
 } from '@mui/icons-material';
+import InteractiveClauseAnalyzer from '../components/InteractiveClauseAnalyzer';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -640,10 +641,10 @@ const LandingPage = () => {
       {/* NEW: Landlord Efficiency Comparison Graph */}
       <Box sx={{ 
         py: { xs: 6, md: 8 }, 
-        bgcolor: 'background.paper', /* Or background.default */
-        borderRadius: theme.shape.borderRadius * 2 // Added this line
+        bgcolor: 'background.paper',
       }}>
         <Container maxWidth="lg">
+          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
            <Typography variant="h4" component="h3" align="center" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
              Faster, More Accurate Tenant Matching
            </Typography>
@@ -707,6 +708,7 @@ const LandingPage = () => {
                 </Grid>
               ))}
            </Grid>
+          </Paper>
         </Container>
       </Box>
       {/* END Landlord Graph */}
@@ -746,16 +748,19 @@ const LandingPage = () => {
         </Grid>
       </Container>
 
+      {/* --- START: Interactive AI Element --- */}
+      <InteractiveClauseAnalyzer />
+      {/* --- END: Interactive AI Element --- */}
+
       {/* --- START: New Lease Analysis Detail Section --- */}
       <Box 
         id="lease-analysis-detail" 
         sx={{ 
-          py: { xs: 6, md: 10 }, 
-          bgcolor: theme.palette.mode === 'light' ? theme.palette.primary.light + '33' : theme.palette.primary.dark + '33', // Light tint of primary
-          borderRadius: '20px' // Added this line
+          py: { xs: 6, md: 10 },
         }}
       >
         <Container maxWidth="lg">
+        <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
           <Grid container spacing={6} alignItems="center">
              {/* Image/Mockup Placeholder (Left Side) - Now using an icon */}
             <Grid item xs={12} md={6}>
@@ -811,6 +816,7 @@ const LandingPage = () => {
                </Fade>
             </Grid>
           </Grid>
+        </Paper>
         </Container>
       </Box>
       {/* --- END: New Lease Analysis Detail Section --- */}
@@ -818,6 +824,7 @@ const LandingPage = () => {
       {/* --- START: Tenant Matcher Detail Section --- */}
       <Box id="tenant-matcher-detail" sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
         <Container maxWidth="lg">
+          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
            {/* Reverse order for visual variation: Text Left, Image Right */}
           <Grid container spacing={6} alignItems="center" direction={{ xs: 'column-reverse', md: 'row' }}>
              {/* Text Content (Left Side) */}
@@ -874,6 +881,7 @@ const LandingPage = () => {
               </Zoom>
             </Grid>
           </Grid>
+          </Paper>
         </Container>
       </Box>
       {/* --- END: Tenant Matcher Detail Section --- */}
@@ -989,8 +997,9 @@ const LandingPage = () => {
       {/* --- End Savings Info Box --- */}
 
       {/* Why Choose Us Section */}
-      <Box sx={{ bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900], py: { xs: 6, md: 10 }, mb: { xs: 6, md: 10 } }}>
+      <Box sx={{ py: { xs: 6, md: 10 }, mb: { xs: 6, md: 10 } }}>
         <Container maxWidth="lg">
+          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
           <Typography variant="h3" component="h2" gutterBottom sx={{ mb: 5, textAlign: 'center' }}>
             The Lease Shield AI Advantage
           </Typography>
@@ -1024,6 +1033,7 @@ const LandingPage = () => {
                </Zoom>
             </Grid>
           </Grid>
+          </Paper>
         </Container>
       </Box>
 
