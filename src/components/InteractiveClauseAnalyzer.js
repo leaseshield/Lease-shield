@@ -8,8 +8,7 @@ import {
   Chip,
   Fade,
   useTheme,
-  IconButton,
-  Tooltip
+  CircularProgress
 } from '@mui/material';
 import { CheckCircleOutline, WarningAmberOutlined, ArrowForward, PsychologyOutlined, Style } from '@mui/icons-material';
 
@@ -39,38 +38,27 @@ const exampleClauses = [
 
 const InteractiveClauseAnalyzer = () => {
   const theme = useTheme();
-  const [text, setText] = useState('');
+  const [selectedClause, setSelectedClause] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleAnalyze = () => {
-    if (!text) return;
+  const handleSelectExample = (clause) => {
+    // If the same clause is clicked again, do nothing
+    if (selectedClause && selectedClause.id === clause.id) {
+        return;
+    }
+
+    setSelectedClause(clause);
     setIsLoading(true);
     setAnalysis(null);
     
-    // Find if the text matches an example for a more "accurate" demo
-    const matchedExample = exampleClauses.find(c => c.text === text);
-    
     setTimeout(() => {
-      if (matchedExample) {
-        setAnalysis(matchedExample);
-      } else {
-        // Generic analysis for custom text
-        setAnalysis({
-          risk: 'Medium',
-          explanation: 'This seems like a standard clause, but our full analysis would provide a deeper breakdown of responsibilities and potential conflicts with local regulations.'
-        });
-      }
+      setAnalysis(clause);
       setIsLoading(false);
     }, 1200);
   };
 
-  const selectExample = (clause) => {
-    setText(clause.text);
-    setAnalysis(null);
-  };
-  
-  const renderAnalyzedText = () => {
+  const renderAnalyzedText = (text, analysis) => {
     if (!analysis) return text;
 
     let highlightedText = text;
@@ -96,7 +84,7 @@ const InteractiveClauseAnalyzer = () => {
         Experience the AI Difference—Instantly
       </Typography>
       <Typography variant="h6" color="text.secondary" align="center" sx={{ maxWidth: '750px', mx: 'auto', mb: 5 }}>
-        Not sure what a clause means? Paste it below or try one of our examples to see our AI in action. No sign-up required.
+        Click one of our example clauses below to see our AI analyze the risk in real-time. No sign-up required.
       </Typography>
 
       <Paper elevation={4} sx={{ maxWidth: '800px', mx: 'auto', p: { xs: 2, md: 4 }, borderRadius: 4 }}>
@@ -105,70 +93,59 @@ const InteractiveClauseAnalyzer = () => {
             Clause Risk Checker
         </Typography>
 
-        <TextField
-          multiline
-          rows={5}
-          fullWidth
-          variant="outlined"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Paste a single lease clause here..."
-          sx={{
-            mb: 2,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2
-            }
-          }}
-        />
-
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-            <Typography variant="body2" sx={{ alignSelf: 'center', mr: 1, color: 'text.secondary' }}>
-                Or try an example:
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
+            <Typography variant="body1" sx={{ alignSelf: 'center', mr: 1, color: 'text.secondary' }}>
+                Select a clause to analyze:
             </Typography>
             {exampleClauses.map(clause => (
                 <Chip
                     key={clause.id}
                     label={clause.short}
-                    onClick={() => selectExample(clause)}
-                    variant={text === clause.text ? 'filled' : 'outlined'}
+                    onClick={() => handleSelectExample(clause)}
+                    variant={selectedClause && selectedClause.id === clause.id ? 'filled' : 'outlined'}
                     color="secondary"
+                    sx={{ cursor: 'pointer' }}
                 />
             ))}
         </Box>
         
-        <Button 
-            variant="contained" 
-            size="large" 
-            onClick={handleAnalyze} 
-            disabled={isLoading || !text}
-            fullWidth
-            endIcon={<ArrowForward />}
-            sx={{ borderRadius: '25px', py: 1.5, mb: 3 }}
-        >
-            {isLoading ? 'Analyzing...' : 'Run Risk Analysis'}
-        </Button>
+        <Box sx={{ minHeight: '250px', position: 'relative' }}>
+          {isLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', position: 'absolute', width: '100%' }}>
+              <CircularProgress />
+            </Box>
+          )}
 
-        {analysis && (
-            <Fade in={true}>
-                <Box>
-                    <Typography variant="h6">Analysis Result:</Typography>
-                    <Box sx={{ mt: 2, mb: 2 }}>
-                        {renderAnalyzedText()}
-                    </Box>
+          {!isLoading && !analysis && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '250px', textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary">
+                    Your analysis will appear here.
+                </Typography>
+            </Box>
+          )}
+          
+          {analysis && (
+              <Fade in={true}>
+                  <Box>
+                      <Typography variant="h6">Analysis Result:</Typography>
+                      <Box sx={{ mt: 2, mb: 2 }}>
+                          {renderAnalyzedText(selectedClause.text, analysis)}
+                      </Box>
 
-                    <Chip 
-                        icon={analysis.risk === 'High' ? <WarningAmberOutlined /> : <CheckCircleOutline />}
-                        label={`Risk Level: ${analysis.risk}`} 
-                        color={analysis.risk === 'High' ? 'error' : 'warning'} 
-                        sx={{ mb: 2 }} 
-                    />
+                      <Chip 
+                          icon={analysis.risk === 'High' ? <WarningAmberOutlined /> : <CheckCircleOutline />}
+                          label={`Risk Level: ${analysis.risk}`} 
+                          color={analysis.risk === 'High' ? 'error' : 'warning'} 
+                          sx={{ mb: 2 }} 
+                      />
 
-                    <Typography variant="body1">
-                        <strong>Insight:</strong> {analysis.explanation}
-                    </Typography>
-                </Box>
-            </Fade>
-        )}
+                      <Typography variant="body1">
+                          <strong>Insight:</strong> {analysis.explanation}
+                      </Typography>
+                  </Box>
+              </Fade>
+          )}
+        </Box>
       </Paper>
     </Box>
   );
