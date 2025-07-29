@@ -489,7 +489,8 @@ const LandingPage = () => {
                        muted
                        loop
                        playsInline
-                       preload="auto"
+                       preload="none"
+                       loading="lazy"
                        poster="/video-poster.jpg"
                        style={{ objectFit: 'cover', borderRadius: '20px' }}
                        aria-label="Lease Shield AI product demonstration video"
@@ -626,8 +627,8 @@ const LandingPage = () => {
             <Grid item xs={12} md={6}>
               <Zoom in={true} timeout={700}>
                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 3 }}>
-                   {/* Placeholder for a graph or illustrative image - using an icon for now */}
-                   <PersonSearchIcon sx={{ fontSize: { xs: 150, md: 250 }, color: 'secondary.main', /* Changed color */ opacity: 0.8 }} />
+                   {/* Decorative icon; hidden from assistive tech */}
+                   <PersonSearchIcon aria-hidden="true" sx={{ fontSize: { xs: 150, md: 250 }, color: 'secondary.main', opacity: 0.8 }} />
                  </Box>
               </Zoom>
             </Grid>
@@ -834,7 +835,7 @@ const LandingPage = () => {
                         // Use specific icons as requested
                         { text: "Match criteria from uploaded profiles or structured inputs", icon: <CheckIcon color="primary" /> },
                         { text: "Data-driven suitability score & recommendations", icon: <AnalyticsIcon color="primary" /> }, // Using AnalyticsIcon
-                        { text: "Automate outreach & track applicant status (Coming Soon!)", icon: <UpcomingIcon color="disabled" /> } // Assuming UpcomingIcon or similar
+                        { text: "Automate outreach & track applicant status", icon: <UpcomingIcon color="disabled" aria-hidden="true" /> }
                      ].map((item, index) => (
                         <ListItem key={index} disableGutters>
                            <ListItemIcon sx={{ minWidth: 35 }}>{item.icon}</ListItemIcon>
