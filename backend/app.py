@@ -1111,11 +1111,11 @@ def analyze_document():
                 'error_message': 'Analysis result was not valid JSON.'
             }
         except Exception as parse_err: # Catch other potential parsing errors
-             print(f"Parsing Error: {parse_err}")
-                         result_data = {
-               'raw_analysis': analysis_result_text,
-               'error_message': 'An error occurred while parsing the analysis result.'
-           }
+            print(f"Parsing Error: {parse_err}")
+            result_data = {
+                'raw_analysis': analysis_result_text,
+                'error_message': 'An error occurred while parsing the analysis result.'
+            }
 
         # --- NEW: Compliance Analysis Step ---
         if tier == 'commercial' and user_profile.get('complianceTemplate'):
