@@ -164,7 +164,16 @@ const AIChat = () => {
       }
 
       const data = await resp.json();
-      setMessages(prev => [...prev, { sender: 'ai', text: data.response }]);
+      if (modelSpec.refinement && data.initial && data.refined) {
+          // Display initial response
+          setMessages(prev => [...prev, { sender: 'ai', text: '**Initial AI Response:**\n' + data.initial }]);
+          // Small delay for effect
+          await new Promise(resolve => setTimeout(resolve, 500));
+          // Display refined response
+          setMessages(prev => [...prev, { sender: 'ai', text: '**Refined AI Response:**\n' + data.refined }]);
+      } else {
+          setMessages(prev => [...prev, { sender: 'ai', text: data.response }]);
+      }
     } catch (err) {
       setLimitReached(err.message.includes('limit reached'));
       setMessages(prev => prev.filter(m => m.sender !== 'system'));

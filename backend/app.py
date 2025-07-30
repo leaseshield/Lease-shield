@@ -599,14 +599,31 @@ def ai_chat():
     # --- AI Generation ---
     try:
         model = get_gemini_model(model_name=model_id_to_use) # Use the key-rotating helper
-        response = model.generate_content(prompt_parts)
-        ai_response_text = response.text.strip()
+
+        # First pass: Generate initial response
+        initial_response = model.generate_content(prompt_parts)
+        ai_response_text = initial_response.text.strip()
+
+        if use_refinement:
+            # Second pass: Refine the initial response
+            refinement_prompt = [
+                ai_response_text,
+                "Refine and improve this response: Make it more accurate, complete, helpful, and concise while preserving the original meaning. Correct any errors and enhance clarity."
+            ]
+            refined_response = model.generate_content(refinement_prompt)
+            ai_response_text = refined_response.text.strip()
+
+        # For the UI to see both, return both if refinement was used
+        response_data = {'response': ai_response_text}
+        if use_refinement:
+            response_data['initial'] = initial_response.text.strip()
+            response_data['refined'] = ai_response_text
+
+        return jsonify(response_data)
+
     except Exception as e:
         print(f"Gemini chat error with model {model_id_to_use}: {e}")
         return jsonify({'error': 'Failed to generate AI response.', 'details': str(e)}), 500
-
-    # The counter has already been incremented, so we just return the response.
-    return jsonify({'response': ai_response_text})
 
 # --- End AI Chat Endpoint ---
 

@@ -904,7 +904,7 @@ const LandingPage = () => {
               </Typography>
               <Grid container spacing={2}>
                 {[ 
-                   { name: 'Lease Shield AI', score: '98.5%', color: 'success.main' },
+                   { name: 'LeaseAnalyzer 1B', score: '98.5%', color: 'success.main' },
                    { name: 'Human Experts', score: '85%', color: 'warning.main' },
                    { name: 'ChatGPT-4', score: '17%', color: 'error.light' },
                    { name: 'Claude 3', score: '12%', color: 'error.dark' },
@@ -1275,8 +1275,8 @@ const LandingPage = () => {
         </Stack>
       </Container>
 
-      {/* --- Admin Login Button --- */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+      {/* Admin button hidden temporarily */}
+      {/* <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
           <Button 
               component={RouterLink} 
               to="/admin" 
@@ -1286,7 +1286,7 @@ const LandingPage = () => {
           >
               Admin Access
           </Button>
-      </Box>
+      </Box> */}
       {/* --- End Admin Login Button --- */}
 
       {/* --- Footer Update --- */}
