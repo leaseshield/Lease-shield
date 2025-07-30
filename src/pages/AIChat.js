@@ -48,24 +48,27 @@ const modelGroups = {
     {
       value: 'gemini-2.5-ultra',
       label: '2.5 Ultra',
-      description: 'Double-pass refinement on 2.5 Pro for the best quality.',
+      description: 'The most powerful model for complex reasoning (coming soon).',
       refinement: true,
       baseModel: 'gemini-2.5-pro',
+      available: false, // Coming soon
     },
   ],
   'Generation 3': [
     {
       value: 'gemini-2.5-pro',
       label: '2.5 Pro',
-      description: 'Standard 2.5 Pro model for deeper reasoning.',
+      description: 'Advanced reasoning for demanding tasks (coming soon).',
       refinement: false,
+      available: false, // Coming soon
     },
     {
       value: 'gemini-2.5-fly',
-      label: '2.5 Fly',
-      description: 'Double-pass refinement on Flash for higher quality.',
-      refinement: true,
+      label: '2.5 Fly (Enhanced)',
+      description: 'Creative double-pass system for nuanced responses.',
+      refinement: true, // This will now trigger the special 3-pass logic
       baseModel: 'gemini-2.5-flash',
+      available: true,
     },
   ],
   'Generation 2.5': [
@@ -74,12 +77,14 @@ const modelGroups = {
       label: '2.5 Flash',
       description: 'Fast and efficient for most tasks.',
       refinement: false,
+      available: true,
     },
     {
       value: 'gemini-2.5-flash-lite',
       label: '2.5 Flash Lite',
       description: 'Light & efficient for simple tasks.',
       refinement: false,
+      available: true,
     },
   ],
 };
@@ -166,13 +171,27 @@ const AIChat = () => {
       }
 
       const data = await resp.json();
-      if (modelSpec.refinement && data.initial && data.refined) {
-          // Display initial response
-          setMessages(prev => [...prev, { sender: 'ai', text: '**Initial AI Response:**\n' + data.initial }]);
-          // Small delay for effect
+      
+      // Handle the new 3-pass response for gemini-2.5-fly
+      if (modelSpec.value === 'gemini-2.5-fly' && data.final) {
+          // Display Pass 1 (Standard)
+          setMessages(prev => [...prev, { sender: 'ai', text: '**Pass 1: Standard Response**\n' + data.initial }]);
           await new Promise(resolve => setTimeout(resolve, 500));
-          // Display refined response
+          
+          // Display Pass 2 (Creative)
+          setMessages(prev => [...prev, { sender: 'ai', text: '**Pass 2: Creative Response**\n' + data.refined }]);
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          // Display Pass 3 (Final Synthesized)
+          setMessages(prev => [...prev, { sender: 'ai', text: '**Final Synthesized Response**\n' + data.final }]);
+
+      // Handle standard 2-pass refinement (e.g., for Ultra)
+      } else if (modelSpec.refinement && data.initial && data.refined) {
+          setMessages(prev => [...prev, { sender: 'ai', text: '**Initial AI Response:**\n' + data.initial }]);
+          await new Promise(resolve => setTimeout(resolve, 500));
           setMessages(prev => [...prev, { sender: 'ai', text: '**Refined AI Response:**\n' + data.refined }]);
+
+      // Handle standard single response
       } else {
           setMessages(prev => [...prev, { sender: 'ai', text: data.response }]);
       }
@@ -205,7 +224,7 @@ const AIChat = () => {
             {Object.entries(modelGroups).map(([groupName, models]) => [
               <ListSubheader key={groupName}>{groupName}</ListSubheader>,
               ...models.map(opt => (
-                <MenuItem key={opt.value} value={opt.value}>
+                <MenuItem key={opt.value} value={opt.value} disabled={!opt.available}>
                   <ListItemText primary={opt.label} secondary={opt.description} />
                 </MenuItem>
               ))

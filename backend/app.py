@@ -553,9 +553,9 @@ def ai_chat():
 
     # --- Model Selection ---
     MODEL_MAP = {
-        'gemini-2.5-flash': 'gemini-1.5-flash-latest',
-        'gemini-2.5-flash-lite': 'gemini-1.5-flash-lite-latest',
-        'gemini-2.5-pro': 'gemini-1.5-pro-latest'
+        'gemini-2.5-flash': 'gemini-2.5-flash',
+        'gemini-2.5-flash-lite': 'gemini-2.5-flash-lite',
+        'gemini-2.5-pro': 'gemini-2.5-pro'
     }
 
     # Determine base model (frontend may send refined aliases like gemini-2.5-fly)
@@ -598,6 +598,54 @@ def ai_chat():
 
     # --- AI Generation ---
     try:
+        # Special handling for the enhanced 'gemini-2.5-fly'
+        if requested_model == 'gemini-2.5-fly':
+            print("Executing 3-pass creative refinement for gemini-2.5-fly")
+
+            # Pass 1: Standard response
+            model_standard = get_gemini_model(model_name=model_id_to_use, temperature=0.5) # Lower temp for precision
+            pass1_response_obj = model_standard.generate_content(prompt_parts)
+            pass1_response = pass1_response_obj.text.strip()
+            print(f"Fly Pass 1 (Standard): {pass1_response[:100]}...")
+
+            # Pass 2: Creative response
+            model_creative = get_gemini_model(model_name=model_id_to_use, temperature=1.0) # Higher temp for creativity
+            pass2_response_obj = model_creative.generate_content(prompt_parts)
+            pass2_response = pass2_response_obj.text.strip()
+            print(f"Fly Pass 2 (Creative): {pass2_response[:100]}...")
+
+            # Pass 3: Synthesize and select the best response
+            synthesis_prompt = f"""You have generated two responses to the same prompt.
+Response A (standard):
+---
+{pass1_response}
+---
+
+Response B (more creative):
+---
+{pass2_response}
+---
+
+Your task is to analyze both responses and produce a final, superior answer.
+You can choose one, or synthesize the best elements of both into a new, more complete response.
+The final output should be the single best response, not a commentary on the differences.
+Final Answer:"""
+            
+            model_synthesis = get_gemini_model(model_name=model_id_to_use) # Use default temp for synthesis
+            final_response_obj = model_synthesis.generate_content(synthesis_prompt)
+            final_response = final_response_obj.text.strip()
+            print(f"Fly Pass 3 (Synthesis): {final_response[:100]}...")
+
+            # Return all three parts for detailed UI display
+            response_data = {
+                'response': final_response, # The main, synthesized response
+                'initial': pass1_response,  # Standard response
+                'refined': pass2_response,  # Creative response
+                'final': final_response   # Final synthesized response
+            }
+            return jsonify(response_data)
+
+        # --- Default/Original Logic for other models ---
         model = get_gemini_model(model_name=model_id_to_use) # Use the key-rotating helper
 
         # First pass: Generate initial response
@@ -605,19 +653,21 @@ def ai_chat():
         ai_response_text = initial_response.text.strip()
 
         if use_refinement:
-            # Second pass: Refine the initial response
+            # This block now primarily serves gemini-2.5-ultra or other future standard refinement models
             refinement_prompt = [
                 ai_response_text,
                 "Refine and improve this response: Make it more accurate, complete, helpful, and concise while preserving the original meaning. Correct any errors and enhance clarity."
             ]
-            refined_response = model.generate_content(refinement_prompt)
-            ai_response_text = refined_response.text.strip()
+            refined_response_obj = model.generate_content(refinement_prompt)
+            refined_response = refined_response_obj.text.strip()
 
-        # For the UI to see both, return both if refinement was used
-        response_data = {'response': ai_response_text}
-        if use_refinement:
-            response_data['initial'] = initial_response.text.strip()
-            response_data['refined'] = ai_response_text
+            response_data = {
+                'response': refined_response, # Final answer is the refined one
+                'initial': ai_response_text,
+                'refined': refined_response
+            }
+        else:
+             response_data = {'response': ai_response_text}
 
         return jsonify(response_data)
 
@@ -1800,7 +1850,7 @@ def calculate_lease_costs():
 gemini_models = {}
 current_key_index = 0
 
-def get_gemini_model(model_name="gemini-2.5-flash-preview-05-20"):
+def get_gemini_model(model_name="gemini-2.5-flash-preview-05-20", temperature=None):
     global current_key_index
     global gemini_models
     global gemini_api_keys
@@ -1812,36 +1862,27 @@ def get_gemini_model(model_name="gemini-2.5-flash-preview-05-20"):
     key_to_use = gemini_api_keys[current_key_index]
     current_key_index = (current_key_index + 1) % len(gemini_api_keys)
     
-    # Simple way to reuse a configured model instance per key, per model type
-    model_key_id = f"{model_name}_{current_key_index}"
+    # Model unique ID now includes temperature if specified, to cache different configurations
+    temp_suffix = f"_t{temperature}" if temperature is not None else ""
+    model_key_id = f"{model_name}_{current_key_index}{temp_suffix}"
 
     if model_key_id not in gemini_models:
-        print(f"Initializing Gemini model {model_name} with key index {current_key_index}")
+        print(f"Initializing Gemini model {model_name} with key index {current_key_index} and temperature {temperature or 'default'}")
         genai.configure(api_key=key_to_use)
-        # Add safety settings if desired
+        
+        generation_config = {}
+        if temperature is not None:
+            generation_config['temperature'] = temperature
+
         safety_settings = [
-            {
-                "category": "HARM_CATEGORY_DANGEROUS",
-                "threshold": "BLOCK_NONE",
-            },
-            {
-                "category": "HARM_CATEGORY_HARASSMENT",
-                "threshold": "BLOCK_NONE",
-            },
-            {
-                "category": "HARM_CATEGORY_HATE_SPEECH",
-                "threshold": "BLOCK_NONE",
-            },
-            {
-                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                "threshold": "BLOCK_NONE",
-            },
-            {
-                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                "threshold": "BLOCK_NONE",
-            },
+            # Your safety settings here...
         ]
-        model = genai.GenerativeModel(model_name, safety_settings=safety_settings)
+        
+        model = genai.GenerativeModel(
+            model_name, 
+            safety_settings=safety_settings,
+            generation_config=genai.types.GenerationConfig(**generation_config) if generation_config else None
+        )
         gemini_models[model_key_id] = model
         
     return gemini_models[model_key_id]
