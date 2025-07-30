@@ -144,18 +144,21 @@ const AIChat = () => {
 
     const userText = input.trim();
     const messagePayload = { sender: 'user', text: userText, files: uploadedFiles };
-    setMessages(prev => [...prev, messagePayload]);
+    setMessages(prev => [...prev, messagePayload, { sender: 'ai', typing: true }]); // Add typing indicator
     setInput('');
     setUploadedFiles([]);
 
     setIsSending(true);
 
     try {
+      // Remove the typing indicator right before processing the response
+      setMessages(prev => prev.filter(m => !m.typing));
       const token = await auth.currentUser?.getIdToken();
       const formData = new FormData();
       formData.append('message', userText);
       const baseModel = modelSpec.baseModel || modelSpec.value;
-      formData.append('model', baseModel);
+      // Ensure the model value from the select is sent
+      formData.append('model', modelSpec.value); 
       formData.append('use_refinement', modelSpec.refinement);
       uploadedFiles.forEach(file => formData.append('files', file));
       
@@ -173,7 +176,7 @@ const AIChat = () => {
       const data = await resp.json();
       
       // Handle standard refinement (e.g., for Ultra - now the only multi-response type)
-      if (modelSpec.refinement && data.initial && data.refined) {
+      if (modelSpec.value !== 'gemini-2.5-fly' && modelSpec.refinement && data.initial && data.refined) {
           setMessages(prev => [...prev, { sender: 'ai', text: '**Initial AI Response:**\n' + data.initial }]);
           await new Promise(resolve => setTimeout(resolve, 500));
           setMessages(prev => [...prev, { sender: 'ai', text: '**Refined AI Response:**\n' + data.refined }]);
@@ -183,6 +186,7 @@ const AIChat = () => {
           setMessages(prev => [...prev, { sender: 'ai', text: data.response }]);
       }
     } catch (err) {
+      setMessages(prev => prev.filter(m => !m.typing)); // Also remove on error
       setLimitReached(err.message.includes('limit reached'));
       setMessages(prev => prev.filter(m => m.sender !== 'system'));
       setMessages(prev => [...prev, { sender: 'system', text: `Error: ${err.message}` }]);
@@ -231,43 +235,49 @@ const AIChat = () => {
         <List>
           {messages.map((msg, idx) => (
             <ListItem key={idx} sx={{ justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
-                <Paper elevation={msg.sender === 'system' ? 0 : 2} sx={{ p: 1.5, borderRadius: 3, bgcolor: msg.sender === 'user' ? 'primary.main' : (msg.sender === 'system' ? 'transparent' : 'background.paper'), color: msg.sender === 'user' ? 'primary.contrastText' : 'text.primary', maxWidth: '80%', textAlign: msg.sender === 'system' ? 'center' : 'left' }}>
-                    <ListItemText
-                      primary={
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm, remarkMath]}
-                          rehypePlugins={[rehypeKatex]}
-                          components={{
-                            code({node, inline, className, children, ...props}) {
-                                const match = /language-(\w+)/.exec(className || '');
-                                return !inline && match ? (
-                                    <SyntaxHighlighter
-                                        children={String(children).replace(/\n$/, '')}
-                                        style={dark}
-                                        language={match[1]}
-                                        PreTag="div"
-                                        {...props}
-                                    />
-                                ) : (
-                                    <code className={className} {...props}>
-                                        {children}
-                                    </code>
-                                );
-                            },
-                            p: ({ node, ...props }) => <Typography component="span" {...props} />,
-                          }}
-                        >
-                          {msg.text}
-                        </ReactMarkdown>
-                      }
-                    />
-                    {msg.files?.map(file => <Avatar key={file.name} variant="rounded" src={file.preview} sx={{mt: 1}}/>)}
-                </Paper>
+                {msg.typing ? (
+                  <Paper elevation={2} sx={{ p: 1.5, borderRadius: 3, bgcolor: 'background.paper', display: 'flex', alignItems: 'center' }}>
+                    <CircularProgress size={20} sx={{ mr: 1.5 }} />
+                    <Typography variant="body1" sx={{ color: 'text.secondary' }}>AI is typing...</Typography>
+                  </Paper>
+                ) : (
+                  <Paper elevation={msg.sender === 'system' ? 0 : 2} sx={{ p: 1.5, borderRadius: 3, bgcolor: msg.sender === 'user' ? 'primary.main' : (msg.sender === 'system' ? 'transparent' : 'background.paper'), color: msg.sender === 'user' ? 'primary.contrastText' : 'text.primary', maxWidth: '80%', textAlign: msg.sender === 'system' ? 'center' : 'left' }}>
+                      <ListItemText
+                        primary={
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm, remarkMath]}
+                            rehypePlugins={[rehypeKatex]}
+                            components={{
+                              code({node, inline, className, children, ...props}) {
+                                  const match = /language-(\w+)/.exec(className || '');
+                                  return !inline && match ? (
+                                      <SyntaxHighlighter
+                                          children={String(children).replace(/\n$/, '')}
+                                          style={dark}
+                                          language={match[1]}
+                                          PreTag="div"
+                                          {...props}
+                                      />
+                                  ) : (
+                                      <code className={className} {...props}>
+                                          {children}
+                                      </code>
+                                  );
+                              },
+                              p: ({ node, ...props }) => <Typography component="span" {...props} />,
+                            }}
+                          >
+                            {msg.text}
+                          </ReactMarkdown>
+                        }
+                      />
+                      {msg.files?.map(file => <Avatar key={file.name} variant="rounded" src={file.preview} sx={{mt: 1}}/>)}
+                  </Paper>
+                )}
             </ListItem>
           ))}
           <div ref={bottomRef} />
         </List>
-        {isSending && <CircularProgress size={24} sx={{ display: 'block', mx: 'auto', my: 1 }} />}
       </Paper>
       
       {/* Input Area */}

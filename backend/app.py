@@ -334,6 +334,48 @@ def analyze_lease(text):
     # You could potentially return the last_error object or a specific message
     return None
 
+def analyze_compliance(new_lease_text, master_template_text):
+    """
+    Compares a new lease against a master template using Gemini AI.
+    Returns a JSON object with a summary of deviations.
+    """
+    prompt = f"""
+    You are a compliance analysis bot. Compare the 'New Lease Document' against the 'Master Template'.
+    Your goal is to identify differences, deviations, and any clauses present in the new lease that are NOT in the master template.
+
+    Master Template Text:
+    --- START ---
+    {master_template_text}
+    --- END ---
+
+    New Lease Document Text:
+    --- START ---
+    {new_lease_text}
+    --- END ---
+
+    Analyze the documents and provide a report ONLY in a single JSON object format.
+    The JSON object must have one top-level key: 'compliance_report'.
+    The value of 'compliance_report' should be an object with three keys:
+    1.  `summary`: A brief, one-sentence summary of the overall compliance (e.g., "The document largely conforms to the master template with minor deviations.").
+    2.  `deviations`: An array of objects, where each object describes a specific deviation. Each object should have two keys: `clause_title` (e.g., "Termination Clause") and `description` (e.g., "The notice period was changed from 30 days in the template to 60 days.").
+    3.  `missing_clauses`: An array of strings, where each string is the title of a clause present in the Master Template but missing from the New Lease Document.
+
+    If no deviations or missing clauses are found, return empty arrays for those keys.
+    Do not include any text before or after the JSON object.
+    """
+    try:
+        model = get_gemini_model() # Use the standard model with key rotation
+        response = model.generate_content(prompt)
+        cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
+        return json.loads(cleaned_text)
+    except Exception as e:
+        print(f"Error during compliance analysis: {e}")
+        return {"compliance_report": {
+            "summary": "Failed to generate compliance report due to an internal error.",
+            "deviations": [],
+            "missing_clauses": []
+        }}
+
 # --- Maxelpay Encryption Helper --- 
 def maxelpay_encryption(secret_key, payload_data):
   """Encrypts payload data for Maxelpay API using AES CBC."""
@@ -1070,10 +1112,40 @@ def analyze_document():
             }
         except Exception as parse_err: # Catch other potential parsing errors
              print(f"Parsing Error: {parse_err}")
-             result_data = {
-                'raw_analysis': analysis_result_text,
-                'error_message': 'An error occurred while parsing the analysis result.'
-            }
+                         result_data = {
+               'raw_analysis': analysis_result_text,
+               'error_message': 'An error occurred while parsing the analysis result.'
+           }
+
+        # --- NEW: Compliance Analysis Step ---
+        if tier == 'commercial' and user_profile.get('complianceTemplate'):
+            print(f"User {user_id} is commercial with a template. Running compliance check.")
+            template_info = user_profile['complianceTemplate']
+            storage_path = template_info.get('storagePath')
+            
+            if storage_path:
+                try:
+                    bucket = storage.bucket()
+                    blob = bucket.blob(storage_path)
+                    template_bytes = blob.download_as_bytes()
+                    template_text = extract_pdf_rich_content(io.BytesIO(template_bytes))
+
+                    if template_text:
+                        print("Successfully extracted text from master template. Analyzing compliance...")
+                        compliance_result = analyze_compliance(text, template_text)
+                        # Merge the compliance report into the main analysis result
+                        result_data.update(compliance_result)
+                    else:
+                        print("Warning: Could not extract text from the stored master template.")
+                except Exception as e:
+                    print(f"CRITICAL: Failed to download or process compliance template for user {user_id}: {e}")
+                    # Optionally add an error to the report
+                    result_data['compliance_report'] = {
+                        "summary": "Error: Could not process the master compliance template.",
+                        "deviations": [],
+                        "missing_clauses": []
+                    }
+        # --- End Compliance Analysis Step ---
 
         # --- Increment scan counts if needed --- 
         if should_increment:
@@ -1361,6 +1433,231 @@ def create_commercial_user():
         return jsonify({'error': 'Failed to get new user ID after creation'}), 500
 
 # --- End Admin Routes --- 
+
+# --- NEW: Commercial Analytics Endpoint ---
+@app.route('/api/commercial/analytics', methods=['GET'])
+def get_commercial_analytics():
+    if db is None:
+        return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
+
+    # 1. --- Authorization & Subscription Check ---
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    token = auth_header.split('Bearer ')[1]
+    user_id = verify_token(token)
+    if not user_id:
+        return jsonify({'error': 'Invalid token'}), 401
+
+    user_profile = get_or_create_user_profile(user_id)
+    if not user_profile or user_profile.get('subscriptionTier') != 'commercial':
+        print(f"Forbidden access attempt to /api/commercial/analytics by user: {user_id}")
+        return jsonify({'error': 'Forbidden: Commercial access required'}), 403
+
+    # 2. --- Data Fetching ---
+    try:
+        leases_query = db.collection('leases').where('userId', '==', user_id)
+        all_leases_docs = list(leases_query.stream()) # Use list to iterate multiple times
+        
+        if not all_leases_docs:
+            return jsonify({
+                'averageRiskScore': 0,
+                'riskiestLeases': [],
+                'commonClauses': [],
+                'upcomingExpiries': []
+            }), 200
+
+    except Exception as e:
+        print(f"Error fetching leases for commercial analytics (user: {user_id}): {e}")
+        return jsonify({'error': 'Failed to retrieve lease data for analytics.'}), 500
+
+    # 3. --- Data Processing & Calculations ---
+    try:
+        total_score = 0
+        valid_leases_for_score = 0
+        lease_risks = []
+        clause_counts = {}
+        upcoming_expiries = []
+        
+        ninety_days_from_now = datetime.date.today() + datetime.timedelta(days=90)
+
+        for doc in all_leases_docs:
+            lease_data = doc.to_dict()
+            analysis = lease_data.get('analysis', {})
+            
+            # --- Risk Score Calculation ---
+            score = analysis.get('score')
+            if isinstance(score, int) or isinstance(score, float):
+                total_score += score
+                valid_leases_for_score += 1
+                lease_risks.append({
+                    'name': lease_data.get('fileName', f'Lease {doc.id}'),
+                    'score': score
+                })
+
+            # --- Common Clause Counting ---
+            risks = analysis.get('risks', [])
+            if isinstance(risks, list):
+                for risk_description in risks:
+                    clause_counts[risk_description] = clause_counts.get(risk_description, 0) + 1
+
+            # --- Expiry Date Calculation ---
+            end_date_str = analysis.get('extracted_data', {}).get('Lease_End_Date')
+            if end_date_str and end_date_str != "Not Found":
+                try:
+                    # Handle various date formats gracefully
+                    end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                    if end_date <= ninety_days_from_now and end_date >= datetime.date.today():
+                        upcoming_expiries.append({
+                            'name': lease_data.get('fileName', f'Lease {doc.id}'),
+                            'date': end_date.isoformat()
+                        })
+                except (ValueError, TypeError):
+                    print(f"Could not parse date '{end_date_str}' for lease {doc.id}")
+
+
+        # --- Final Data Aggregation ---
+        average_risk_score = round(total_score / valid_leases_for_score) if valid_leases_for_score > 0 else 0
+        
+        # Sort and get top 5 riskiest leases (lower score is riskier)
+        riskiest_leases = sorted(lease_risks, key=lambda x: x['score'])[:5]
+        
+        # Sort and get top 5 common clauses
+        sorted_clauses = sorted(clause_counts.items(), key=lambda item: item[1], reverse=True)
+        common_clauses = [{'name': name, 'count': count} for name, count in sorted_clauses[:5]]
+
+        # Sort upcoming expiries by date
+        sorted_expiries = sorted(upcoming_expiries, key=lambda x: x['date'])
+
+        # 4. --- Response ---
+        return jsonify({
+            'averageRiskScore': average_risk_score,
+            'riskiestLeases': riskiest_leases,
+            'commonClauses': common_clauses,
+            'upcomingExpiries': sorted_expiries
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"Error processing analytics data for user {user_id}: {e}")
+        return jsonify({'error': 'An error occurred while processing analytics data.'}), 500
+
+# --- End Commercial Analytics Endpoint ---
+
+
+# --- NEW: Compliance Template Management Endpoints ---
+
+@app.route('/api/compliance/template', methods=['GET'])
+def get_compliance_template():
+    if db is None:
+        return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
+
+    # Authorization & Subscription Check
+    auth_header = request.headers.get('Authorization')
+    if not auth_header: return jsonify({'error': 'Unauthorized'}), 401
+    
+    token = auth_header.split('Bearer ')[1]
+    user_id = verify_token(token)
+    if not user_id: return jsonify({'error': 'Invalid token'}), 401
+
+    user_profile = get_or_create_user_profile(user_id)
+    if user_profile.get('subscriptionTier') != 'commercial':
+        return jsonify({'error': 'Forbidden: Commercial access required'}), 403
+
+    template_info = user_profile.get('complianceTemplate')
+    if template_info:
+        return jsonify(template_info), 200
+    else:
+        return jsonify({'message': 'No template found'}), 404
+
+@app.route('/api/compliance/template', methods=['POST'])
+def upload_compliance_template():
+    if db is None: return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
+
+    # Authorization & Subscription Check
+    auth_header = request.headers.get('Authorization')
+    if not auth_header: return jsonify({'error': 'Unauthorized'}), 401
+    token = auth_header.split('Bearer ')[1]
+    user_id = verify_token(token)
+    if not user_id: return jsonify({'error': 'Invalid token'}), 401
+
+    user_profile = get_or_create_user_profile(user_id)
+    if user_profile.get('subscriptionTier') != 'commercial':
+        return jsonify({'error': 'Forbidden: Commercial access required'}), 403
+
+    if 'templateFile' not in request.files:
+        return jsonify({'error': 'No template file provided'}), 400
+    
+    file = request.files['templateFile']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    try:
+        # Define the storage path
+        storage_path = f"compliance_templates/{user_id}/master_template"
+        bucket = storage.bucket()
+        blob = bucket.blob(storage_path)
+
+        # Upload the file
+        blob.upload_from_file(file.stream, content_type=file.content_type)
+        
+        # Update user's profile in Firestore
+        template_info = {
+            'fileName': file.filename,
+            'storagePath': storage_path,
+            'uploadedAt': firestore.SERVER_TIMESTAMP
+        }
+        user_ref = db.collection('users').document(user_id)
+        user_ref.update({'complianceTemplate': template_info})
+
+        return jsonify({'success': True, 'template': {'fileName': file.filename}}), 200
+
+    except Exception as e:
+        print(f"Error uploading compliance template for user {user_id}: {e}")
+        return jsonify({'error': 'Failed to upload template.'}), 500
+
+@app.route('/api/compliance/template', methods=['DELETE'])
+def delete_compliance_template():
+    if db is None: return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
+
+    # Authorization & Subscription Check
+    auth_header = request.headers.get('Authorization')
+    if not auth_header: return jsonify({'error': 'Unauthorized'}), 401
+    token = auth_header.split('Bearer ')[1]
+    user_id = verify_token(token)
+    if not user_id: return jsonify({'error': 'Invalid token'}), 401
+
+    user_profile = get_or_create_user_profile(user_id)
+    if user_profile.get('subscriptionTier') != 'commercial':
+        return jsonify({'error': 'Forbidden: Commercial access required'}), 403
+
+    template_info = user_profile.get('complianceTemplate')
+    if not template_info:
+        return jsonify({'error': 'No template found to delete'}), 404
+
+    try:
+        # Delete from Firebase Storage
+        storage_path = template_info.get('storagePath')
+        if storage_path:
+            bucket = storage.bucket()
+            blob = bucket.blob(storage_path)
+            if blob.exists():
+                blob.delete()
+
+        # Remove from user's profile in Firestore
+        user_ref = db.collection('users').document(user_id)
+        user_ref.update({'complianceTemplate': firestore.DELETE_FIELD})
+
+        return jsonify({'success': True}), 200
+
+    except Exception as e:
+        print(f"Error deleting compliance template for user {user_id}: {e}")
+        return jsonify({'error': 'Failed to delete template.'}), 500
+
+# --- End Compliance Template Management Endpoints ---
+
 
 # --- NEW: Photo Inspection Endpoint ---
 def allowed_image_file(filename):

@@ -62,6 +62,7 @@ import { doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from 'fireba
 import { db, auth } from '../firebase/config';
 import { Link } from 'react-router-dom';
 import jsPDF from 'jspdf'; // Added for PDF generation
+import ComplianceReport from '../components/ComplianceReport'; // Import the new component
 
 // Helper function for score bar color
 const getScoreColor = (score) => {
@@ -763,6 +764,11 @@ const LeaseAnalysis = ({ showSnackbar }) => {
                       </Grid>
                   )}
               </Grid>
+
+              {/* NEW: Compliance Report Section */}
+              {analysisResult.compliance_report && (
+                <ComplianceReport report={analysisResult.compliance_report} />
+              )}
               
               {/* Disclaimer */}
               <Alert severity="info" icon={<InfoOutlined />} sx={{ mt: 4 }}>

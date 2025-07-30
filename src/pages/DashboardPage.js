@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useAuthState } from '../hooks/useAuthState'; // Assuming useAuthState provides user object
+import { useAuthState } from '../hooks/useAuthState';
+import { useUserProfile } from '../context/UserProfileContext'; // Import the user profile hook
 import { db } from '../firebase/config';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import {
@@ -21,16 +22,24 @@ import {
 } from '@mui/material';
 import { 
     Dashboard as DashboardIcon,
-    Description as DescriptionIcon, // Lease
-    CameraAlt as CameraAltIcon, // Inspection
-    ReceiptLong as ReceiptLongIcon, // Expense
-    Calculate as CalculateIcon, // Calculator
-    PersonSearch as PersonSearchIcon // Tenant Matcher
+    Description as DescriptionIcon,
+    CameraAlt as CameraAltIcon,
+    ReceiptLong as ReceiptLongIcon,
+    Calculate as CalculateIcon,
+    PersonSearch as PersonSearchIcon,
+    BarChart as BarChartIcon, // Icon for analytics
+    Gavel as GavelIcon // Icon for compliance
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 
+// Import the new commercial widgets
+import PortfolioRiskWidget from '../components/PortfolioRiskWidget';
+import CommonClauseWidget from '../components/CommonClauseWidget';
+import LeaseExpiryWidget from '../components/LeaseExpiryWidget';
+
 const DashboardPage = () => {
-  const { user } = useAuthState(); // Get user from your auth hook
+  const { user } = useAuthState();
+  const { profile, loadingProfile } = useUserProfile(); // Get user profile and loading state
   const [leases, setLeases] = useState([]);
   const [inspections, setInspections] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -41,7 +50,6 @@ const DashboardPage = () => {
     const fetchData = async () => {
       if (!user) {
         setLoading(false);
-        // setError('Please log in to view the dashboard.'); // Optional: prompt login
         return; 
       }
 
@@ -53,7 +61,7 @@ const DashboardPage = () => {
         const leasesQuery = query(
           collection(db, 'leases'), 
           where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc') // Sort by most recent
+          orderBy('createdAt', 'desc')
         );
         const leaseSnapshot = await getDocs(leasesQuery);
         const leaseData = leaseSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -81,45 +89,17 @@ const DashboardPage = () => {
 
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
-        // setError('Failed to load dashboard data. Please try again later.'); // Commented out as requested
+        setError('Failed to load dashboard data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [user]); // Re-fetch if user changes
+  }, [user]);
 
-  // --- Render Helper Functions (Optional) ---
-  const renderLeaseSummary = (lease) => (
-    <ListItem key={lease.id} secondaryAction={<span>{lease.analysis?.score || 'N/A'}</span>}>
-        <ListItemText 
-            primary={lease.fileName || 'Lease Analysis'}
-            secondary={`Analyzed: ${lease.createdAt?.toDate().toLocaleDateString() || 'Unknown'}`}
-        />
-    </ListItem>
-  );
-
-  const renderInspectionSummary = (inspection) => (
-     <ListItem key={inspection.id} secondaryAction={<span>{inspection.repairEstimate?.totalEstimatedCost ? `$${inspection.repairEstimate.totalEstimatedCost.toFixed(2)}` : 'N/A'}</span>}>
-        <ListItemText 
-            primary={`Inspection (${inspection.results?.length || 0} photos)`}
-            secondary={`Inspected: ${inspection.createdAt?.toDate().toLocaleDateString() || 'Unknown'}`}
-        />
-    </ListItem>
-  );
-
-  const renderExpenseSummary = (expense) => (
-    <ListItem key={expense.id} secondaryAction={<span>{expense.extractedData?.amount ? `$${expense.extractedData.amount.toFixed(2)}` : 'N/A'}</span>}>
-        <ListItemText 
-            primary={expense.extractedData?.vendor || expense.fileName || 'Expense'}
-            secondary={`Date: ${expense.extractedData?.date || expense.createdAt?.toDate().toLocaleDateString() || 'Unknown'}`}
-        />
-    </ListItem>
-  );
-
-  // --- Main Render --- 
-  if (loading) {
+  // Combined loading state
+  if (loading || loadingProfile) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
         <CircularProgress />
@@ -135,6 +115,8 @@ const DashboardPage = () => {
      );
   }
 
+  const isCommercial = profile?.subscriptionTier === 'commercial';
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
@@ -145,47 +127,48 @@ const DashboardPage = () => {
 
       {/* Action Buttons */}
       <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-        <Button 
-          variant="contained" 
-          component={Link} 
-          to="/analysis" 
-          startIcon={<DescriptionIcon />}
-        >
+        <Button variant="contained" component={Link} to="/analysis" startIcon={<DescriptionIcon />}>
           Analyze New Lease
         </Button>
-        <Button 
-          variant="contained" 
-          component={Link} 
-          to="/photo-inspection" 
-          startIcon={<CameraAltIcon />}
-        >
+        <Button variant="contained" component={Link} to="/photo-inspection" startIcon={<CameraAltIcon />}>
           Start New Inspection
         </Button>
-        <Button 
-          variant="contained" 
-          component={Link} 
-          to="/expense-scanner" 
-          startIcon={<ReceiptLongIcon />}
-        >
+        <Button variant="contained" component={Link} to="/expense-scanner" startIcon={<ReceiptLongIcon />}>
           Scan New Expense
         </Button>
-        <Button 
-          variant="contained" 
-          component={Link} 
-          to="/calculator" 
-          startIcon={<CalculateIcon />}
-        >
+        <Button variant="contained" component={Link} to="/calculator" startIcon={<CalculateIcon />}>
           Lease Calculator
         </Button>
-        <Button 
-          variant="contained" 
-          component={Link} 
-          to="/tenant-matcher"
-          startIcon={<PersonSearchIcon />}
-        >
+        <Button variant="contained" component={Link} to="/tenant-matcher" startIcon={<PersonSearchIcon />}>
           Tenant Matcher
         </Button>
+        {isCommercial && (
+          <Button variant="outlined" component={Link} to="/compliance" startIcon={<GavelIcon />}>
+            Manage Compliance
+          </Button>
+        )}
       </Box>
+
+      {/* --- Commercial Analytics Section --- */}
+      {isCommercial && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" component="h2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+            <BarChartIcon sx={{ mr: 1 }} /> Commercial Analytics
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <PortfolioRiskWidget />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <CommonClauseWidget />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <LeaseExpiryWidget />
+            </Grid>
+          </Grid>
+          <Divider sx={{ my: 4 }} />
+        </Box>
+      )}
 
       <Grid container spacing={3}>
         {/* Leases Card */}
@@ -198,7 +181,14 @@ const DashboardPage = () => {
             <CardContent>
               {leases.length > 0 ? (
                 <List dense>
-                  {leases.slice(0, 5).map(renderLeaseSummary)} {/* Show latest 5 */}
+                  {leases.slice(0, 5).map(lease => (
+                    <ListItem key={lease.id} secondaryAction={<span>{lease.analysis?.score || 'N/A'}</span>}>
+                      <ListItemText 
+                          primary={lease.fileName || 'Lease Analysis'}
+                          secondary={`Analyzed: ${lease.createdAt?.toDate().toLocaleDateString() || 'Unknown'}`}
+                      />
+                    </ListItem>
+                  ))}
                   {leases.length > 5 && <ListItem><ListItemText primary="...and more" /></ListItem>}
                 </List>
               ) : (
@@ -215,7 +205,14 @@ const DashboardPage = () => {
             <CardContent>
               {inspections.length > 0 ? (
                  <List dense>
-                    {inspections.slice(0, 5).map(renderInspectionSummary)}
+                    {inspections.slice(0, 5).map(inspection => (
+                      <ListItem key={inspection.id} secondaryAction={<span>{inspection.repairEstimate?.totalEstimatedCost ? `$${inspection.repairEstimate.totalEstimatedCost.toFixed(2)}` : 'N/A'}</span>}>
+                        <ListItemText 
+                            primary={`Inspection (${inspection.results?.length || 0} photos)`}
+                            secondary={`Inspected: ${inspection.createdAt?.toDate().toLocaleDateString() || 'Unknown'}`}
+                        />
+                      </ListItem>
+                    ))}
                     {inspections.length > 5 && <ListItem><ListItemText primary="...and more" /></ListItem>}
                  </List>
               ) : (
@@ -232,7 +229,14 @@ const DashboardPage = () => {
             <CardContent>
                {expenses.length > 0 ? (
                  <List dense>
-                   {expenses.slice(0, 5).map(renderExpenseSummary)}
+                   {expenses.slice(0, 5).map(expense => (
+                     <ListItem key={expense.id} secondaryAction={<span>{expense.extractedData?.amount ? `$${expense.extractedData.amount.toFixed(2)}` : 'N/A'}</span>}>
+                       <ListItemText 
+                           primary={expense.extractedData?.vendor || expense.fileName || 'Expense'}
+                           secondary={`Date: ${expense.extractedData?.date || expense.createdAt?.toDate().toLocaleDateString() || 'Unknown'}`}
+                       />
+                     </ListItem>
+                   ))}
                    {expenses.length > 5 && <ListItem><ListItemText primary="...and more" /></ListItem>}
                  </List>
               ) : (
@@ -241,9 +245,6 @@ const DashboardPage = () => {
             </CardContent>
           </Card>
         </Grid>
-
-        {/* Add more detailed sections or links here if needed */}
-
       </Grid>
     </Container>
   );

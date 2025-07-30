@@ -35,6 +35,7 @@ import ExpenseScannerPage from './pages/ExpenseScannerPage';
 import PhotoInspectionPage from './pages/PhotoInspectionPage';
 import DashboardPage from './pages/DashboardPage';
 import AIChat from './pages/AIChat';
+import CompliancePage from './pages/CompliancePage';
 
 // Create theme
 const theme = createTheme({
@@ -428,6 +429,14 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <AIChat />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/compliance" element={
+              <ProtectedRoute requirePaid={true}>
+                <Layout>
+                  <CompliancePage />
                 </Layout>
               </ProtectedRoute>
             } />
