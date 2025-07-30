@@ -553,9 +553,9 @@ def ai_chat():
 
     # --- Model Selection ---
     MODEL_MAP = {
-        'gemini-2.5-flash': 'gemini-2.5-flash-preview-05-20',
-        'gemini-2.5-flash-lite': 'gemini-2.5-flash-lite-preview-06-17',
-        'gemini-2.5-pro': 'gemini-2.5-pro-latest'
+        'gemini-2.5-flash': 'gemini-1.5-flash-latest',
+        'gemini-2.5-flash-lite': 'gemini-1.5-flash-lite-latest',
+        'gemini-2.5-pro': 'gemini-1.5-pro-latest'
     }
 
     # Determine base model (frontend may send refined aliases like gemini-2.5-fly)
@@ -623,7 +623,7 @@ def ai_chat():
 
     except Exception as e:
         print(f"Gemini chat error with model {model_id_to_use}: {e}")
-        return jsonify({'error': 'Failed to generate AI response.', 'details': str(e)}), 500
+        return jsonify({'error': 'Failed to generate AI response. Please try a different model or check your input.', 'details': str(e)}), 500
 
 # --- End AI Chat Endpoint ---
 
