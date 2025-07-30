@@ -172,26 +172,13 @@ const AIChat = () => {
 
       const data = await resp.json();
       
-      // Handle the new 3-pass response for gemini-2.5-fly
-      if (modelSpec.value === 'gemini-2.5-fly' && data.final) {
-          // Display Pass 1 (Standard)
-          setMessages(prev => [...prev, { sender: 'ai', text: '**Pass 1: Standard Response**\n' + data.initial }]);
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Display Pass 2 (Creative)
-          setMessages(prev => [...prev, { sender: 'ai', text: '**Pass 2: Creative Response**\n' + data.refined }]);
-          await new Promise(resolve => setTimeout(resolve, 500));
-
-          // Display Pass 3 (Final Synthesized)
-          setMessages(prev => [...prev, { sender: 'ai', text: '**Final Synthesized Response**\n' + data.final }]);
-
-      // Handle standard 2-pass refinement (e.g., for Ultra)
-      } else if (modelSpec.refinement && data.initial && data.refined) {
+      // Handle standard refinement (e.g., for Ultra - now the only multi-response type)
+      if (modelSpec.refinement && data.initial && data.refined) {
           setMessages(prev => [...prev, { sender: 'ai', text: '**Initial AI Response:**\n' + data.initial }]);
           await new Promise(resolve => setTimeout(resolve, 500));
           setMessages(prev => [...prev, { sender: 'ai', text: '**Refined AI Response:**\n' + data.refined }]);
 
-      // Handle standard single response
+      // Handle all single responses (including the synthesized one from Fly)
       } else {
           setMessages(prev => [...prev, { sender: 'ai', text: data.response }]);
       }

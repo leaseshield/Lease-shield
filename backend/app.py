@@ -636,13 +636,8 @@ Final Answer:"""
             final_response = final_response_obj.text.strip()
             print(f"Fly Pass 3 (Synthesis): {final_response[:100]}...")
 
-            # Return all three parts for detailed UI display
-            response_data = {
-                'response': final_response, # The main, synthesized response
-                'initial': pass1_response,  # Standard response
-                'refined': pass2_response,  # Creative response
-                'final': final_response   # Final synthesized response
-            }
+            # Return only the final synthesized response to the user
+            response_data = {'response': final_response}
             return jsonify(response_data)
 
         # --- Default/Original Logic for other models ---
