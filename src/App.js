@@ -36,6 +36,7 @@ import PhotoInspectionPage from './pages/PhotoInspectionPage';
 import DashboardPage from './pages/DashboardPage';
 import AIChat from './pages/AIChat';
 import CompliancePage from './pages/CompliancePage';
+import Contact from './pages/Contact';
 
 // Create theme
 const theme = createTheme({
@@ -319,6 +320,11 @@ function App() {
             <Route path="/pricing" element={
                <Layout showAuthButtons={true}>
                   <Pricing />
+               </Layout>
+            } />
+            <Route path="/contact" element={
+               <Layout showAuthButtons={true}>
+                  <Contact />
                </Layout>
             } />
             <Route path="/trial" element={<TrialRouteHandler />} />

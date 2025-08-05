@@ -37,7 +37,13 @@ import {
   HomeWork,
   ReceiptLong as ReceiptIcon,
   CameraAlt as CameraAltIcon,
-  Chat as ChatIcon
+  Chat as ChatIcon,
+  Twitter as TwitterIcon,
+  Instagram as InstagramIcon,
+  LinkedIn as LinkedInIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  LocationOn as LocationIcon
 } from '@mui/icons-material';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
@@ -293,23 +299,87 @@ const Layout = ({ children, showAuthButtons = false }) => {
       <Box 
         component="footer" 
         sx={{ 
-          py: 3, 
+          py: 4, 
           bgcolor: 'background.paper', 
           borderTop: '1px solid', 
           borderColor: 'divider' 
         }}
       >
         <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: { xs: 2, md: 0 } }}>
-              © {new Date().getFullYear()} Lease Shield AI
-            </Typography>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 3 }}>
+            {/* Left side - Company info and contact */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Lease Shield AI
+              </Typography>
+              
+              {/* Contact Information */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <EmailIcon fontSize="small" color="action" />
+                <Typography variant="body2" color="text.secondary">
+                  contact@leaseshield.eu
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <PhoneIcon fontSize="small" color="action" />
+                <Typography variant="body2" color="text.secondary">
+                  +31 (0) 20 123 4567
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <LocationIcon fontSize="small" color="action" />
+                <Typography variant="body2" color="text.secondary">
+                  Amsterdam, Netherlands
+                </Typography>
+              </Box>
+              
+              <Typography variant="body2" color="text.secondary">
+                © {new Date().getFullYear()} Lease Shield AI
+              </Typography>
+            </Box>
             
-            <Box sx={{ display: 'flex', gap: 3 }}>
-              <Link href="#" color="inherit" underline="hover">Privacy</Link>
-              <Link href="#" color="inherit" underline="hover">Terms</Link>
-              <Link href="#" color="inherit" underline="hover">Contact</Link>
-              <MuiLink component={RouterLink} to="/blog" color="inherit" underline="hover">Blog</MuiLink>
+            {/* Right side - Links and Social Media */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'flex-start', md: 'flex-end' }, gap: 2 }}>
+              {/* Navigation Links */}
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                <Link href="#" color="inherit" underline="hover">Privacy</Link>
+                <Link href="#" color="inherit" underline="hover">Terms</Link>
+                <MuiLink component={RouterLink} to="/contact" color="inherit" underline="hover">Contact</MuiLink>
+                <MuiLink component={RouterLink} to="/blog" color="inherit" underline="hover">Blog</MuiLink>
+              </Box>
+              
+              {/* Social Media Links */}
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <IconButton 
+                  href="https://twitter.com/LeaseShieldAI" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  size="small"
+                  sx={{ color: 'text.secondary', '&:hover': { color: '#1DA1F2' } }}
+                >
+                  <TwitterIcon />
+                </IconButton>
+                <IconButton 
+                  href="https://instagram.com/leaseshield" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  size="small"
+                  sx={{ color: 'text.secondary', '&:hover': { color: '#E4405F' } }}
+                >
+                  <InstagramIcon />
+                </IconButton>
+                <IconButton 
+                  href="https://linkedin.com/company/lease-shield-ai" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  size="small"
+                  sx={{ color: 'text.secondary', '&:hover': { color: '#0077B5' } }}
+                >
+                  <LinkedInIcon />
+                </IconButton>
+              </Box>
             </Box>
           </Box>
         </Container>
