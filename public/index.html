@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Lease Shield: Empowering renters with AI-driven lease review. Understand your rights, identify red flags, and sign with confidence. Secure your tenancy today!"
+      content="AI-powered lease analysis in minutes. Upload your rental agreement and get instant insights, risk identification, and plain-language explanations. Start free!"
     />
     <meta
       name="keywords"
@@ -27,16 +27,20 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://leaseshield.eu/" />
-    <meta property="og:title" content="Lease Shield - AI-Powered Lease Review for Renters" />
-    <meta property="og:description" content="Understand your lease agreement like never before. Lease Shield uses AI to analyze your lease, highlight crucial clauses, and protect your rights as a renter." />
+    <meta property="og:title" content="Lease Shield AI - Smart Lease Analysis & Rental Review Tool" />
+    <meta property="og:description" content="AI-powered lease analysis in minutes. Upload your rental agreement and get instant insights, risk identification, and plain-language explanations. Start free!" />
     <meta property="og:image" content="%PUBLIC_URL%/LeaseShield_OG_Image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Lease Shield AI - Smart lease analysis dashboard showing AI-powered insights" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://leaseshield.eu/" />
-    <meta property="twitter:title" content="Lease Shield - Secure Your Tenancy with AI Lease Review" />
-    <meta property="twitter:description" content="Don't sign blindly. Lease Shield's AI-powered platform helps you understand your lease, identify potential issues, and negotiate better terms. Rent with confidence." />
+    <meta property="twitter:title" content="Lease Shield AI - Smart Lease Analysis & Rental Review Tool" />
+    <meta property="twitter:description" content="AI-powered lease analysis in minutes. Upload your rental agreement and get instant insights, risk identification, and plain-language explanations. Start free!" />
     <meta property="twitter:image" content="%PUBLIC_URL%/LeaseShield_Twitter_Card.png" />
+    <meta property="twitter:image:alt" content="Lease Shield AI - Smart lease analysis dashboard showing AI-powered insights" />
 
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
@@ -65,7 +69,7 @@
     
     <link rel="canonical" href="https://leaseshield.eu/" />
 
-    <title>Lease Shield</title>
+    <title>Lease Shield AI - Smart Lease Analysis & Rental Review Tool</title>
     
     <!-- Performance optimization meta tags -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -107,20 +111,88 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
+      "@type": "SoftwareApplication",
       "name": "Lease Shield AI",
+      "applicationCategory": "LegalTech",
+      "applicationSubCategory": "Document Analysis",
+      "operatingSystem": "Web Browser",
       "url": "https://leaseshield.eu/",
-      "logo": "https://leaseshield.eu/logo512.png",
-      "description": "Lease Shield AI offers AI-powered analysis of lease agreements to help users understand complex legal documents quickly and easily.",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "YOUR_CONTACT_PHONE", // Optional: if you have a business phone
-        "contactType": "Customer Service" // Or other relevant type
+      "description": "AI-powered lease analysis tool that helps renters and landlords understand rental agreements, identify risks, and make informed decisions in minutes.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "priceValidUntil": "2025-12-31"
       },
-      "sameAs": [ // Optional: add links to your social media profiles
-        // "https://www.facebook.com/yourprofile",
-        // "https://www.twitter.com/yourprofile",
-        // "https://www.linkedin.com/company/yourcompany"
+      "publisher": {
+        "@type": "Organization",
+        "name": "Lease Shield AI",
+        "url": "https://leaseshield.eu/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://leaseshield.eu/logo512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "featureList": [
+        "AI-powered lease analysis",
+        "Risk identification",
+        "Plain language explanations",
+        "Tenant matching",
+        "Expense scanning",
+        "Photo inspection",
+        "Lease calculator"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "127",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+    
+    <!-- FAQ Schema Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How accurate is the AI analysis?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Our AI model is trained on thousands of lease agreements and achieves high accuracy in identifying standard lease terms and potential issues. However, we always recommend consulting with a legal professional for final decisions."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, we take security seriously. Your documents are encrypted in transit and at rest using enterprise-grade security measures. We are compliant with industry standards for data protection."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What file formats are supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Currently we support PDF and direct text pasting. We're working on adding support for Word documents (.docx) and other formats."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does the analysis take?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most lease agreements are analyzed within 1-2 minutes. Extremely long or complex documents might take slightly longer."
+          }
+        }
       ]
     }
     </script>

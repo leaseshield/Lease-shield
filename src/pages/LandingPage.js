@@ -385,7 +385,7 @@ const LandingPage = () => {
                     fontSize: { xs: '0.9rem', md: '1.1rem' }
                   }}
                 >
-                  All-in-One AI Suite: Lease Analysis • Tenant Matching • Lease Calculator • Expense Scanner • Photo Inspector
+                  All-in-One AI Suite: Lease Analysis • Tenant Matching • <Link component={RouterLink} to="/calculator" color="inherit" sx={{ textDecoration: 'underline', '&:hover': { opacity: 0.8 } }}>Lease Calculator</Link> • Expense Scanner • Photo Inspector
                 </Typography>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-start">
                   <Button
@@ -580,11 +580,11 @@ const LandingPage = () => {
             <Grid item xs={12} md={6}>
                <Zoom in={true} timeout={500}>
                  <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                   <Typography variant="h2" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
+                   <Typography variant="h2" component="h3" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
                      Meet Your AI Landlord Assistant
                    </Typography>
                    <Typography variant="h6" paragraph sx={{ mb: 3, color: 'text.secondary' /* Adjusted for light background */ }}>
-                     Streamline tenant matching and property management with Lease Shield AI. Define your ideal tenant and let our AI find the best fit based on preferences and uploaded documents.
+                     Streamline tenant matching and property management with Lease Shield AI. Define your ideal tenant and let our AI find the best fit based on preferences and uploaded documents. Learn more about <Link component={RouterLink} to="/blog/tenant-rights-overview" color="primary" sx={{ textDecoration: 'underline', '&:hover': { opacity: 0.8 } }}>tenant rights</Link> and property management best practices.
                    </Typography>
                    <List dense>
                      <ListItem>
@@ -645,7 +645,7 @@ const LandingPage = () => {
       }}>
         <Container maxWidth="lg">
           <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
-           <Typography variant="h4" component="h3" align="center" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
+           <Typography variant="h3" component="h2" align="center" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
              Faster, More Accurate Tenant Matching
            </Typography>
            <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 6 }}>
@@ -1323,7 +1323,7 @@ const LandingPage = () => {
                 Ready to Understand Your Lease?
               </Typography>
               <Typography variant="h6" paragraph sx={{ mb: 4, opacity: 0.9 }}>
-                Join thousands who use Lease Shield AI to analyze, understand, and negotiate better lease agreements.
+                Join thousands who use Lease Shield AI to analyze, understand, and negotiate better lease agreements. Check out our comprehensive <Link component={RouterLink} to="/blog" color="inherit" sx={{ textDecoration: 'underline', '&:hover': { opacity: 0.8 } }}>lease analysis guides</Link> for expert tips.
               </Typography>
               <Button
                 variant="contained"
@@ -1360,7 +1360,7 @@ const LandingPage = () => {
           Frequently Asked Questions
         </Typography>
         <Stack spacing={2}>
-          {[ { q: "How accurate is the AI analysis?", a: "Our AI model is trained on thousands of lease agreements and achieves high accuracy in identifying standard lease terms and potential issues. However, we always recommend consulting with a legal professional for final decisions." }, { q: "Is my data secure?", a: "Yes, we take security seriously. Your documents are encrypted in transit and at rest using enterprise-grade security measures. We are compliant with industry standards for data protection.", icon: <LockIcon fontSize="small" sx={{ verticalAlign: 'middle', ml: 0.5, color: 'text.secondary' }} /> }, { q: "What file formats are supported?", a: "Currently we support PDF and direct text pasting. We're working on adding support for Word documents (.docx) and other formats."}, { q: "How long does the analysis take?", a: "Most lease agreements are analyzed within 1-2 minutes. Extremely long or complex documents might take slightly longer." } ].map((item, index) => (
+          {[ { q: "How accurate is the AI analysis?", a: "Our AI model is trained on thousands of lease agreements and achieves high accuracy in identifying standard lease terms and potential issues. However, we always recommend consulting with a legal professional for final decisions." }, { q: "Is my data secure?", a: "Yes, we take security seriously. Your documents are encrypted in transit and at rest using enterprise-grade security measures. We are compliant with industry standards for data protection.", icon: <LockIcon fontSize="small" sx={{ verticalAlign: 'middle', ml: 0.5, color: 'text.secondary' }} /> }, { q: "What file formats are supported?", a: <>Currently we support PDF and direct text pasting. We're working on adding support for Word documents (.docx) and other formats. Visit our <Link component={RouterLink} to="/pricing" color="primary" sx={{ textDecoration: 'underline' }}>pricing page</Link> for more details.</>}, { q: "How long does the analysis take?", a: <>Most lease agreements are analyzed within 1-2 minutes. Extremely long or complex documents might take slightly longer. Learn more about <Link href="https://www.nolo.com/legal-encyclopedia/tenant-rights" target="_blank" rel="noopener noreferrer" color="primary" sx={{ textDecoration: 'underline' }}>tenant rights at Nolo.com</Link>, a trusted legal resource.</> } ].map((item, index) => (
              <Fade in={true} timeout={600} style={{ transitionDelay: `${100 * index + 200}ms` }}>
                <Paper key={index} elevation={0} variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
