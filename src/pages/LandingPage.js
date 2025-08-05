@@ -297,7 +297,7 @@ const LandingPage = () => {
         <title>Lease Shield AI: Advanced AI Lease Analyzer & Contract Review | Understand Your Rental Agreement</title>
         <meta 
           name="description" 
-          content="Lease Shield AI uses advanced artificial intelligence to analyze your lease agreement in minutes. Understand complex clauses, identify risks, and review your rental contract like an expert. Get started free!" 
+          content="Lease Shield: Empowering renters with AI-driven lease review. Understand your rights, identify red flags, and sign with confidence. Our specialized AI analyzes rental agreements in minutes, explaining complex terms in plain language and protecting your interests as a tenant." 
         />
         <meta name="robots" content="index, follow" />
         <meta property="og:title" content="Lease Shield AI: Advanced AI Lease Analyzer & Contract Review" />
@@ -373,7 +373,7 @@ const LandingPage = () => {
                     fontSize: { xs: '1.1rem', md: '1.25rem' }
                   }}
                 >
-                  Lease Shield AI uses advanced artificial intelligence, specifically trained on legal documents, to analyze your rental agreement, identify potential issues, and explain complex terms in plain language.
+                  Lease Shield AI uses advanced artificial intelligence, specifically trained on legal documents, to analyze your rental agreement, identify potential issues, and explain complex terms in plain language. Our AI lease review technology empowers renters to understand their rights and make informed decisions about their rental agreements with confidence.
                 </Typography>
                 <Typography
                   variant="subtitle1"
@@ -713,6 +713,105 @@ const LandingPage = () => {
       </Box>
       {/* END Landlord Graph */}
 
+      {/* What is Lease Shield - Main Content Section */}
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={6} alignItems="center">
+            <Grid item xs={12} md={8}>
+              <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
+                What is Lease Shield AI?
+              </Typography>
+              <Typography variant="h6" paragraph sx={{ mb: 3, color: 'text.secondary', fontWeight: 'medium' }}>
+                Empowering renters with AI-driven lease review to understand your rights, identify red flags, and sign with confidence.
+              </Typography>
+              
+              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                Lease Shield AI is a revolutionary platform designed specifically for renters who want to understand their rental agreements before signing. Whether you're a first-time renter, experienced tenant, or property professional, our advanced artificial intelligence technology transforms complex legal documents into clear, actionable insights.
+              </Typography>
+
+              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                <strong>Who is Lease Shield for?</strong> Our AI lease review tool serves a diverse community of users. Students renting their first apartment can navigate complex terms with confidence. Families relocating to new cities can quickly assess multiple rental agreements. Real estate professionals can provide better service to their clients by identifying potential issues before they become problems. Property managers can ensure their lease agreements are fair and transparent, improving tenant satisfaction and reducing disputes.
+              </Typography>
+
+              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                <strong>The Problems We Solve:</strong> Traditional lease review is time-consuming, expensive, and often inaccessible. Many renters sign agreements without fully understanding their rights or obligations, leading to costly surprises later. Legal consultations can cost hundreds of dollars per hour, making professional review prohibitive for most tenants. Generic AI tools lack the specialized knowledge needed to properly analyze rental agreements, missing critical clauses that could impact your tenancy.
+              </Typography>
+
+              <Typography variant="body1" paragraph sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                <strong>How Lease Shield Works:</strong> Our AI has been specifically trained on thousands of lease agreements, learning to identify patterns, risks, and important clauses that matter most to renters. Simply upload your rental agreement in PDF format or paste the text directly into our platform. Within minutes, you'll receive a comprehensive analysis that highlights key terms, explains complex clauses in plain language, identifies potential red flags, and provides actionable recommendations. Our system handles documents up to 700 pages long and supports over 30 languages, making it accessible to renters worldwide.
+              </Typography>
+
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 4 }}>
+                <Chip 
+                  icon={<SecurityIcon />} 
+                  label="Your Rights Protected" 
+                  variant="outlined" 
+                  color="primary"
+                  size="medium"
+                />
+                <Chip 
+                  icon={<SpeedIcon />} 
+                  label="Results in Minutes" 
+                  variant="outlined" 
+                  color="primary"
+                  size="medium"
+                />
+                <Chip 
+                  icon={<GavelIcon />} 
+                  label="Legal Expertise" 
+                  variant="outlined" 
+                  color="primary"
+                  size="medium"
+                />
+                <Chip 
+                  icon={<LanguageIcon />} 
+                  label="30+ Languages" 
+                  variant="outlined" 
+                  color="primary"
+                  size="medium"
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Zoom in={true} timeout={800}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  gap: 3,
+                  p: 3,
+                  bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[800],
+                  borderRadius: 3,
+                  border: `1px solid ${theme.palette.divider}`
+                }}>
+                  <DescriptionIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
+                  <Typography variant="h6" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
+                    Trusted by Thousands
+                  </Typography>
+                  <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 2 }}>
+                    Join over 10,000 renters who have used Lease Shield AI to understand their rental agreements and protect their rights.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={handleGetStartedClick}
+                    sx={{
+                      borderRadius: '25px',
+                      px: 4,
+                      py: 1.5,
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {user ? 'Analyze Your Lease' : 'Start Free Analysis'}
+                  </Button>
+                </Box>
+              </Zoom>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+      {/* END What is Lease Shield Section */}
+
       {/* How It Works */}
       <Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 }, mb: { xs: 6, md: 10 } }}>
         <Typography variant="h3" component="h2" gutterBottom sx={{ mb: 5, textAlign: 'center' }}>
@@ -720,9 +819,9 @@ const LandingPage = () => {
         </Typography>
         <Grid container spacing={4}>
           {[ 
-             { title: 'Upload', desc: 'Securely upload your lease document (PDF or text). Your data is encrypted and confidential.', icon: <UploadFileIcon sx={{ fontSize: 30 }}/> }, 
-             { title: 'Analyze', desc: 'Our specialized AI reads every clause, identifying key terms, dates, and potential risks.', icon: <PsychologyIcon sx={{ fontSize: 30 }}/> }, 
-             { title: 'Review', desc: 'Get a clear, summarized report in plain language, highlighting areas needing attention.', icon: <ArticleOutlinedIcon sx={{ fontSize: 30 }}/> } 
+             { title: 'Upload Your Lease', desc: 'Securely upload your rental agreement in PDF format or paste the text directly. Our enterprise-grade encryption ensures your personal information remains confidential and protected throughout the analysis process.', icon: <UploadFileIcon sx={{ fontSize: 30 }}/> }, 
+             { title: 'AI Analysis', desc: 'Our specialized AI, trained on thousands of lease agreements, meticulously reads every clause, identifying key terms, important dates, rent escalation schedules, and potential risks that could affect your tenancy rights.', icon: <PsychologyIcon sx={{ fontSize: 30 }}/> }, 
+             { title: 'Understand Your Rights', desc: 'Receive a comprehensive report in plain language that explains complex legal terms, highlights potential red flags, and provides actionable recommendations to help you make informed decisions about your rental agreement.', icon: <ArticleOutlinedIcon sx={{ fontSize: 30 }}/> } 
            ].map((step, index) => (
              <Grid item xs={12} md={4} key={step.title}>
                <Zoom in={true} style={{ transitionDelay: `${200 * index}ms` }}>
@@ -1008,11 +1107,11 @@ const LandingPage = () => {
               <List sx={{ '& .MuiListItem-root': { alignItems: 'flex-start', pb: 2 } }}>
                 {
                   [
-                     { title: "Specifically Trained AI", text: "Unlike general AI, ours understands the nuances of lease agreements for superior accuracy.", icon: <PsychologyIcon color="primary" /> },
-                     { title: "Handles Extreme Length", text: "Confidently analyze documents up to 700 pages long, far exceeding many other tools.", icon: <DescriptionIcon color="primary" /> },
-                     { title: "Deep Contextual Understanding", text: "Goes beyond simple keyword searching to grasp the true meaning and implications of clauses.", icon: <CompareIcon color="primary" /> },
-                     { title: "Tenant Protection Focus", text: "Our analysis prioritizes identifying potential risks and unfavorable terms for renters.", icon: <SecurityIcon color="primary" /> },
-                     { title: "Multilingual Capabilities", text: "Analyze leases in over 30 languages with reliable translation and understanding.", icon: <LanguageIcon color="primary" /> }
+                     { title: "Specifically Trained AI", text: "Unlike general-purpose AI tools, Lease Shield has been specifically trained on thousands of rental agreements, understanding the unique legal language, common clauses, and potential issues that matter most to renters. This specialized training ensures superior accuracy in identifying risks and explaining your rights.", icon: <PsychologyIcon color="primary" /> },
+                     { title: "Handles Complex Documents", text: "Confidently analyze even the most comprehensive lease agreements up to 700 pages long, including commercial leases, multi-property agreements, and complex residential contracts that would overwhelm other analysis tools.", icon: <DescriptionIcon color="primary" /> },
+                     { title: "Deep Contextual Understanding", text: "Our AI goes far beyond simple keyword searching to grasp the true meaning, legal implications, and interconnected relationships between different clauses in your rental agreement, providing insights that protect your interests.", icon: <CompareIcon color="primary" /> },
+                     { title: "Renter Rights Protection", text: "Every analysis prioritizes your protection as a tenant, specifically identifying potentially unfavorable terms, hidden fees, unusual restrictions, and clauses that could limit your rights or increase your financial obligations.", icon: <SecurityIcon color="primary" /> },
+                     { title: "Global Accessibility", text: "Analyze lease agreements in over 30 languages with accurate translation and cultural understanding of local rental laws and practices, making our service accessible to renters worldwide.", icon: <LanguageIcon color="primary" /> }
                   ].map(item => (
                     <ListItem disableGutters key={item.title}>
                       <ListItemIcon sx={{ minWidth: 45, mt: 0.5 }} >{item.icon}</ListItemIcon>
