@@ -294,17 +294,17 @@ const LandingPage = () => {
       */}
 
       <Helmet>
-        <title>Lease Shield AI: Advanced AI Lease Analyzer & Contract Review | Understand Your Rental Agreement</title>
+        <title>Lease Shield AI: Expert AI Lease Analysis & Contract Review</title>
         <meta 
           name="description" 
-          content="Lease Shield: Empowering renters with AI-driven lease review. Understand your rights, identify red flags, and sign with confidence. Our specialized AI analyzes rental agreements in minutes, explaining complex terms in plain language and protecting your interests as a tenant." 
+          content="Get an expert AI lease analysis with Lease Shield. Our platform reviews your rental contract, identifies red flags, and explains complex terms so you can sign with confidence." 
         />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content="Lease Shield AI: Advanced AI Lease Analyzer & Contract Review" />
-        <meta property="og:description" content="Understand your lease agreement in minutes with AI-powered analysis. Identify risks, understand terms, and protect your rights." />
+        <meta property="og:title" content="Lease Shield AI: Expert AI Lease Analysis & Contract Review" />
+        <meta property="og:description" content="Get an expert AI lease analysis with Lease Shield. Our platform reviews your rental contract, identifies red flags, and explains complex terms so you can sign with confidence." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://leaseshield.eu" />
-        <link rel="canonical" href="https://leaseshield.eu" />
+        <meta property="og:url" content="https://leaseshield.eu/" />
+        <link rel="canonical" href="https://leaseshield.eu/" />
         {/* Add JSON-LD Schema */}
         <script type="application/ld+json">
           {JSON.stringify(softwareApplicationSchema)}
