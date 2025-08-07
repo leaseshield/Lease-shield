@@ -157,7 +157,7 @@ const Contact = () => {
                       <IconButton 
                         href="https://twitter.com/LeaseShieldAI" 
                         target="_blank" 
-                        rel="noopener noreferrer"
+                        rel="noopener noreferrer nofollow"
                         sx={{ color: 'text.secondary', '&:hover': { color: '#1DA1F2' } }}
                       >
                         <TwitterIcon />
@@ -165,7 +165,7 @@ const Contact = () => {
                       <IconButton 
                         href="https://instagram.com/leaseshield" 
                         target="_blank" 
-                        rel="noopener noreferrer"
+                        rel="noopener noreferrer nofollow"
                         sx={{ color: 'text.secondary', '&:hover': { color: '#E4405F' } }}
                       >
                         <InstagramIcon />
@@ -173,7 +173,7 @@ const Contact = () => {
                       <IconButton 
                         href="https://linkedin.com/company/lease-shield-ai" 
                         target="_blank" 
-                        rel="noopener noreferrer"
+                        rel="noopener noreferrer nofollow"
                         sx={{ color: 'text.secondary', '&:hover': { color: '#0077B5' } }}
                       >
                         <LinkedInIcon />

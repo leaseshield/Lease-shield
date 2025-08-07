@@ -296,14 +296,14 @@ const LandingPage = () => {
       */}
 
       <Helmet>
-        <title>Lease Shield AI: Fast Lease Analysis & Review</title>
+        <title>Lease Shield AI: Fast Lease Review & Legal Analysis</title>
         <meta 
           name="description" 
-          content="Analyze your lease in minutes. Spot risks, understand clauses, and negotiate better terms with Lease Shield AI." 
+          content="Instantly analyze your lease, detect legal risks, and negotiate better terms using AI tools from Lease Shield." 
         />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content="Lease Shield AI: Lease Analysis & Review" />
-        <meta property="og:description" content="Analyze your lease in minutes. Spot risks, understand clauses, and negotiate better terms with Lease Shield AI." />
+        <meta property="og:title" content="Lease Shield AI: Fast Lease Review & Legal Analysis" />
+        <meta property="og:description" content="Instantly analyze your lease, detect legal risks, and negotiate better terms using AI tools from Lease Shield." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://leaseshield.eu/" />
         {/* Canonical is handled globally in Layout */}

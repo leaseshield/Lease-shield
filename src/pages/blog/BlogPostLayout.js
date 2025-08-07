@@ -27,6 +27,8 @@ const BlogPostLayout = ({ children, title, description }) => {
       <Helmet>
         <title>{title} | Lease Shield AI Blog</title>
         <meta name="description" content={description} />
+        <meta property="og:title" content={`${title} | Lease Shield AI Blog`} />
+        <meta property="og:description" content={description} />
       </Helmet>
       
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
@@ -53,6 +55,21 @@ const BlogPostLayout = ({ children, title, description }) => {
               <Typography variant="h1" component="h1" gutterBottom sx={{ fontSize: { xs: '2rem', md: '2.5rem' }, fontWeight: 'bold' }}>
                 {title}
               </Typography>
+              {/* Promote YouTube channel when applicable */}
+              <Box sx={{ my: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Watch more tips on our YouTube channel
+                </Typography>
+                <iframe
+                  title="Lease Shield AI YouTube"
+                  width="100%"
+                  height="315"
+                  src="https://www.youtube.com/embed?listType=user_uploads&list=leaseshield"
+                  style={{ border: 0, borderRadius: 8 }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </Box>
               {children}
             </Box>
           </Grid>
@@ -74,6 +91,20 @@ const BlogPostLayout = ({ children, title, description }) => {
                   );
                 })}
               </List>
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="overline" color="text.secondary">Related resources</Typography>
+                <List dense>
+                  <ListItemButton component={RouterLink} to="/blog/understanding-common-clauses">
+                    <ListItemText primary="Understanding Common Clauses" />
+                  </ListItemButton>
+                  <ListItemButton component={RouterLink} to="/blog/lease-red-flags">
+                    <ListItemText primary="Lease Red Flags" />
+                  </ListItemButton>
+                  <ListItemButton component={RouterLink} to="/pricing">
+                    <ListItemText primary="Lease Shield AI Pricing" />
+                  </ListItemButton>
+                </List>
+              </Box>
             </Box>
           </Grid>
         </Grid>

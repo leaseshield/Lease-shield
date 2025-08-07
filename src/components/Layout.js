@@ -358,7 +358,7 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
         <Container maxWidth="lg">
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 3 }}>
             {/* Left side - Company info and contact */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Lease Shield AI
               </Typography>
@@ -378,12 +378,14 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
                 </MuiLink>
               </Box>
               
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <LocationIcon fontSize="small" color="action" />
-                <Typography variant="body2" color="text.secondary">
-                  Amsterdam, Netherlands
-                </Typography>
-              </Box>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                  <LocationIcon fontSize="small" color="action" />
+                  <Typography variant="body2" color="text.secondary">
+                    Lease Shield AI B.V.<br />
+                    Science Park 123,<br />
+                    1098 XG Amsterdam, Netherlands
+                  </Typography>
+                </Box>
               
               <Typography variant="body2" color="text.secondary">
                 © {new Date().getFullYear()} Lease Shield AI
@@ -410,7 +412,7 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
                 <IconButton 
                   href="https://www.facebook.com/leaseshield" 
                   target="_blank" 
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   size="small"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#1877F2' } }}
                 >
@@ -419,7 +421,7 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
                 <IconButton 
                   href="https://twitter.com/LeaseShieldAI" 
                   target="_blank" 
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   size="small"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#1DA1F2' } }}
                 >
@@ -428,7 +430,7 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
                 <IconButton 
                   href="https://instagram.com/leaseshield" 
                   target="_blank" 
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   size="small"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#E4405F' } }}
                 >
@@ -437,7 +439,7 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
                 <IconButton 
                   href="https://linkedin.com/company/lease-shield-ai" 
                   target="_blank" 
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   size="small"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#0077B5' } }}
                 >
@@ -446,7 +448,7 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
                 <IconButton 
                   href="https://www.youtube.com/@leaseshield" 
                   target="_blank" 
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   size="small"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#FF0000' } }}
                 >
