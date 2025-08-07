@@ -245,94 +245,73 @@ def extract_pdf_text(file_stream):
 
 # Analyze lease with Gemini
 def analyze_lease(text):
-    # Refined prompt for stricter JSON output and specific keys
-    prompt = f"""
+    """Analyze lease text using Gemini 2.5 Pro with a double-pass JSON correction step."""
+    base_prompt = f"""
     Analyze the following lease document. Extract the specified information and format the output ONLY as a single JSON object. 
-    Do not include any text before or after the JSON object (e.g., no ```json markdown).
-    The JSON object must have the following top-level keys: 'extracted_data', 'clause_summaries', 'risks', and 'score'.
-    
-    1.  **extracted_data**: An object containing these exact keys. If a value cannot be found, use the string "Not Found".
-        -   `Landlord_Name`: Full name of the landlord/lessor.
-        -   `Tenant_Name`: Full name of the tenant/lessee.
-        -   `Property_Address`: Full address of the leased property.
-        -   `Lease_Start_Date`: The exact start date of the lease term.
-        -   `Lease_End_Date`: The exact end date of the lease term.
-        -   `Monthly_Rent_Amount`: The numerical value of the monthly rent (e.g., "$1500" or "1500").
-        -   `Rent_Due_Date`: The day or date rent is due each month (e.g., "1st of the month", "5th").
-        -   `Security_Deposit_Amount`: The numerical value of the security deposit.
-        -   `Lease_Term`: The lease term in months (e.g., "12").
+    Do not include any text before or after the JSON object (no markdown fences).
+    The JSON object must have these top-level keys: 'extracted_data', 'clause_summaries', 'risks', and 'score'.
 
-    2.  **clause_summaries**: An object summarizing the following clauses. Use the exact key names provided. If a clause is not present, omit the key or use "Not Found".
-        -   `Termination_Clause`: Summary of how the lease can be terminated by either party.
-        -   `Pet_Policy`: Summary of rules regarding pets.
-        -   `Subletting_Policy`: Summary of rules regarding subletting.
-        -   `Maintenance_Responsibilities`: Summary of who is responsible for repairs/maintenance (landlord/tenant).
-        -   `Late_Fee_Policy`: Summary of penalties for late rent payments.
-        -   `Renewal_Options`: Summary of options or procedures for lease renewal.
+    1. extracted_data: An object with these exact keys. If a value cannot be found, use the string "Not Found".
+       - Landlord_Name
+       - Tenant_Name
+       - Property_Address
+       - Lease_Start_Date
+       - Lease_End_Date
+       - Monthly_Rent_Amount
+       - Rent_Due_Date
+       - Security_Deposit_Amount
+       - Lease_Term
 
-    3.  **risks**: An array of strings, where each string describes an unusual or potentially unfavorable clause for the tenant. If no risks are found, return an empty array [].
-    
-    4.  **score**: An integer score from 0 (very unfavorable for tenant) to 100 (very favorable for tenant), based on the number and severity of unfavorable clauses identified in 'risks'.
-    
+    2. clause_summaries: Summarize these clauses using the exact key names (omit if not present or use "Not Found").
+       - Termination_Clause
+       - Pet_Policy
+       - Subletting_Policy
+       - Maintenance_Responsibilities
+       - Late_Fee_Policy
+       - Renewal_Options
+
+    3. risks: Array of strings describing unusual or unfavorable clauses. Return [] if none.
+
+    4. score: Integer from 0 (unfavorable) to 100 (favorable), based on number and severity of risks.
+
     Lease Document Text:
-    --- START --- 
+    --- START ---
     {text}
-    --- END --- 
-    
-    Output ONLY the JSON object.
+    --- END ---
+
+    Output ONLY the JSON.
     """
-    
-    last_error = None # Store the last error encountered
 
-    # Iterate through the available API keys
-    for i, api_key in enumerate(gemini_api_keys):
-        print(f"Attempting Gemini analysis with API key #{i+1}")
+    try:
+        # Pass 1 (Pro, lower temperature for precision)
+        model_pass1 = get_gemini_model(model_name='gemini-2.5-pro', temperature=0.2)
+        resp1 = model_pass1.generate_content(base_prompt)
+        cleaned1 = (resp1.text or '').strip().lstrip('```json').rstrip('```').strip()
+
+        # Try to parse
         try:
-            # Configure GenAI with the current key for this attempt
-            genai.configure(api_key=api_key)
-            # Initialize the model (consider model name from env var if needed)
-            # Use a valid Gemini model name (defaulting to the same one as get_gemini_model)
-            model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20') 
-            
-            response = model.generate_content(prompt)
-            
-            # Attempt to clean and parse the response
-            cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
-            print(f"Gemini analysis successful with API key #{i+1}")
-            return cleaned_text # Success!
-            
-        except PermissionDenied as e:
-            # Check if it's specifically an invalid API key error
-            # The error message might vary, adjust string check if needed
-            if "API key not valid" in str(e) or "invalid" in str(e).lower():
-                print(f"Warning: Gemini API key #{i+1} failed (Invalid Key): {e}")
-                last_error = e # Store the error
-                continue # Try the next key
-            else:
-                # Different permission error (e.g., API not enabled for project)
-                print(f"Gemini API Permission Error (key #{i+1}): {e}")
-                last_error = e
-                break # Don't retry with other keys for non-key-related permission issues
-                
-        except GoogleAPIError as e: # Catch other Google API errors
-            print(f"Gemini API Error (key #{i+1}): {e}")
-            last_error = e
-            # Decide whether to retry on other errors (e.g., rate limits?) 
-            # For now, let's stop on most API errors other than invalid key.
-            break 
-            
-        except Exception as e:
-            # Catch any other unexpected errors during configuration or generation
-            print(f"Unexpected Error during Gemini analysis (key #{i+1}): {e}")
-            last_error = e
-            break # Stop on unexpected errors
+            json.loads(cleaned1)
+            return cleaned1
+        except Exception:
+            pass
 
-    # If the loop finished without returning, all keys failed
-    print(f"Gemini analysis failed after trying {len(gemini_api_keys)} key(s).")
-    if last_error:
-        print(f"Last error encountered: {last_error}")
-    # You could potentially return the last_error object or a specific message
-    return None
+        # Pass 2 (Refinement) - ask model to strictly fix JSON
+        refine_prompt = f"""
+        The following was intended to be a single strict JSON object response but may contain formatting issues or extra commentary.
+        Return ONLY a corrected JSON object that strictly adheres to the schema described earlier.
+        If any fields are missing, include them with the value "Not Found" where appropriate.
+        Response to correct:
+        ---
+        {cleaned1}
+        ---
+        """
+        model_pass2 = get_gemini_model(model_name='gemini-2.5-pro', temperature=0.1)
+        resp2 = model_pass2.generate_content(refine_prompt)
+        cleaned2 = (resp2.text or '').strip().lstrip('```json').rstrip('```').strip()
+        return cleaned2
+    except Exception as e:
+        print(f"analyze_lease error: {e}")
+        return None
 
 def analyze_compliance(new_lease_text, master_template_text):
     """
@@ -612,7 +591,7 @@ def ai_chat():
         base_model_key = 'gemini-2.5-pro'
         use_refinement = True
 
-    model_id_to_use = MODEL_MAP.get(base_model_key, 'gemini-2.5-flash-preview-05-20')
+    model_id_to_use = MODEL_MAP.get(base_model_key, 'gemini-2.5-pro')
     print(f"Chat request using model: {model_id_to_use} (alias {requested_model}), refinement={use_refinement}")
 
     # --- Prompt Construction ---

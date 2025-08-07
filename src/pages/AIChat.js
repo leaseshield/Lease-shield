@@ -58,15 +58,15 @@ const modelGroups = {
     {
       value: 'gemini-2.5-pro',
       label: '2.5 Pro',
-      description: 'Advanced reasoning for demanding tasks (coming soon).',
-      refinement: false,
-      available: false, // Coming soon
+      description: 'Advanced reasoning for demanding tasks.',
+      refinement: true,
+      available: true,
     },
     {
       value: 'gemini-2.5-fly',
       label: '2.5 Fly (Enhanced)',
-      description: 'Creative double-pass system for nuanced responses.',
-      refinement: true, // This will now trigger the special 3-pass logic
+      description: 'Creative triple-pass synthesis for nuanced responses.',
+      refinement: true,
       baseModel: 'gemini-2.5-flash',
       available: true,
     },

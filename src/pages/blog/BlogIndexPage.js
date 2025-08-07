@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { motion } from 'framer-motion';
 import {
   Container,
   Typography,
@@ -62,8 +63,9 @@ const BlogIndexPage = () => {
         Lease Shield AI Blog
       </Typography>
       <Grid container spacing={3}>
-        {blogPosts.map((post) => (
+        {blogPosts.map((post, idx) => (
           <Grid item xs={12} sm={6} md={4} key={post.slug}>
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: idx * 0.05 }}>
             <Card sx={{ height: '100%', borderRadius: 3, overflow: 'hidden' }}>
               <CardActionArea component={RouterLink} to={`/blog/${post.slug}`} sx={{ height: '100%' }}>
                 <CardMedia
@@ -90,6 +92,7 @@ const BlogIndexPage = () => {
                 </CardContent>
               </CardActionArea>
             </Card>
+            </motion.div>
           </Grid>
         ))}
       </Grid>

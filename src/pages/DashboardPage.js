@@ -20,6 +20,7 @@ import {
   Divider,
   Button
 } from '@mui/material';
+import { motion } from 'framer-motion';
 import { 
     Dashboard as DashboardIcon,
     Description as DescriptionIcon,
@@ -195,6 +196,7 @@ const DashboardPage = () => {
       <Grid container spacing={3}>
         {/* Leases Card */}
         <Grid item xs={12} md={4}>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>
           <Card>
             <CardHeader 
                 avatar={<DescriptionIcon />} 
@@ -218,10 +220,12 @@ const DashboardPage = () => {
               )}
             </CardContent>
           </Card>
+          </motion.div>
         </Grid>
 
         {/* Inspections Card */}
         <Grid item xs={12} md={4}>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.1 }}>
           <Card>
             <CardHeader avatar={<CameraAltIcon />} title="Recent Inspections" />
             <CardContent>
@@ -242,10 +246,12 @@ const DashboardPage = () => {
               )}
             </CardContent>
           </Card>
+          </motion.div>
         </Grid>
 
         {/* Expenses Card */}
         <Grid item xs={12} md={4}>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.2 }}>
           <Card>
             <CardHeader avatar={<ReceiptLongIcon />} title="Recent Expenses" />
             <CardContent>
@@ -266,6 +272,7 @@ const DashboardPage = () => {
               )}
             </CardContent>
           </Card>
+          </motion.div>
         </Grid>
       </Grid>
     </Container>
