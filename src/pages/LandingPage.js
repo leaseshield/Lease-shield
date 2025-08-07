@@ -425,10 +425,10 @@ const LandingPage = () => {
       {/* NEW: Landlord Efficiency Comparison Graph */}
       <Box sx={{ 
         py: { xs: 6, md: 8 }, 
-        bgcolor: 'background.paper',
+        bgcolor: 'transparent',
       }}>
         <Container maxWidth="lg">
-          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
+          <Paper elevation={0} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, background: theme.palette.gradients.soft, border: '1px solid', borderColor: theme.palette.divider }}>
            <Typography variant="h3" component="h2" align="center" gutterBottom sx={{ fontWeight: 'bold', mb: 1 }}>
              Faster, More Accurate Tenant Matching
            </Typography>
@@ -441,8 +441,8 @@ const LandingPage = () => {
                 { label: 'Time to Find Suitable Tenant', traditional: 14, ai: 3, unit: 'days' },
                 { label: 'Tenant Suitability Match Rate', traditional: 70, ai: 95, unit: '%' },
               ].map((metric, index) => (
-                <Grid item xs={10} sm={5} md={4} key={metric.label}>
-                  <Paper elevation={2} sx={{ p: 3, borderRadius: 2, textAlign: 'center', height: '100%' }}>
+                <Grid item xs={12} sm={6} md={4} key={metric.label} sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <Paper elevation={2} sx={{ p: 3, borderRadius: 4, textAlign: 'center', height: '100%', width: '100%', maxWidth: 300 }}>
                     <Typography variant="h6" gutterBottom>{metric.label}</Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', height: 150, mt: 2, mb: 1 }}>
                       {/* Traditional Bar */} 
@@ -498,100 +498,85 @@ const LandingPage = () => {
       {/* END Landlord Graph */}
 
       {/* What is Lease Shield - Main Content Section */}
-      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
+      <Box sx={{ py: { xs: 8, md: 10 } }}>
         <Container maxWidth="lg">
-          <Grid container spacing={6} alignItems="center">
-            <Grid item xs={12} md={8}>
-              <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
-                What is Lease Shield AI?
+          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, sm: 3, md: 5 }, borderRadius: 5, borderColor: theme.palette.divider }}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+              What is Lease Shield AI?
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 800, mx: 'auto' }}>
+              Empowering renters with AI-driven lease review to understand your rights, identify red flags, and sign with confidence.
+            </Typography>
+          </Box>
+          
+          <Grid container spacing={4} sx={{ mb: 6 }}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1rem', lineHeight: 1.6 }}>
+                <strong>Who is Lease Shield for?</strong> Our AI lease review tool serves students renting their first apartment, families relocating to new cities, and real estate professionals who want to provide better service to their clients.
               </Typography>
-              <Typography variant="h6" paragraph sx={{ mb: 3, color: 'text.secondary', fontWeight: 'medium' }}>
-                Empowering renters with AI-driven lease review to understand your rights, identify red flags, and sign with confidence.
+              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1rem', lineHeight: 1.6 }}>
+                <strong>The Problems We Solve:</strong> Traditional lease review is time-consuming, expensive, and often inaccessible. Many renters sign agreements without fully understanding their rights or obligations.
               </Typography>
-              
-              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                Lease Shield AI is a revolutionary platform designed specifically for renters who want to understand their rental agreements before signing. Whether you're a first-time renter, experienced tenant, or property professional, our advanced artificial intelligence technology transforms complex legal documents into clear, actionable insights.
-              </Typography>
-
-              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                <strong>Who is Lease Shield for?</strong> Our AI lease review tool serves a diverse community of users. Students renting their first apartment can navigate complex terms with confidence. Families relocating to new cities can quickly assess multiple rental agreements. Real estate professionals can provide better service to their clients by identifying potential issues before they become problems. Property managers can ensure their lease agreements are fair and transparent, improving tenant satisfaction and reducing disputes.
-              </Typography>
-
-              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                <strong>The Problems We Solve:</strong> Traditional lease review is time-consuming, expensive, and often inaccessible. Many renters sign agreements without fully understanding their rights or obligations, leading to costly surprises later. Legal consultations can cost hundreds of dollars per hour, making professional review prohibitive for most tenants. Generic AI tools lack the specialized knowledge needed to properly analyze rental agreements, missing critical clauses that could impact your tenancy.
-              </Typography>
-
-              <Typography variant="body1" paragraph sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                <strong>How Lease Shield Works:</strong> Our AI has been specifically trained on thousands of lease agreements, learning to identify patterns, risks, and important clauses that matter most to renters. Simply upload your rental agreement in PDF format or paste the text directly into our platform. Within minutes, you'll receive a comprehensive analysis that highlights key terms, explains complex clauses in plain language, identifies potential red flags, and provides actionable recommendations. Our system handles documents up to 700 pages long and supports over 30 languages, making it accessible to renters worldwide.
-              </Typography>
-
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 4 }}>
-                <Chip 
-                  icon={<SecurityIcon />} 
-                  label="Your Rights Protected" 
-                  variant="outlined" 
-                  color="primary"
-                  size="medium"
-                />
-                <Chip 
-                  icon={<SpeedIcon />} 
-                  label="Results in Minutes" 
-                  variant="outlined" 
-                  color="primary"
-                  size="medium"
-                />
-                <Chip 
-                  icon={<GavelIcon />} 
-                  label="Legal Expertise" 
-                  variant="outlined" 
-                  color="primary"
-                  size="medium"
-                />
-                <Chip 
-                  icon={<LanguageIcon />} 
-                  label="30+ Languages" 
-                  variant="outlined" 
-                  color="primary"
-                  size="medium"
-                />
-              </Box>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Zoom in={true} timeout={800}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  gap: 3,
-                  p: 3,
-                  bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[800],
-                  borderRadius: 3,
-                  border: `1px solid ${theme.palette.divider}`
-                }}>
-                  <DescriptionIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
-                  <Typography variant="h6" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    Trusted by Thousands
-                  </Typography>
-                  <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 2 }}>
-                    Join over 10,000 renters who have used Lease Shield AI to understand their rental agreements and protect their rights.
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={handleGetStartedClick}
-                    sx={{
-                      borderRadius: '25px',
-                      px: 4,
-                      py: 1.5,
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {user ? 'Analyze Your Lease' : 'Start Free Analysis'}
-                  </Button>
-                </Box>
-              </Zoom>
+            <Grid item xs={12} md={6}>
+              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1rem', lineHeight: 1.6 }}>
+                <strong>How Lease Shield Works:</strong> Our AI has been specifically trained on thousands of lease agreements. Simply upload your rental agreement and receive a comprehensive analysis within minutes.
+              </Typography>
+              <Typography variant="body1" paragraph sx={{ mb: 3, fontSize: '1rem', lineHeight: 1.6 }}>
+                <strong>Advanced Features:</strong> Our system handles documents up to 700 pages long and supports over 30 languages, making it accessible to renters worldwide.
+              </Typography>
             </Grid>
           </Grid>
+
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center', mb: 4 }}>
+            <Chip 
+              icon={<SecurityIcon />} 
+              label="Your Rights Protected" 
+              variant="outlined" 
+              color="primary"
+              size="medium"
+            />
+            <Chip 
+              icon={<SpeedIcon />} 
+              label="Results in Minutes" 
+              variant="outlined" 
+              color="primary"
+              size="medium"
+            />
+            <Chip 
+              icon={<GavelIcon />} 
+              label="Legal Expertise" 
+              variant="outlined" 
+              color="primary"
+              size="medium"
+            />
+            <Chip 
+              icon={<LanguageIcon />} 
+              label="30+ Languages" 
+              variant="outlined" 
+              color="primary"
+              size="medium"
+            />
+          </Box>
+
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleGetStartedClick}
+              sx={{
+                borderRadius: '25px',
+                px: 6,
+                py: 2,
+                fontWeight: 'bold',
+                fontSize: '1.1rem'
+              }}
+            >
+              {user ? 'Analyze Your Lease' : 'Start Free Analysis'}
+            </Button>
+          </Box>
+          </Paper>
         </Container>
       </Box>
       {/* END What is Lease Shield Section */}
@@ -645,7 +630,7 @@ const LandingPage = () => {
         }}
       >
         <Container maxWidth="lg">
-        <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
+        <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 8, borderColor: theme.palette.divider }}>
           <Grid container spacing={6} alignItems="center">
              {/* Image/Mockup Placeholder (Left Side) - Now using an icon */}
             <Grid item xs={12} md={6}>
@@ -709,7 +694,7 @@ const LandingPage = () => {
       {/* --- START: Tenant Matcher Detail Section --- */}
       <Box id="tenant-matcher-detail" sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
         <Container maxWidth="lg">
-          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
+          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 8, borderColor: theme.palette.divider }}>
            {/* Reverse order for visual variation: Text Left, Image Right */}
           <Grid container spacing={6} alignItems="center" direction={{ xs: 'column-reverse', md: 'row' }}>
              {/* Text Content (Left Side) */}
@@ -884,7 +869,7 @@ const LandingPage = () => {
       {/* Why Choose Us Section */}
       <Box sx={{ py: { xs: 6, md: 10 }, mb: { xs: 6, md: 10 } }}>
         <Container maxWidth="lg">
-          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
+          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 8, borderColor: theme.palette.divider }}>
           <Typography variant="h3" component="h2" gutterBottom sx={{ mb: 5, textAlign: 'center' }}>
             The Lease Shield AI Advantage
           </Typography>
@@ -932,7 +917,7 @@ const LandingPage = () => {
         </Typography>
         <Grid container spacing={3}>
           {advancedFeatures.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid item xs={12} sm={6} md={3} key={index}>
               <Zoom in={true} style={{ transitionDelay: `${150 * index + 300}ms` }}>
                 <Paper
                   elevation={0}
@@ -943,6 +928,7 @@ const LandingPage = () => {
                     alignItems: 'flex-start',
                     borderRadius: 3,
                     height: '100%',
+                    minHeight: 160,
                     transition: theme.transitions.create(['border-color', 'box-shadow', 'background-color'], {
                         duration: theme.transitions.duration.short,
                         easing: theme.transitions.easing.easeInOut,
@@ -981,8 +967,8 @@ const LandingPage = () => {
         </Grid>
       </Container>
 
-      {/* Comparison Section */}
-       <Box sx={{ bgcolor: theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[900], py: { xs: 6, md: 10 }, mb: { xs: 6, md: 10 } }}>
+       {/* Comparison Section */}
+       <Box sx={{ py: { xs: 6, md: 10 }, mb: { xs: 6, md: 10 } }}>
         <Container maxWidth="lg">
           <Typography variant="h3" component="h2" gutterBottom sx={{ mb: 1, textAlign: 'center' }}>
              A Smarter Alternative
@@ -992,7 +978,7 @@ const LandingPage = () => {
            </Typography>
           
           <Fade in={true} timeout={1000} style={{ transitionDelay: '300ms' }}>
-            <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, borderColor: theme.palette.divider }}>
+            <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 8, borderColor: theme.palette.divider, background: theme.palette.gradients.soft }}>
               <Grid container sx={{ display: { xs: 'none', md: 'flex' } }}>
                 <Grid item md={4} />
                 <Grid item md={4}>
@@ -1096,13 +1082,14 @@ const LandingPage = () => {
        <Box sx={{ py: { xs: 6, md: 10 } }}>
         <Container maxWidth="md">
           <Paper
-            elevation={6}
+            elevation={8}
             sx={{
               p: { xs: 4, sm: 6 },
               borderRadius: 4,
-              bgcolor: 'primary.main',
+              bgcolor: 'primary.dark',
               color: 'white',
               textAlign: 'center',
+              background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
             }}
           >
               <Typography variant="h3" gutterBottom sx={{ fontWeight: 700 }}>

@@ -70,7 +70,11 @@ const buildTheme = (mode) => createTheme({
       primary: mode === 'dark' ? '#E5E7EB' : '#1F2937',
       secondary: mode === 'dark' ? '#94A3B8' : '#4B5563',
     },
-    divider: mode === 'dark' ? 'rgba(148,163,184,0.2)' : 'rgba(2,6,23,0.12)'
+    divider: mode === 'dark' ? 'rgba(148,163,184,0.2)' : 'rgba(2,6,23,0.12)',
+    gradients: {
+      primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      soft: 'linear-gradient(135deg, rgba(102,126,234,0.12) 0%, rgba(240,147,251,0.12) 100%)',
+    }
   },
   typography: {
     fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"',
@@ -119,7 +123,37 @@ const buildTheme = (mode) => createTheme({
       }
     },
     MuiPaper: { styleOverrides: { root: { borderRadius: 16 } } },
-    MuiContainer: { styleOverrides: { root: { scrollBehavior: 'smooth' } } }
+    MuiContainer: { styleOverrides: { root: { scrollBehavior: 'smooth' } } },
+    MuiTableContainer: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 50%, rgba(240, 147, 251, 0.03) 100%)',
+          border: '1px solid rgba(99, 102, 241, 0.1)',
+        }
+      }
+    },
+    MuiTable: {
+      styleOverrides: {
+        root: {
+          '& .MuiTableHead-root': {
+            '& .MuiTableCell-root': {
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
+              fontWeight: 600,
+              color: '#6366F1',
+              borderBottom: '2px solid rgba(99, 102, 241, 0.2)'
+            }
+          },
+          '& .MuiTableBody-root': {
+            '& .MuiTableRow-root': {
+              '&:hover': {
+                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+              }
+            }
+          }
+        }
+      }
+    }
   }
 });
 
@@ -436,7 +470,7 @@ function App() {
             } />
             <Route path="/ai-chat" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout maxWidth={false}>
                   <AIChat />
                 </Layout>
               </ProtectedRoute>

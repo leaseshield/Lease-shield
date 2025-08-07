@@ -71,7 +71,7 @@ const ColorModeToggle = () => {
   );
 };
 
-const Layout = ({ children, showAuthButtons = false }) => {
+const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
   const navigate = useNavigate();
   const { user, loading } = useAuthState();
   const theme = useTheme();
@@ -145,13 +145,17 @@ const Layout = ({ children, showAuthButtons = false }) => {
     // Add more groups here as needed
   ];
 
+  const handleDrawerToggle = () => {
+    setDrawerOpen(false);
+  };
+
   const drawer = (
     <Box sx={{ width: 250 }} role="presentation">
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h6" component="div">
           Lease Shield AI
         </Typography>
-        <IconButton onClick={() => setDrawerOpen(false)}>
+        <IconButton onClick={handleDrawerToggle}>
           <ChevronRight />
         </IconButton>
       </Box>
@@ -175,7 +179,7 @@ const Layout = ({ children, showAuthButtons = false }) => {
                 <ListItemButton 
                   component={RouterLink} 
                   to={item.path} 
-                  onClick={() => setDrawerOpen(false)}
+                  onClick={handleDrawerToggle}
                   sx={{ borderRadius: 1 }}
                 >
                   <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
@@ -218,7 +222,7 @@ const Layout = ({ children, showAuthButtons = false }) => {
               color="inherit"
               aria-label="menu"
               sx={{ mr: 2 }}
-              onClick={() => setDrawerOpen(true)}
+              onClick={() => setDrawerOpen(!drawerOpen)}
             >
               <MenuIcon />
             </IconButton>
@@ -323,12 +327,15 @@ const Layout = ({ children, showAuthButtons = false }) => {
       <Drawer
         anchor="left"
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
       >
         {drawer}
       </Drawer>
       
-      <Container component="main" sx={{ flexGrow: 1, py: 4 }}>
+      <Container component="main" maxWidth={maxWidth} sx={{ flexGrow: 1, py: 4 }}>
         {/* Pass showSnackbar down to children */}
         {/* Use React.cloneElement to add props to children */}
         {React.Children.map(children, child => {

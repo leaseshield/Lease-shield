@@ -38,9 +38,6 @@ const BentoFeaturesGrid = () => {
       description: 'Upload a lease document (PDF/TXT) or paste text to get an AI-powered breakdown of clauses, risks, and key terms in minutes.',
       icon: <DescriptionIcon sx={{ fontSize: 40 }} />,
       link: '/analysis',
-      span: 2,
-      tall: true,
-      gradient: true,
       stats: '98.5% Accuracy',
       features: ['Risk Detection', 'Plain Language', 'Instant Analysis'],
       color: '#667eea'
@@ -51,7 +48,6 @@ const BentoFeaturesGrid = () => {
       description: 'Upload property details or tenant preferences and let our AI pinpoint ideal matches.',
       icon: <HomeWorkIcon sx={{ fontSize: 40 }} />,
       link: '/real-estate-agent',
-      span: 1,
       stats: '95% Match Rate',
       features: ['Smart Matching', 'Preference Analysis'],
       color: '#f093fb'
@@ -62,7 +58,6 @@ const BentoFeaturesGrid = () => {
       description: 'Estimate costs, compare scenarios, and understand financial implications.',
       icon: <CalculateIcon sx={{ fontSize: 40 }} />,
       link: '/calculator',
-      span: 1,
       stats: 'Save 40% Time',
       features: ['Cost Estimation', 'Scenario Comparison'],
       color: '#43e97b'
@@ -72,9 +67,7 @@ const BentoFeaturesGrid = () => {
       title: 'Expense Scanner',
       description: 'Upload receipts or invoices to automatically extract details and categorize expenses.',
       icon: <ReceiptLongIcon sx={{ fontSize: 40 }} />,
-      link: '/expenses',
-      span: 1,
-      tall: true,
+      link: '/expense-scanner',
       stats: '99% OCR Accuracy',
       features: ['Auto-Extract', 'Smart Categories', 'Export Ready'],
       color: '#ffa726'
@@ -84,8 +77,7 @@ const BentoFeaturesGrid = () => {
       title: 'Photo Inspector',
       description: 'Upload property photos to detect issues and estimate repair costs instantly.',
       icon: <CameraAltIcon sx={{ fontSize: 40 }} />,
-      link: '/inspection',
-      span: 2,
+      link: '/photo-inspection',
       stats: 'Instant Reports',
       features: ['Issue Detection', 'Cost Estimation', 'Annotated Reports'],
       color: '#42a5f5'
@@ -156,160 +148,41 @@ const BentoFeaturesGrid = () => {
       </Box>
 
       {/* Main Bento Grid */}
-      <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, mb: 8 }}>
+      <Box sx={{ maxWidth: 1060, mx: 'auto', px: 2, mb: 8 }}>
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
             gap: 3,
-            gridAutoRows: 'minmax(200px, auto)',
+            justifyItems: 'stretch',
+            alignItems: 'stretch'
           }}
         >
           {coreModules.map((module, index) => (
             <BentoGridItem
               key={module.id}
-              span={isMobile ? 1 : module.span}
-              tall={module.tall && !isMobile}
-              gradient={module.gradient}
               index={index}
               onMouseEnter={() => setHoveredItem(module.id)}
               onMouseLeave={() => setHoveredItem(null)}
               onClick={() => handleModuleClick(module.link)}
-              sx={{ cursor: 'pointer' }}
+              sx={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', borderRadius: 3 }}
             >
-              <Box sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                {/* Background decoration */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -50,
-                    right: -50,
-                    width: 100,
-                    height: 100,
-                    borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${module.color}22 0%, ${module.color}11 100%)`,
-                    opacity: hoveredItem === module.id ? 1 : 0.5,
-                    transition: 'opacity 0.3s ease',
-                  }}
-                />
-
-                {/* Header */}
-                <Box sx={{ mb: 2, position: 'relative', zIndex: 1 }}>
-                  <Avatar
-                    sx={{
-                      bgcolor: module.color,
-                      mb: 2,
-                      width: 56,
-                      height: 56,
-                      '& svg': { fontSize: 28 }
-                    }}
-                  >
-                    {module.icon}
-                  </Avatar>
-                  
-                  <Typography 
-                    variant="h6" 
-                    component="h3" 
-                    gutterBottom 
-                    sx={{ 
-                      fontWeight: 'bold',
-                      fontSize: '1.1rem'
-                    }}
-                  >
-                    {module.title}
-                  </Typography>
-
-                  <Chip
-                    icon={<StarIcon fontSize="small" />}
-                    label={module.stats}
-                    size="small"
-                    sx={{
-                      bgcolor: `${module.color}22`,
-                      color: module.color,
-                      fontWeight: 'bold',
-                      '& .MuiChip-icon': { color: module.color }
-                    }}
-                  />
-                </Box>
-
-                {/* Content */}
-                <Box sx={{ flex: 1, mb: 2 }}>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
-                    sx={{ 
-                      mb: 2,
-                      lineHeight: 1.6
-                    }}
-                  >
-                    {module.description}
-                  </Typography>
-
-                  {/* Features list */}
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-                    {module.features.map((feature, idx) => (
-                      <Chip
-                        key={idx}
-                        label={feature}
-                        size="small"
-                        variant="outlined"
-                        sx={{
-                          fontSize: '0.7rem',
-                          height: 24,
-                          borderColor: `${module.color}44`,
-                          color: 'text.secondary',
-                          '&:hover': {
-                            borderColor: module.color,
-                            bgcolor: `${module.color}11`,
-                          }
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-
-                {/* CTA Button */}
-                <Button
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  sx={{
-                    borderColor: module.color,
-                    color: module.color,
-                    '&:hover': {
-                      borderColor: module.color,
-                      bgcolor: `${module.color}11`,
-                      transform: 'translateY(-2px)',
-                    },
-                    transition: 'all 0.3s ease',
-                    mt: 'auto'
-                  }}
-                >
-                  Try {module.title}
-                </Button>
-
-                {/* Hover overlay */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: hoveredItem === module.id ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: `linear-gradient(135deg, ${module.color}11 0%, transparent 100%)`,
-                    pointerEvents: 'none',
-                    borderRadius: 'inherit',
-                  }}
-                />
+              <Box sx={{ mb: 1.5 }}>
+                <Avatar sx={{ bgcolor: module.color, width: 48, height: 48, mb: 1 }}>
+                  {module.icon}
+                </Avatar>
+                <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold' }}>
+                  {module.title}
+                </Typography>
+                <Chip icon={<StarIcon fontSize="small" />} label={module.stats} size="small" sx={{ bgcolor: `${module.color}22`, color: module.color, '& .MuiChip-icon': { color: module.color } }} />
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, lineHeight: 1.6, wordBreak: 'break-word' }}>
+                {module.description}
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 'auto' }}>
+                {module.features.map((feature, idx) => (
+                  <Chip key={idx} label={feature} size="small" variant="outlined" sx={{ borderRadius: 2 }} />
+                ))}
               </Box>
             </BentoGridItem>
           ))}
@@ -330,8 +203,10 @@ const BentoFeaturesGrid = () => {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            gap: 2,
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+            gap: 3,
+            maxWidth: 800,
+            mx: 'auto'
           }}
         >
           {advancedFeatures.map((feature, index) => (
@@ -342,7 +217,7 @@ const BentoFeaturesGrid = () => {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <GlassmorphismCard>
+              <GlassmorphismCard sx={{ borderRadius: 5 }}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Avatar
                     sx={{
@@ -381,9 +256,9 @@ const BentoFeaturesGrid = () => {
               maxWidth: 600,
               mx: 'auto',
               p: 4,
-              borderRadius: 4,
-              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
-              border: '1px solid rgba(102, 126, 234, 0.2)',
+              borderRadius: 6,
+              background: (theme) => theme.palette.gradients.soft,
+              border: '1px solid rgba(102, 126, 234, 0.25)',
             }}
           >
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
@@ -397,7 +272,7 @@ const BentoFeaturesGrid = () => {
               size="large"
               onClick={() => navigate('/register')}
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: (theme) => theme.palette.gradients.primary,
                 px: 4,
                 py: 1.5,
               }}

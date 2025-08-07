@@ -259,7 +259,7 @@ const EnhancedTestimonials = () => {
           onClick={prevTestimonial}
           sx={{
             position: 'absolute',
-            left: { xs: -20, md: -60 },
+            left: 16,
             top: '50%',
             transform: 'translateY(-50%)',
             bgcolor: 'rgba(255, 255, 255, 0.9)',
@@ -279,7 +279,7 @@ const EnhancedTestimonials = () => {
           onClick={nextTestimonial}
           sx={{
             position: 'absolute',
-            right: { xs: -20, md: -60 },
+            right: 16,
             top: '50%',
             transform: 'translateY(-50%)',
             bgcolor: 'rgba(255, 255, 255, 0.9)',
@@ -319,38 +319,7 @@ const EnhancedTestimonials = () => {
         ))}
       </Box>
 
-      {/* Auto-play indicator */}
-      <Box sx={{ 
-        position: 'absolute', 
-        bottom: 20, 
-        right: 20,
-        display: { xs: 'none', md: 'flex' },
-        alignItems: 'center',
-        gap: 1,
-        bgcolor: 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(10px)',
-        px: 2,
-        py: 1,
-        borderRadius: 2,
-        fontSize: '0.8rem',
-        color: 'text.secondary'
-      }}>
-        <Box
-          sx={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            bgcolor: isAutoPlaying ? 'success.main' : 'text.disabled',
-            animation: isAutoPlaying ? 'pulse 2s infinite' : 'none',
-            '@keyframes pulse': {
-              '0%': { opacity: 1 },
-              '50%': { opacity: 0.5 },
-              '100%': { opacity: 1 },
-            },
-          }}
-        />
-        Auto-playing
-      </Box>
+      {/* Auto-play indicator removed to avoid bottom-right floating box */}
     </Box>
   );
 };

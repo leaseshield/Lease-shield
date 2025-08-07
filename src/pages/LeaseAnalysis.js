@@ -1032,23 +1032,72 @@ const LeaseAnalysis = ({ showSnackbar }) => {
 
           {/* Right Side: Placeholder/Info */}
           <Grid item xs={12} md={6}>
-             <Paper sx={{ p: 3, borderRadius: 2, height: '100%', bgcolor: 'grey.100' }}>
-                <Typography variant="h6" gutterBottom>How it Works</Typography>
-                <List>
-                  <ListItem>
-                    <ListItemIcon><Check color="primary" /></ListItemIcon>
-                    <ListItemText primary={isMultiMode ? "Upload up to 5 PDF or TXT lease files." : "Upload your lease document (PDF or TXT) or paste the text."} />
+             <Paper 
+               elevation={0}
+               variant="outlined"
+               sx={{ 
+                 p: 3, 
+                 borderRadius: 3, 
+                 height: '100%', 
+                 background: 'background.paper',
+                 border: '1px solid',
+                 borderColor: 'divider',
+                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                 '&:hover': {
+                   borderColor: 'primary.main',
+                   transform: 'translateY(-2px)',
+                   boxShadow: '0 8px 24px rgba(102, 126, 234, 0.12)',
+                 },
+               }}
+             >
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: 'text.primary' }}>
+                  How it Works
+                </Typography>
+                <List sx={{ p: 0 }}>
+                  <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Check color="primary" sx={{ fontSize: 20 }} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={isMultiMode ? "Upload up to 5 PDF or TXT lease files." : "Upload your lease document (PDF or TXT) or paste the text."}
+                      primaryTypographyProps={{ variant: 'body2', color: 'text.primary' }}
+                    />
                   </ListItem>
-                  <ListItem>
-                    <ListItemIcon><Check color="primary" /></ListItemIcon>
-                    <ListItemText primary="Our AI analyzes the content for key terms, dates, and potential risks." />
+                  <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Check color="primary" sx={{ fontSize: 20 }} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Our AI analyzes the content for key terms, dates, and potential risks."
+                      primaryTypographyProps={{ variant: 'body2', color: 'text.primary' }}
+                    />
                   </ListItem>
-                  <ListItem>
-                    <ListItemIcon><Check color="primary" /></ListItemIcon>
-                    <ListItemText primary={isMultiMode ? "Review a summary table comparing the key results for each lease." : "Receive a detailed report with summaries and highlighted issues."} />
+                  <ListItem sx={{ px: 0, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Check color="primary" sx={{ fontSize: 20 }} />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={isMultiMode ? "Review a summary table comparing the key results for each lease." : "Receive a detailed report with summaries and highlighted issues."}
+                      primaryTypographyProps={{ variant: 'body2', color: 'text.primary' }}
+                    />
                   </ListItem>
                 </List>
-                <Alert severity="info" icon={<InfoOutlined />} sx={{ mt: 2 }}>
+                <Alert 
+                  severity="info" 
+                  icon={<InfoOutlined />} 
+                  sx={{ 
+                    mt: 2,
+                    backgroundColor: 'rgba(102, 126, 234, 0.08)',
+                    border: '1px solid rgba(102, 126, 234, 0.2)',
+                    borderRadius: 2,
+                    '& .MuiAlert-icon': {
+                      color: 'primary.main',
+                    },
+                    '& .MuiAlert-message': {
+                      color: 'text.primary',
+                    },
+                  }}
+                >
                   Your documents are processed securely and are not stored long-term unless you explicitly save the analysis.
                 </Alert>
              </Paper>

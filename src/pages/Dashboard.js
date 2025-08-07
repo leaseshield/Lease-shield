@@ -298,14 +298,14 @@ const Dashboard = ({ showSnackbar }) => {
              {/* Lease Analysis Card */}
             <Grid item xs={12} sm={6} md={4}>
                 <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)' } }}>
-                    <CardContent sx={{ flexGrow: 1 }}>
+                    <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
                         <Description sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
                         <Typography variant="h6" component="h2" gutterBottom>New Lease Analysis</Typography>
                         <Typography variant="body2" color="text.secondary">
                             Upload a lease document (PDF/TXT) or paste text to get an AI-powered breakdown of clauses, risks, and key terms.
                         </Typography>
                     </CardContent>
-                    <CardActions sx={{ justifyContent: 'flex-end' }}>
+                    <CardActions sx={{ justifyContent: 'center' }}>
                         <Button 
                           variant="contained"
                           startIcon={<Add />}
@@ -321,14 +321,14 @@ const Dashboard = ({ showSnackbar }) => {
             {/* Real Estate Agent Tool Card */}
             <Grid item xs={12} sm={6} md={4}>
                 <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)' } }}>
-                    <CardContent sx={{ flexGrow: 1 }}>
+                    <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
                         <HomeWorkIcon sx={{ fontSize: 40, color: 'secondary.main', mb: 1 }} />
                         <Typography variant="h6" component="h2" gutterBottom>Tenant Matcher</Typography>
                         <Typography variant="body2" color="text.secondary">
                             Upload property details or tenant preferences (files/text) to automatically identify matching criteria and streamline your tenant search.
                         </Typography>
                     </CardContent>
-                    <CardActions sx={{ justifyContent: 'flex-end' }}>
+                    <CardActions sx={{ justifyContent: 'center' }}>
                         <Button 
                           variant="contained"
                           color="secondary"
@@ -345,14 +345,14 @@ const Dashboard = ({ showSnackbar }) => {
             {/* Lease Calculator Card */}
             <Grid item xs={12} sm={6} md={4}>
                 <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)' } }}>
-                    <CardContent sx={{ flexGrow: 1 }}>
+                    <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
                         <Calculate sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
                         <Typography variant="h6" component="h2" gutterBottom>Lease Calculator</Typography>
                         <Typography variant="body2" color="text.secondary">
                             Estimate potential costs, compare scenarios, and understand the financial implications of different lease terms.
                         </Typography>
                     </CardContent>
-                    <CardActions sx={{ justifyContent: 'flex-end' }}>
+                    <CardActions sx={{ justifyContent: 'center' }}>
                         <Button 
                           variant="contained"
                           color="success"
@@ -369,14 +369,14 @@ const Dashboard = ({ showSnackbar }) => {
             {/* Expense Scanner Card */}
             <Grid item xs={12} sm={6} md={4}>
                 <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)' } }}>
-                    <CardContent sx={{ flexGrow: 1 }}>
+                    <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
                         <ReceiptIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
                         <Typography variant="h6" component="h2" gutterBottom>Expense Scanner</Typography>
                         <Typography variant="body2" color="text.secondary">
                             Upload receipts or invoices (PDF, JPG, PNG) to automatically extract details, categorize expenses, and prepare for your ledger.
                         </Typography>
                     </CardContent>
-                    <CardActions sx={{ justifyContent: 'flex-end' }}>
+                    <CardActions sx={{ justifyContent: 'center' }}>
                         <Button 
                           variant="contained"
                           color="info"
@@ -393,14 +393,14 @@ const Dashboard = ({ showSnackbar }) => {
             {/* Photo Inspector Card */}
             <Grid item xs={12} sm={6} md={4}>
                 <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)' } }}>
-                    <CardContent sx={{ flexGrow: 1 }}>
+                    <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
                         <CameraAltIcon sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
                         <Typography variant="h6" component="h2" gutterBottom>Photo Inspector</Typography>
                         <Typography variant="body2" color="text.secondary">
                              Upload property photos (walls, fixtures, roof) to automatically detect issues and estimate potential repair costs.
                         </Typography>
                     </CardContent>
-                    <CardActions sx={{ justifyContent: 'flex-end' }}>
+                    <CardActions sx={{ justifyContent: 'center' }}>
                         <Button 
                           variant="contained"
                           color="warning"

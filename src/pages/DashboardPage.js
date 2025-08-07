@@ -129,19 +129,19 @@ const DashboardPage = () => {
       {/* KPI Header */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={4}>
-          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">Total Analyses</Typography>
             <Typography variant="h4" sx={{ fontWeight: 700 }}>{leases.length}</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">Inspections</Typography>
             <Typography variant="h4" sx={{ fontWeight: 700 }}>{inspections.length}</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">Expenses</Typography>
             <Typography variant="h4" sx={{ fontWeight: 700 }}>{expenses.length}</Typography>
           </Paper>
@@ -149,7 +149,7 @@ const DashboardPage = () => {
       </Grid>
 
       {/* Action Buttons */}
-      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
         <Button variant="contained" component={Link} to="/analysis" startIcon={<DescriptionIcon />}>
           Analyze New Lease
         </Button>

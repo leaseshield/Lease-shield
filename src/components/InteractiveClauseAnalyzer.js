@@ -75,7 +75,19 @@ const InteractiveClauseAnalyzer = () => {
       });
     }
 
-    return <Typography component="p" dangerouslySetInnerHTML={{ __html: highlightedText }} sx={{ lineHeight: 1.7, p: 2, bgcolor: 'grey.100', borderRadius: 2 }} />;
+    return <Typography 
+      component="p" 
+      dangerouslySetInnerHTML={{ __html: highlightedText }} 
+      sx={{ 
+        lineHeight: 1.7, 
+        p: 2, 
+        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'grey.100',
+        borderRadius: 2,
+        color: 'text.primary',
+        fontSize: '0.95rem',
+        border: `1px solid ${theme.palette.divider}`
+      }} 
+    />;
   };
 
   return (
@@ -87,14 +99,29 @@ const InteractiveClauseAnalyzer = () => {
         Click one of our example clauses below to see our AI analyze the risk in real-time. No sign-up required.
       </Typography>
 
-      <Paper elevation={4} sx={{ maxWidth: '800px', mx: 'auto', p: { xs: 2, md: 4 }, borderRadius: 4 }}>
+      <Paper elevation={4} sx={{ 
+        maxWidth: '800px', 
+        mx: 'auto', 
+        p: { xs: 2, md: 4 }, 
+        borderRadius: 4,
+        background: theme.palette.mode === 'dark' 
+          ? 'rgba(15, 23, 42, 0.95)' 
+          : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        border: `1px solid ${theme.palette.divider}`
+      }}>
         <Typography variant="h6" component="h3" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
             <PsychologyOutlined />
             Clause Risk Checker
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-            <Typography variant="body1" sx={{ alignSelf: 'center', mr: 1, color: 'text.secondary' }}>
+            <Typography variant="body1" sx={{ 
+                alignSelf: 'center', 
+                mr: 1, 
+                color: 'text.secondary',
+                fontWeight: 500
+            }}>
                 Select a clause to analyze:
             </Typography>
             {exampleClauses.map(clause => (
@@ -103,8 +130,27 @@ const InteractiveClauseAnalyzer = () => {
                     label={clause.short}
                     onClick={() => handleSelectExample(clause)}
                     variant={selectedClause && selectedClause.id === clause.id ? 'filled' : 'outlined'}
-                    color="secondary"
-                    sx={{ cursor: 'pointer' }}
+                    color="primary"
+                    sx={{ 
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        transition: 'all 0.3s ease',
+                        ...(selectedClause && selectedClause.id === clause.id ? {
+                            background: theme.palette.primary.gradient,
+                            color: 'white',
+                            '&:hover': {
+                                background: theme.palette.primary.gradient,
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                            }
+                        } : {
+                            '&:hover': {
+                                borderColor: 'primary.main',
+                                background: 'rgba(99, 102, 241, 0.08)',
+                                transform: 'translateY(-1px)'
+                            }
+                        })
+                    }}
                 />
             ))}
         </Box>
@@ -126,9 +172,27 @@ const InteractiveClauseAnalyzer = () => {
           
           {analysis && (
               <Fade in={true}>
-                  <Box>
-                      <Typography variant="h6">Analysis Result:</Typography>
-                      <Box sx={{ mt: 2, mb: 2 }}>
+                  <Box sx={{ 
+                      background: theme.palette.mode === 'dark' 
+                          ? 'linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 50%, rgba(240,147,251,0.08) 100%)'
+                          : 'linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 50%, rgba(240,147,251,0.05) 100%)',
+                      borderRadius: 3,
+                      p: 3,
+                      border: `1px solid ${theme.palette.divider}`
+                  }}>
+                      <Typography variant="h6" sx={{ 
+                          color: 'text.primary',
+                          fontWeight: 'bold',
+                          mb: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                      }}>
+                          <Style color="primary" />
+                          Analysis Result:
+                      </Typography>
+                      
+                      <Box sx={{ mt: 2, mb: 3 }}>
                           {renderAnalyzedText(selectedClause.text, analysis)}
                       </Box>
 
@@ -136,11 +200,28 @@ const InteractiveClauseAnalyzer = () => {
                           icon={analysis.risk === 'High' ? <WarningAmberOutlined /> : <CheckCircleOutline />}
                           label={`Risk Level: ${analysis.risk}`} 
                           color={analysis.risk === 'High' ? 'error' : 'warning'} 
-                          sx={{ mb: 2 }} 
+                          sx={{ 
+                              mb: 3,
+                              fontWeight: 'bold',
+                              '& .MuiChip-icon': {
+                                  color: 'inherit'
+                              }
+                          }} 
                       />
 
-                      <Typography variant="body1">
-                          <strong>Insight:</strong> {analysis.explanation}
+                      <Typography variant="body1" sx={{ 
+                          color: 'text.primary',
+                          lineHeight: 1.6,
+                          fontSize: '1rem'
+                      }}>
+                          <Typography component="span" sx={{ 
+                              fontWeight: 'bold', 
+                              color: 'primary.main',
+                              mr: 0.5
+                          }}>
+                              Insight:
+                          </Typography>
+                          {analysis.explanation}
                       </Typography>
                   </Box>
               </Fade>

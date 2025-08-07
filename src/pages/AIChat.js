@@ -305,28 +305,6 @@ const AIChat = () => {
           </Paper>
         </Box>
       </Paper>
-      
-      {/* Input Area */}
-      <Box sx={{ pt: 2 }}>
-        <Box sx={{ display: 'flex', gap: 1, mb: uploadedFiles.length > 0 ? 1 : 0, flexWrap: 'wrap' }}>
-            {uploadedFiles.map((file, i) => (
-              <Tooltip key={i} title={file.name}>
-                <Avatar variant="rounded" src={file.preview} />
-              </Tooltip>
-            ))}
-        </Box>
-        <Paper elevation={4} sx={{ p: 1, borderRadius: '20px', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton component="label">
-            <AttachFileIcon />
-            <input type="file" multiple hidden onChange={(e) => onDrop(Array.from(e.target.files))} />
-          </IconButton>
-          <TextField fullWidth multiline maxRows={5} variant="standard" placeholder={currentPlaceholder} value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={handleKeyPress} disabled={isSending || limitReached} InputProps={{ disableUnderline: true }} />
-          <IconButton><MicIcon /></IconButton>
-          <IconButton color="primary" onClick={handleSend} disabled={!input.trim() || isSending || limitReached}>
-            <SendIcon />
-          </IconButton>
-        </Paper>
-      </Box>
     </Box>
   );
 };

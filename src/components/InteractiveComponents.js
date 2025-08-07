@@ -326,6 +326,7 @@ export const BentoGridItem = ({
   tall = false, 
   gradient = false,
   index = 0,
+  sx: sxOverride,
   ...props 
 }) => {
   const { ref, controls } = useScrollAnimation();
@@ -350,22 +351,23 @@ export const BentoGridItem = ({
     >
       <Paper
         elevation={0}
-        sx={{
+        sx={[{
           height: '100%',
           p: 3,
-          borderRadius: 3,
-          background: gradient 
-            ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)'
-            : 'background.paper',
+          borderRadius: 12,
+          minHeight: 290,
+          maxHeight: 'none',
+          background: (theme) => gradient 
+            ? theme.palette.background.paper
+            : theme.palette.background.paper,
           border: '1px solid',
           borderColor: 'divider',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
           '&:hover': {
-            borderColor: 'primary.main',
-            transform: 'translateY(-4px)',
-            boxShadow: '0 12px 24px rgba(102, 126, 234, 0.15)',
+            borderColor: 'primary.light',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
           },
-        }}
+        }, sxOverride]}
         {...props}
       >
         {children}
@@ -382,7 +384,7 @@ export const GlassmorphismCard = ({ children, ...props }) => {
         background: 'rgba(255, 255, 255, 0.25)',
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255, 255, 255, 0.3)',
-        borderRadius: 4,
+        borderRadius: 6,
         p: 3,
         transition: 'all 0.3s ease',
         '&:hover': {

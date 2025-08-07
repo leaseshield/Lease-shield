@@ -398,7 +398,7 @@ const PhotoInspectionPage = () => {
            )}
 
            {!isLoading && !inspectionResults && !error && (
-                 <Paper elevation={1} sx={{ p: 3, textAlign: 'center', minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', bgcolor: 'grey.50' }}>
+                 <Paper elevation={1} variant="outlined" sx={{ p: 3, textAlign: 'center', minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', borderRadius: 3, background: (theme) => theme.palette.gradients.soft, borderColor: (theme) => theme.palette.divider }}>
                     <ReportProblemIcon sx={{ fontSize: 50, color: 'text.secondary', mb: 2 }}/>
                      <Typography variant='h6' color="text.secondary">
                          Inspection results and repair estimates will appear here after you upload photos and click "Inspect Photos".
@@ -463,7 +463,30 @@ const PhotoInspectionPage = () => {
                               <Typography variant="h6">Repair Cost Estimate</Typography>
                            </Box>
                             {repairEstimate.lineItems && repairEstimate.lineItems.length > 0 ? (
-                               <TableContainer component={Paper} variant="outlined" sx={{ mb: 2, maxHeight: 400 }}>
+                               <TableContainer 
+                                   component={Paper} 
+                                   variant="outlined" 
+                                   sx={{ 
+                                       mb: 2, 
+                                       maxHeight: 400,
+                                       background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 50%, rgba(240, 147, 251, 0.03) 100%)',
+                                       borderColor: 'rgba(99, 102, 241, 0.2)',
+                                       '& .MuiTableHead-root': {
+                                           '& .MuiTableCell-root': {
+                                               background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
+                                               fontWeight: 600,
+                                               color: 'primary.main'
+                                           }
+                                       },
+                                       '& .MuiTableBody-root': {
+                                           '& .MuiTableRow-root': {
+                                               '&:hover': {
+                                                   background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                                               }
+                                           }
+                                       }
+                                   }}
+                               >
                                    <Table size="small" stickyHeader>
                                        <TableHead>
                                            <TableRow>
@@ -577,9 +600,42 @@ const PhotoInspectionPage = () => {
                <Typography variant="h5" gutterBottom component="h2" sx={{ display: 'flex', alignItems: 'center' }}>
                    <PriceCheckIcon sx={{ mr: 1 }} /> Estimated Repair Costs (Placeholders)
                </Typography>
-               <Paper elevation={2} sx={{ p: 2 }}>
+               <Paper 
+                   elevation={2} 
+                   sx={{ 
+                       p: 2,
+                       background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 50%, rgba(240, 147, 251, 0.03) 100%)',
+                       border: '1px solid rgba(99, 102, 241, 0.1)'
+                   }}
+               >
                     <TableContainer>
-                       <Table size="small">
+                       <Table 
+                           size="small"
+                           sx={{
+                               '& .MuiTableHead-root': {
+                                   '& .MuiTableCell-root': {
+                                       background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
+                                       fontWeight: 600,
+                                       color: 'primary.main',
+                                       borderBottom: '2px solid rgba(99, 102, 241, 0.2)'
+                                   }
+                               },
+                               '& .MuiTableBody-root': {
+                                   '& .MuiTableRow-root': {
+                                       '&:hover': {
+                                           background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                                       },
+                                       '&:last-child': {
+                                           '& .MuiTableCell-root': {
+                                               borderTop: '2px solid rgba(99, 102, 241, 0.2)',
+                                               background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                                               fontWeight: 'bold'
+                                           }
+                                       }
+                                   }
+                               }
+                           }}
+                       >
                            <TableHead>
                                <TableRow>
                                    <TableCell>Task</TableCell>

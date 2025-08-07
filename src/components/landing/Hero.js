@@ -5,36 +5,10 @@ import LanguageIcon from '@mui/icons-material/Translate';
 import PsychologyIcon from '@mui/icons-material/PsychologyOutlined';
 import { Link as RouterLink } from 'react-router-dom';
 
-const BackgroundDecor = () => (
-  <Box aria-hidden sx={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-    <Box sx={{
-      position: 'absolute',
-      top: -120,
-      right: -120,
-      width: 360,
-      height: 360,
-      borderRadius: '50%',
-      filter: 'blur(60px)',
-      background: 'radial-gradient(circle at 30% 30%, rgba(102,126,234,0.35), transparent 60%)'
-    }} />
-    <Box sx={{
-      position: 'absolute',
-      bottom: -140,
-      left: -100,
-      width: 420,
-      height: 420,
-      borderRadius: '50%',
-      filter: 'blur(70px)',
-      background: 'radial-gradient(circle at 70% 70%, rgba(240,147,251,0.35), transparent 60%)'
-    }} />
-  </Box>
-);
-
 const Hero = ({ onPrimaryClick }) => {
   const theme = useTheme();
   return (
-    <Box sx={{ position: 'relative', py: { xs: 6, md: 10 }, mb: { xs: 6, md: 10 } }}>
-      <BackgroundDecor />
+    <Box sx={{ position: 'relative', py: { xs: 6, md: 10 }, mb: { xs: 6, md: 10 }, background: (t) => t.palette.gradients.soft, borderRadius: 4 }}>
       <Container maxWidth="lg">
         <Grid container spacing={{ xs: 3, md: 6 }} alignItems="center">
           <Grid item xs={12} md={6}>
@@ -57,12 +31,15 @@ const Hero = ({ onPrimaryClick }) => {
           <Grid item xs={12} md={6}>
             <Box sx={{
               position: 'relative',
-              borderRadius: 3,
+              borderRadius: 4,
               overflow: 'hidden',
               boxShadow: theme.shadows[8],
               background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'
             }}>
-              <Box component="video" src="/Product Launch Video_compressed.mp4" controls poster="/video-poster.jpg" style={{ width: '100%', height: 'auto', display: 'block' }} />
+              <Box component="video" autoPlay loop muted playsInline preload="auto" poster="/video-poster.jpg" controls={false} style={{ width: '100%', height: 'auto', display: 'block', pointerEvents: 'none' }}>
+                <source src="/Product Launch Video_compressed.mp4" type="video/mp4" />
+                <source src="/Product Launch Video.mp4" type="video/mp4" />
+              </Box>
             </Box>
           </Grid>
         </Grid>
