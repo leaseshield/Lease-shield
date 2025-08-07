@@ -32,6 +32,9 @@ const NegotiatingLeaseTerms = lazy(() => import('./pages/blog/NegotiatingLeaseTe
 const LeaseRedFlags = lazy(() => import('./pages/blog/LeaseRedFlags'));
 const TenantRightsOverview = lazy(() => import('./pages/blog/TenantRightsOverview'));
 const UsingLeaseShieldAIEffectively = lazy(() => import('./pages/blog/UsingLeaseShieldAIEffectively'));
+const UnderstandLeaseIn60Seconds = lazy(() => import('./pages/blog/UnderstandLeaseIn60Seconds'));
+const CommercialLease5KeyDifferences = lazy(() => import('./pages/blog/CommercialLease5KeyDifferences'));
+const UltimateMoveInChecklist = lazy(() => import('./pages/blog/UltimateMoveInChecklist'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const RealEstateAgentPage = lazy(() => import('./pages/RealEstateAgentPage'));
 const ExpenseScannerPage = lazy(() => import('./pages/ExpenseScannerPage'));
@@ -400,6 +403,21 @@ function App() {
             <Route path="/blog/using-lease-shield-ai-effectively" element={
               <Layout showAuthButtons={true}>
                 <UsingLeaseShieldAIEffectively />
+              </Layout>
+            } />
+            <Route path="/blog/understand-lease-in-60-seconds" element={
+              <Layout showAuthButtons={true}>
+                <UnderstandLeaseIn60Seconds />
+              </Layout>
+            } />
+            <Route path="/blog/commercial-lease-5-key-differences" element={
+              <Layout showAuthButtons={true}>
+                <CommercialLease5KeyDifferences />
+              </Layout>
+            } />
+            <Route path="/blog/ultimate-move-in-checklist" element={
+              <Layout showAuthButtons={true}>
+                <UltimateMoveInChecklist />
               </Layout>
             } />
             {/* END Public Blog Routes */}

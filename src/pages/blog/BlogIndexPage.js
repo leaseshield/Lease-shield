@@ -18,6 +18,21 @@ import {
 // Define blog posts data (replace with dynamic fetching later if needed)
 const blogPosts = [
   {
+    slug: 'understand-lease-in-60-seconds',
+    title: 'That 70-Page Lease Agreement? Understand It in 60 Seconds.',
+    excerpt: 'Use Lease Shield AI to decode clauses, spot risks, and protect your rights — faster than making a coffee.'
+  },
+  {
+    slug: 'commercial-lease-5-key-differences',
+    title: 'Not Just a Bigger Apartment: 5 Key Differences in a Commercial Lease',
+    excerpt: 'Commercial leases are complex. Learn about NNN, use clauses, subletting rights, and more before you sign.'
+  },
+  {
+    slug: 'ultimate-move-in-checklist',
+    title: 'The Ultimate Move-In Checklist: How to Document Your Rental and Protect Your Deposit',
+    excerpt: 'Document everything on move-in with photos, tests, and an AI-annotated report to secure your deposit.'
+  },
+  {
     slug: 'using-lease-shield-ai-effectively',
     title: 'How to Use Lease Shield AI Effectively',
     excerpt: 'Tips for uploading documents, interpreting analysis reports, understanding scores, and leveraging AI...'
