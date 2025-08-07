@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Button, Grid, Container, CircularProgress, Chip, List, ListItem, ListItemIcon, ListItemText, Card, CardContent, CardActions } from '@mui/material';
+import { Box, Typography, Paper, Button, Grid, Container, CircularProgress, Chip, List, ListItem, ListItemIcon, ListItemText, Card, CardContent, CardActions, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import StarIcon from '@mui/icons-material/Star';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { Helmet } from 'react-helmet-async';
 import { initiateCheckout } from '../utils/paymentUtils';
 
 // Define Plan Details (centralized)
-const pricingPlans = [
+const basePlans = [
   {
     id: 'free',
     title: 'Free',
@@ -67,6 +67,7 @@ const Pricing = ({ showSnackbar }) => {
   const { user, loading: authLoading } = useAuthState();
   const [loadingPlanId, setLoadingPlanId] = useState(null); // Track loading state per plan
   const [highlightPlanId, setHighlightPlanId] = useState('');
+  const [billing, setBilling] = useState('monthly'); // 'monthly' | 'annual'
 
   // Check for plan query parameter on mount
   useEffect(() => {
@@ -76,6 +77,19 @@ const Pricing = ({ showSnackbar }) => {
       setHighlightPlanId(plan);
     }
   }, [location.search]);
+
+  const pricingPlans = basePlans.map(p => {
+    if (p.id === 'free') return p;
+    if (billing === 'annual') {
+      // Example annual discount: 2 months free
+      const priceNum = parseFloat(p.price.replace('$',''));
+      const monthly = priceNum;
+      const annualMonthly = (priceNum * 10) / 12; // 2 months free
+      return { ...p, price: `$${annualMonthly.toFixed(2)}`, priceDetail: '/ month (billed annually)', originalPrice: `$${monthly}` };
+    }
+    // monthly
+    return { ...p, priceDetail: '/ month', originalPrice: p.originalPrice };
+  });
 
   const handleSubscribeClick = async (planId) => {
     if (!user) {
@@ -123,6 +137,20 @@ const Pricing = ({ showSnackbar }) => {
        <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: 'center', mb: 6 }}>
          Select the plan that best fits your lease analysis needs.
        </Typography>
+
+      {/* Billing Toggle */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+        <ToggleButtonGroup
+          color="primary"
+          value={billing}
+          exclusive
+          onChange={(_, val) => val && setBilling(val)}
+          aria-label="billing period"
+        >
+          <ToggleButton value="monthly" aria-label="monthly">Monthly</ToggleButton>
+          <ToggleButton value="annual" aria-label="annual">Annual (2 months free)</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
       
       <Grid container spacing={4} justifyContent="center" alignItems="stretch"> 
         {pricingPlans.map((plan) => (
@@ -201,6 +229,14 @@ const Pricing = ({ showSnackbar }) => {
         ))}
       </Grid>
     </Container>
+    /* Sticky CTA on mobile */
+    // This is a simple persistent CTA; for production consider portal mounting and safe-area insets.
+    /* eslint-disable-next-line */
+    ,
+    <Box key="mobile-cta" sx={{ display: { xs: 'flex', md: 'none' }, position: 'sticky', bottom: 0, left: 0, right: 0, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider', p: 1.5, gap: 1 }}>
+      <Button fullWidth variant="contained" onClick={() => handleSubscribeClick('commercial')}>Start Commercial</Button>
+      <Button fullWidth variant="outlined" onClick={() => handleSubscribeClick('pro')}>Go Pro</Button>
+    </Box>
   );
 };
 

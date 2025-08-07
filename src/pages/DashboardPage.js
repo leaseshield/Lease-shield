@@ -125,6 +125,28 @@ const DashboardPage = () => {
 
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
+      {/* KPI Header */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="body2" color="text.secondary">Total Analyses</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>{leases.length}</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="body2" color="text.secondary">Inspections</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>{inspections.length}</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="body2" color="text.secondary">Expenses</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>{expenses.length}</Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+
       {/* Action Buttons */}
       <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
         <Button variant="contained" component={Link} to="/analysis" startIcon={<DescriptionIcon />}>

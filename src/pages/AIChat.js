@@ -205,11 +205,12 @@ const AIChat = () => {
   // --- Render ---
 
   return (
-    <Box sx={{ p: 2, display: 'flex', height: '100%', flexDirection: 'column' }} {...getRootProps()}>
+    <Box sx={{ p: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '300px 1fr' }, gap: 2, height: '100%' }} {...getRootProps()}>
       
-      {/* Top Controls */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
-        <FormControl sx={{ minWidth: 240 }}>
+      {/* Left Pane: Controls */}
+      <Paper variant="outlined" sx={{ p: 2, height: '100%', display: { xs: 'none', md: 'flex' }, flexDirection: 'column', gap: 2 }}>
+        <Typography variant="subtitle2" color="text.secondary">Settings</Typography>
+        <FormControl fullWidth>
           <InputLabel>Model</InputLabel>
           <Select value={selectedModel} label="Model" onChange={(e) => setSelectedModel(e.target.value)}>
             {Object.entries(modelGroups).map(([groupName, models]) => [
@@ -222,11 +223,14 @@ const AIChat = () => {
             ])}
           </Select>
         </FormControl>
-        {/* Slider removed as passes are implicit in model selection */}
-      </Box>
+        <Box sx={{ mt: 'auto' }} />
+        <Typography variant="caption" color="text.secondary">Drag files anywhere to attach (max 5).</Typography>
+      </Paper>
 
-      {/* Message Area */}
-      <Paper variant="outlined" sx={{ flexGrow: 1, overflowY: 'auto', p: 2, position: 'relative' }}>
+      {/* Right Pane: Conversation */}
+      <Paper variant="outlined" sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+        {/* Message Area */}
+        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
         {isDragActive && (
           <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, bgcolor: 'rgba(0,120,255,0.1)', border: '2px dashed #1976d2', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
             <Typography variant="h5">Drop Files Here</Typography>
@@ -278,6 +282,28 @@ const AIChat = () => {
           ))}
           <div ref={bottomRef} />
         </List>
+        </Box>
+        {/* Composer */}
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', gap: 1, mb: uploadedFiles.length > 0 ? 1 : 0, flexWrap: 'wrap' }}>
+              {uploadedFiles.map((file, i) => (
+                <Tooltip key={i} title={file.name}>
+                  <Avatar variant="rounded" src={file.preview} />
+                </Tooltip>
+              ))}
+          </Box>
+          <Paper elevation={4} sx={{ p: 1, borderRadius: '20px', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton component="label">
+              <AttachFileIcon />
+              <input type="file" multiple hidden onChange={(e) => onDrop(Array.from(e.target.files))} />
+            </IconButton>
+            <TextField fullWidth multiline maxRows={5} variant="standard" placeholder={currentPlaceholder} value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={handleKeyPress} disabled={isSending || limitReached} InputProps={{ disableUnderline: true }} />
+            <IconButton><MicIcon /></IconButton>
+            <IconButton color="primary" onClick={handleSend} disabled={!input.trim() || isSending || limitReached}>
+              <SendIcon />
+            </IconButton>
+          </Paper>
+        </Box>
       </Paper>
       
       {/* Input Area */}

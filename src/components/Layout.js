@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useContext } from 'react';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { 
   AppBar, 
@@ -27,6 +27,8 @@ import {
   Link as MuiLink,
   ListSubheader
 } from '@mui/material';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import { 
   Menu as MenuIcon, 
   Dashboard, 
@@ -51,6 +53,23 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { useAuthState } from '../hooks/useAuthState';
 import { Helmet } from 'react-helmet-async';
+import { ColorModeContext } from '../context/ColorModeContext';
+
+const ColorModeToggle = () => {
+  const theme = useTheme();
+  const colorMode = useContext(ColorModeContext);
+  const isDark = theme.palette.mode === 'dark';
+  return (
+    <IconButton
+      onClick={colorMode.toggleColorMode}
+      color="inherit"
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      sx={{ mx: 1 }}
+    >
+      {isDark ? <LightModeIcon /> : <DarkModeIcon />}
+    </IconButton>
+  );
+};
 
 const Layout = ({ children, showAuthButtons = false }) => {
   const navigate = useNavigate();
@@ -185,8 +204,13 @@ const Layout = ({ children, showAuthButtons = false }) => {
         <link rel="alternate" hrefLang="en" href={canonicalUrl} />
         <link rel="alternate" hrefLang="en-us" href={canonicalUrl} />
       </Helmet>
-      <AppBar position="static">
-        <Toolbar>
+      <AppBar position="sticky" elevation={0} sx={{
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(2,6,23,0.6)' : 'rgba(255,255,255,0.6)',
+        backdropFilter: 'saturate(180%) blur(12px)'
+      }}>
+        <Toolbar sx={{ minHeight: 72 }}>
           {user && (
             <IconButton
               size="large"
@@ -203,7 +227,7 @@ const Layout = ({ children, showAuthButtons = false }) => {
           <Typography 
             variant="h6" 
             component="div" 
-            sx={{ flexGrow: 1, cursor: 'pointer' }}
+            sx={{ flexGrow: 1, cursor: 'pointer', fontWeight: 700 }}
             onClick={() => navigate('/')}
           >
             Lease Shield AI
@@ -222,6 +246,9 @@ const Layout = ({ children, showAuthButtons = false }) => {
           >
             Blog
           </Button>
+
+          {/* Color mode toggle */}
+          <ColorModeToggle />
           
           {loading ? (
             <CircularProgress color="inherit" size={24} />
@@ -356,8 +383,13 @@ const Layout = ({ children, showAuthButtons = false }) => {
               </Typography>
             </Box>
             
-            {/* Right side - Links and Social Media */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'flex-start', md: 'flex-end' }, gap: 2 }}>
+            {/* Right side - Links, Newsletter and Social Media */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'flex-start', md: 'flex-end' }, gap: 2, width: { xs: '100%', md: 'auto' } }}>
+              {/* Newsletter mini-form */}
+              <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', md: 360 } }}>
+                <input type="email" placeholder="Your email" aria-label="Email for newsletter" style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'transparent', color: 'inherit' }} />
+                <Button variant="contained" size="small">Subscribe</Button>
+              </Box>
               {/* Navigation Links */}
               <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                 <Link href="#" color="inherit" underline="hover">Privacy</Link>

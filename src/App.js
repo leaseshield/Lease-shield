@@ -12,6 +12,7 @@ import Alert from '@mui/material/Alert';
 // Pages
 import { lazy, Suspense } from 'react';
 import Layout from './components/Layout';
+import { ColorModeContext } from './context/ColorModeContext';
 
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
@@ -40,103 +41,86 @@ const AIChat = lazy(() => import('./pages/AIChat'));
 const CompliancePage = lazy(() => import('./pages/CompliancePage'));
 const Contact = lazy(() => import('./pages/Contact'));
 
-// Create theme
-const theme = createTheme({
+// Build theme dynamically based on color mode
+const buildTheme = (mode) => createTheme({
   palette: {
+    mode,
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
+      main: '#6366F1',
+      light: '#8B5CF6',
+      dark: '#4F46E5',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       aurora: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
     },
     secondary: {
-      main: '#10d9c4', // Electric teal accent
-      light: '#4eddcf',
-      dark: '#0bb5a3',
+      main: '#10D9C4',
+      light: '#4EDDCF',
+      dark: '#0BB5A3',
     },
     accent: {
-      electric: '#00ff88', // Vibrant green for CTAs
-      neon: '#ff006e', // Electric pink
+      electric: '#00FF88',
+      neon: '#FF006E',
     },
     background: {
-      default: '#f8fafc',
-      paper: '#ffffff',
+      default: mode === 'dark' ? '#0B1020' : '#F8FAFC',
+      paper: mode === 'dark' ? '#0F172A' : '#FFFFFF',
       aurora: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 50%, rgba(240, 147, 251, 0.05) 100%)',
     },
     text: {
-      primary: '#1a202c',
-      secondary: '#4a5568',
+      primary: mode === 'dark' ? '#E5E7EB' : '#1F2937',
+      secondary: mode === 'dark' ? '#94A3B8' : '#4B5563',
     },
+    divider: mode === 'dark' ? 'rgba(148,163,184,0.2)' : 'rgba(2,6,23,0.12)'
   },
   typography: {
-    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontWeight: 800,
-      letterSpacing: '-0.025em',
-      lineHeight: 1.1,
-    },
-    h2: {
-      fontWeight: 700,
-      letterSpacing: '-0.02em',
-      lineHeight: 1.2,
-    },
-    h3: {
-      fontWeight: 600,
-      letterSpacing: '-0.015em',
-      lineHeight: 1.3,
-    },
-    body1: {
-      lineHeight: 1.6,
-    },
-    button: {
-      fontWeight: 600,
-      textTransform: 'none',
-    },
+    fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"',
+    h1: { fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.1 },
+    h2: { fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
+    h3: { fontWeight: 700, letterSpacing: '-0.015em', lineHeight: 1.25 },
+    button: { fontWeight: 600, textTransform: 'none' },
   },
-  shape: {
-    borderRadius: 16,
-  },
+  shape: { borderRadius: 16 },
   components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backdropFilter: 'saturate(180%) blur(12px)',
+          backgroundColor: mode === 'dark' ? 'rgba(2,6,23,0.6)' : 'rgba(255,255,255,0.6)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
+        }
+      }
+    },
     MuiButton: {
       styleOverrides: {
         root: {
           borderRadius: 24,
-          padding: '12px 32px',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          padding: '12px 24px',
+          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
             transform: 'translateY(-2px)',
-            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-          },
+            boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+          }
         },
         contained: {
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           '&:hover': {
-            background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-          },
-        },
-      },
+            background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+          }
+        }
+      }
     },
     MuiCard: {
       styleOverrides: {
         root: {
           borderRadius: 20,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            transform: 'translateY(-8px)',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-          },
-        },
-      },
+          transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+          '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 18px 36px rgba(0,0,0,0.12)' }
+        }
+      }
     },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-        },
-      },
-    },
-  },
+    MuiPaper: { styleOverrides: { root: { borderRadius: 16 } } },
+    MuiContainer: { styleOverrides: { root: { scrollBehavior: 'smooth' } } }
+  }
 });
 
 // Updated Protected route component
@@ -270,6 +254,21 @@ const RouteChangeTracker = () => {
 function App() {
   // Log when App component mounts
   console.log("App component mounted.");
+  const [mode, setMode] = React.useState(() => {
+    const stored = typeof window !== 'undefined' ? window.localStorage.getItem('ls-color-mode') : null;
+    return stored === 'dark' || stored === 'light' ? stored : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  });
+  const colorMode = React.useMemo(() => ({
+    mode,
+    toggleColorMode: () => {
+      setMode((prev) => {
+        const next = prev === 'light' ? 'dark' : 'light';
+        try { window.localStorage.setItem('ls-color-mode', next); } catch {}
+        return next;
+      });
+    }
+  }), [mode]);
+  const theme = React.useMemo(() => buildTheme(mode), [mode]);
 
   // --- Backend Pinger --- 
   useEffect(() => {
@@ -306,6 +305,7 @@ function App() {
 
   return (
     <UserProfileProvider>
+      <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
@@ -465,6 +465,7 @@ function App() {
           </Suspense>
         </Router>
       </ThemeProvider>
+      </ColorModeContext.Provider>
     </UserProfileProvider>
   );
 }

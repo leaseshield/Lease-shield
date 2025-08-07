@@ -4,12 +4,14 @@ import { Helmet } from 'react-helmet-async';
 import {
   Container,
   Typography,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Paper,
-  Divider
+  Grid,
+  Card,
+  CardActionArea,
+  CardContent,
+  CardMedia,
+  Chip,
+  Stack,
+  Box
 } from '@mui/material';
 
 // Define blog posts data (replace with dynamic fetching later if needed)
@@ -48,7 +50,7 @@ const blogPosts = [
 
 const BlogIndexPage = () => {
   return (
-    <Container maxWidth="md" sx={{ my: 4 }}>
+    <Container maxWidth="lg" sx={{ my: 4 }}>
       <Helmet>
         <title>Lease Shield AI Blog | Tips for Tenants & Lease Analysis</title>
         <meta 
@@ -59,25 +61,38 @@ const BlogIndexPage = () => {
       <Typography variant="h1" component="h1" gutterBottom sx={{ mb: 4, fontSize: { xs: '2.5rem', md: '3rem' }, fontWeight: 'bold' }}>
         Lease Shield AI Blog
       </Typography>
-      
-      <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden'}}>
-        <List disablePadding>
-          {blogPosts.map((post, index) => (
-            <React.Fragment key={post.slug}>
-              <ListItem disablePadding>
-                <ListItemButton component={RouterLink} to={`/blog/${post.slug}`}>
-                  <ListItemText 
-                    primary={post.title}
-                    secondary={post.excerpt}
-                    primaryTypographyProps={{ variant: 'h6', component: 'h2', mb: 0.5 }}
-                  />
-                </ListItemButton>
-              </ListItem>
-              {index < blogPosts.length - 1 && <Divider />}
-            </React.Fragment>
-          ))}
-        </List>
-      </Paper>
+      <Grid container spacing={3}>
+        {blogPosts.map((post) => (
+          <Grid item xs={12} sm={6} md={4} key={post.slug}>
+            <Card sx={{ height: '100%', borderRadius: 3, overflow: 'hidden' }}>
+              <CardActionArea component={RouterLink} to={`/blog/${post.slug}`} sx={{ height: '100%' }}>
+                <CardMedia
+                  component="img"
+                  height="160"
+                  image="/images/document-analysis.svg"
+                  alt={post.title}
+                  sx={{ objectFit: 'contain', bgcolor: 'action.hover' }}
+                />
+                <CardContent>
+                  <Typography variant="h6" component="h2" gutterBottom>
+                    {post.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {post.excerpt}
+                  </Typography>
+                  <Stack direction="row" spacing={1}>
+                    <Chip size="small" label="Lease" />
+                    <Chip size="small" label="Guides" variant="outlined" />
+                    <Box sx={{ ml: 'auto' }}>
+                      <Typography variant="caption" color="text.secondary">5 min read</Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Container>
   );
 };

@@ -897,6 +897,20 @@ const LeaseAnalysis = ({ showSnackbar }) => {
              <Typography variant="h4" gutterBottom component="h1">
                 Analyze Your Lease
              </Typography>
+            {/* Stepper-like header */}
+            <Paper sx={{ p: 2, mb: 2, borderRadius: 2, bgcolor: 'background.paper' }}>
+              <Grid container spacing={2}>
+                {[{label:'Upload or Paste'}, {label:'Analyzing'}, {label:'Results'}].map((step, idx) => (
+                  <Grid item xs={4} key={step.label}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="caption" color="text.secondary">Step {idx+1}</Typography>
+                      <LinearProgress variant="determinate" value={idx === 0 ? (analyzing ? 100 : 50) : idx === 1 ? (analyzing ? analysisProgress : 0) : (analysisResult ? 100 : 0)} sx={{ height: 8, borderRadius: 5, mt: 0.5 }} />
+                      <Typography variant="body2" sx={{ mt: 0.5 }}>{step.label}</Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
             <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
                {/* Multi-mode Toggle */}
                <FormControlLabel 
