@@ -58,7 +58,7 @@ import {
   PersonSearch as PersonSearchIcon,
   Upcoming as UpcomingIcon
 } from '@mui/icons-material';
-import React from 'react';
+// Removed duplicate React import to avoid redeclaration
 const InteractiveClauseAnalyzer = React.lazy(() => import('../components/InteractiveClauseAnalyzer'));
 const Hero = React.lazy(() => import('../components/landing/Hero'));
 import BentoFeaturesGrid from '../components/BentoFeaturesGrid';
