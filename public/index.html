@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Get an expert AI lease analysis with Lease Shield. Our platform reviews your rental contract, identifies red flags, and explains complex terms so you can sign with confidence."
+      content="Analyze your lease in minutes with AI. Spot risks, understand clauses, and negotiate better terms so you can sign with confidence."
     />
     <meta
       name="keywords"
@@ -27,8 +27,8 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://leaseshield.eu/" />
-    <meta property="og:title" content="Lease Shield AI: Expert AI Lease Analysis & Contract Review" />
-    <meta property="og:description" content="Get an expert AI lease analysis with Lease Shield. Our platform reviews your rental contract, identifies red flags, and explains complex terms so you can sign with confidence." />
+    <meta property="og:title" content="Lease Shield AI: Lease Analysis & Review" />
+    <meta property="og:description" content="Analyze your lease in minutes with AI. Spot risks, understand clauses, and sign with confidence." />
     <meta property="og:image" content="%PUBLIC_URL%/LeaseShield_OG_Image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -37,8 +37,8 @@
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://leaseshield.eu/" />
-    <meta property="twitter:title" content="Lease Shield AI: Expert AI Lease Analysis & Contract Review" />
-    <meta property="twitter:description" content="Get an expert AI lease analysis with Lease Shield. Our platform reviews your rental contract, identifies red flags, and explains complex terms so you can sign with confidence." />
+    <meta property="twitter:title" content="Lease Shield AI: Lease Analysis & Review" />
+    <meta property="twitter:description" content="Analyze your lease in minutes with AI. Spot risks, understand clauses, and sign with confidence." />
     <meta property="twitter:image" content="%PUBLIC_URL%/LeaseShield_Twitter_Card.png" />
     <meta property="twitter:image:alt" content="Lease Shield AI - Smart lease analysis dashboard showing AI-powered insights" />
 
@@ -51,11 +51,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
     
-    <!-- Load Google Fonts with display swap -->
+    <!-- Load Google Fonts without render-blocking -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" />
+    </noscript>
     
     <!-- Preload critical assets -->
     <link rel="preload" href="%PUBLIC_URL%/video-poster.jpg" as="image" />
@@ -67,9 +73,7 @@
     <!-- Resource hints -->
     <link rel="prefetch" href="%PUBLIC_URL%/manifest.json" />
     
-    <link rel="canonical" href="https://leaseshield.eu/" />
-
-    <title>Lease Shield AI: Expert AI Lease Analysis & Contract Review</title>
+    <title>Lease Shield AI: Fast Lease Analysis & Contract Review</title>
     
     <!-- Performance optimization meta tags -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -141,7 +145,7 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "LegalService",
+      "@type": "LocalBusiness",
       "name": "Lease Shield AI",
       "url": "https://leaseshield.eu/",
       "logo": {
@@ -151,7 +155,6 @@
         "height": 512
       },
       "description": "AI-powered lease analysis service helping renters understand rental agreements, identify risks, and make informed decisions.",
-      "serviceType": "Legal Technology Service",
       "areaServed": {
         "@type": "Place",
         "name": "European Union"
@@ -163,6 +166,7 @@
         "postalCode": "1098 XG",
         "addressCountry": "NL"
       },
+      "telephone": "+31-20-123-4567",
       "contactPoint": [
         {
           "@type": "ContactPoint",
@@ -179,9 +183,11 @@
         }
       ],
       "sameAs": [
+        "https://www.facebook.com/leaseshield",
         "https://twitter.com/LeaseShieldAI",
         "https://instagram.com/leaseshield",
-        "https://linkedin.com/company/lease-shield-ai"
+        "https://linkedin.com/company/lease-shield-ai",
+        "https://www.youtube.com/@leaseshield"
       ]
     }
     </script>

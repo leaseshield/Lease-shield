@@ -10,33 +10,35 @@ import { Box, CircularProgress } from '@mui/material';
 import Alert from '@mui/material/Alert';
 
 // Pages
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import LeaseAnalysis from './pages/LeaseAnalysis';
-import NotFound from './pages/NotFound';
+import { lazy, Suspense } from 'react';
 import Layout from './components/Layout';
-import LeaseCalculator from './pages/LeaseCalculator';
-import LeaseManager from './pages/LeaseManager';
-import LandingPage from './pages/LandingPage';
-import Profile from './pages/Profile';
-import Pricing from './pages/Pricing';
-import TrialPage from './pages/TrialPage';
-import BlogIndexPage from './pages/blog/BlogIndexPage';
-import HowToSpotLeaseScams from './pages/blog/HowToSpotLeaseScams';
-import UnderstandingCommonClauses from './pages/blog/UnderstandingCommonClauses';
-import NegotiatingLeaseTerms from './pages/blog/NegotiatingLeaseTerms';
-import LeaseRedFlags from './pages/blog/LeaseRedFlags';
-import TenantRightsOverview from './pages/blog/TenantRightsOverview';
-import UsingLeaseShieldAIEffectively from './pages/blog/UsingLeaseShieldAIEffectively';
-import AdminPage from './pages/AdminPage';
-import RealEstateAgentPage from './pages/RealEstateAgentPage';
-import ExpenseScannerPage from './pages/ExpenseScannerPage';
-import PhotoInspectionPage from './pages/PhotoInspectionPage';
-import DashboardPage from './pages/DashboardPage';
-import AIChat from './pages/AIChat';
-import CompliancePage from './pages/CompliancePage';
-import Contact from './pages/Contact';
+
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const LeaseAnalysis = lazy(() => import('./pages/LeaseAnalysis'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const LeaseCalculator = lazy(() => import('./pages/LeaseCalculator'));
+const LeaseManager = lazy(() => import('./pages/LeaseManager'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const TrialPage = lazy(() => import('./pages/TrialPage'));
+const BlogIndexPage = lazy(() => import('./pages/blog/BlogIndexPage'));
+const HowToSpotLeaseScams = lazy(() => import('./pages/blog/HowToSpotLeaseScams'));
+const UnderstandingCommonClauses = lazy(() => import('./pages/blog/UnderstandingCommonClauses'));
+const NegotiatingLeaseTerms = lazy(() => import('./pages/blog/NegotiatingLeaseTerms'));
+const LeaseRedFlags = lazy(() => import('./pages/blog/LeaseRedFlags'));
+const TenantRightsOverview = lazy(() => import('./pages/blog/TenantRightsOverview'));
+const UsingLeaseShieldAIEffectively = lazy(() => import('./pages/blog/UsingLeaseShieldAIEffectively'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const RealEstateAgentPage = lazy(() => import('./pages/RealEstateAgentPage'));
+const ExpenseScannerPage = lazy(() => import('./pages/ExpenseScannerPage'));
+const PhotoInspectionPage = lazy(() => import('./pages/PhotoInspectionPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AIChat = lazy(() => import('./pages/AIChat'));
+const CompliancePage = lazy(() => import('./pages/CompliancePage'));
+const Contact = lazy(() => import('./pages/Contact'));
 
 // Create theme
 const theme = createTheme({
@@ -308,6 +310,7 @@ function App() {
         <CssBaseline />
         <Router>
           <RouteChangeTracker />
+          <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}><CircularProgress /></Box>}>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={
@@ -459,6 +462,7 @@ function App() {
             {/* 404 Not Found */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>
+          </Suspense>
         </Router>
       </ThemeProvider>
     </UserProfileProvider>

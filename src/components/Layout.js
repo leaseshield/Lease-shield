@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { 
   AppBar, 
   Box, 
@@ -39,6 +39,8 @@ import {
   CameraAlt as CameraAltIcon,
   Chat as ChatIcon,
   Twitter as TwitterIcon,
+  YouTube as YouTubeIcon,
+  Facebook as FacebookIcon,
   Instagram as InstagramIcon,
   LinkedIn as LinkedInIcon,
   Email as EmailIcon,
@@ -48,6 +50,7 @@ import {
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import { useAuthState } from '../hooks/useAuthState';
+import { Helmet } from 'react-helmet-async';
 
 const Layout = ({ children, showAuthButtons = false }) => {
   const navigate = useNavigate();
@@ -167,8 +170,21 @@ const Layout = ({ children, showAuthButtons = false }) => {
     </Box>
   );
   
+  const location = useLocation();
+  const canonicalUrl = useMemo(() => {
+    const base = 'https://leaseshield.eu';
+    return `${base}${location.pathname}${location.search}`;
+  }, [location.pathname, location.search]);
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Helmet>
+        <link rel="canonical" href={canonicalUrl} />
+        {/* Optional hreflang example for English EU only; extend if more locales */}
+        <link rel="alternate" hrefLang="x-default" href={canonicalUrl} />
+        <link rel="alternate" hrefLang="en" href={canonicalUrl} />
+        <link rel="alternate" hrefLang="en-us" href={canonicalUrl} />
+      </Helmet>
       <AppBar position="static">
         <Toolbar>
           {user && (
@@ -316,16 +332,16 @@ const Layout = ({ children, showAuthButtons = false }) => {
               {/* Contact Information */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                 <EmailIcon fontSize="small" color="action" />
-                <Typography variant="body2" color="text.secondary">
+               <MuiLink href="mailto:contact@leaseshield.eu" color="text.secondary" underline="hover" variant="body2">
                   contact@leaseshield.eu
-                </Typography>
+                </MuiLink>
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                 <PhoneIcon fontSize="small" color="action" />
-                <Typography variant="body2" color="text.secondary">
+                <MuiLink href="tel:+31201234567" color="text.secondary" underline="hover" variant="body2">
                   +31 (0) 20 123 4567
-                </Typography>
+                </MuiLink>
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -353,6 +369,15 @@ const Layout = ({ children, showAuthButtons = false }) => {
               {/* Social Media Links */}
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <IconButton 
+                  href="https://www.facebook.com/leaseshield" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  size="small"
+                  sx={{ color: 'text.secondary', '&:hover': { color: '#1877F2' } }}
+                >
+                  <FacebookIcon />
+                </IconButton>
+                <IconButton 
                   href="https://twitter.com/LeaseShieldAI" 
                   target="_blank" 
                   rel="noopener noreferrer"
@@ -378,6 +403,15 @@ const Layout = ({ children, showAuthButtons = false }) => {
                   sx={{ color: 'text.secondary', '&:hover': { color: '#0077B5' } }}
                 >
                   <LinkedInIcon />
+                </IconButton>
+                <IconButton 
+                  href="https://www.youtube.com/@leaseshield" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  size="small"
+                  sx={{ color: 'text.secondary', '&:hover': { color: '#FF0000' } }}
+                >
+                  <YouTubeIcon />
                 </IconButton>
               </Box>
             </Box>

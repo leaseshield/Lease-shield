@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState, Suspense } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useAuthState } from '../hooks/useAuthState';
@@ -58,7 +58,8 @@ import {
   PersonSearch as PersonSearchIcon,
   Upcoming as UpcomingIcon
 } from '@mui/icons-material';
-import InteractiveClauseAnalyzer from '../components/InteractiveClauseAnalyzer';
+import React from 'react';
+const InteractiveClauseAnalyzer = React.lazy(() => import('../components/InteractiveClauseAnalyzer'));
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -137,13 +138,13 @@ const LandingPage = () => {
       title: "Expense Scanner",
       description: "Upload receipts or invoices (PDF, JPG, PNG) to automatically extract details, categorize expenses, and prepare them for your ledger.",
       icon: <ReceiptLongIcon sx={{ fontSize: 40 }} color="primary" />,
-      link: "/expenses"
+      link: "/expense-scanner"
     },
     {
       title: "Photo Inspector",
       description: "Upload property photos (walls, fixtures, roof) to detect issues and estimate repair costs—instantly producing annotated reports and budgets.",
       icon: <CameraAltIcon sx={{ fontSize: 40 }} color="primary" />,
-      link: "/inspection"
+      link: "/photo-inspection"
     }
   ];
 
@@ -294,17 +295,17 @@ const LandingPage = () => {
       */}
 
       <Helmet>
-        <title>Lease Shield AI: Expert AI Lease Analysis & Contract Review</title>
+        <title>Lease Shield AI: Fast Lease Analysis & Review</title>
         <meta 
           name="description" 
-          content="Get an expert AI lease analysis with Lease Shield. Our platform reviews your rental contract, identifies red flags, and explains complex terms so you can sign with confidence." 
+          content="Analyze your lease in minutes. Spot risks, understand clauses, and negotiate better terms with Lease Shield AI." 
         />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content="Lease Shield AI: Expert AI Lease Analysis & Contract Review" />
-        <meta property="og:description" content="Get an expert AI lease analysis with Lease Shield. Our platform reviews your rental contract, identifies red flags, and explains complex terms so you can sign with confidence." />
+        <meta property="og:title" content="Lease Shield AI: Lease Analysis & Review" />
+        <meta property="og:description" content="Analyze your lease in minutes. Spot risks, understand clauses, and negotiate better terms with Lease Shield AI." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://leaseshield.eu/" />
-        <link rel="canonical" href="https://leaseshield.eu/" />
+        {/* Canonical is handled globally in Layout */}
         {/* Add JSON-LD Schema */}
         <script type="application/ld+json">
           {JSON.stringify(softwareApplicationSchema)}
@@ -321,8 +322,8 @@ const LandingPage = () => {
             "thumbnailUrl": "https://leaseshield.eu/video-poster.jpg",
             "uploadDate": "2023-10-26T08:00:00+00:00", // Change to the actual upload date
             "duration": "PT1M30S", // Change to the actual video duration (e.g., PT1M30S for 1 minute 30 seconds)
-            "contentUrl": "https://leaseshield.eu/Product Launch Video.mp4",
-            "embedUrl": "https://leaseshield.eu/Product Launch Video.mp4", // Or the URL of a page where the video is embedded if different
+            "contentUrl": "https://leaseshield.eu/Product Launch Video_compressed.mp4",
+            "embedUrl": "https://leaseshield.eu/Product Launch Video_compressed.mp4", // Or the URL of a page where the video is embedded if different
             "publisher": {
               "@type": "Organization",
               "name": "Lease Shield AI",
@@ -482,30 +483,32 @@ const LandingPage = () => {
                        mx: 'auto',
                      }}
                    >
-                     <video
-                       width="100%"
-                       height="100%"
-                       controls
-                       autoPlay
-                       muted
-                       loop
-                       playsInline
-                       preload="none"
-                       loading="lazy"
-                       poster="/video-poster.jpg"
-                       style={{ objectFit: 'cover', borderRadius: '20px' }}
-                       aria-label="Lease Shield AI product demonstration video"
-                     >
-                       <source src="/Product Launch Video.mp4" type="video/mp4" />
-                       <track 
-                         kind="captions" 
-                         src="/captions.vtt" 
-                         srcLang="en" 
-                         label="English" 
-                         default 
-                       />
-                       Your browser does not support the video tag.
-                     </video>
+                      {isMobile ? (
+                        <Box component="img" src="/video-poster.jpg" alt="Lease Shield AI demo" sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px' }} loading="lazy" />
+                      ) : (
+                        <video
+                          width="100%"
+                          height="100%"
+                          controls
+                          muted
+                          playsInline
+                          preload="none"
+                          poster="/video-poster.jpg"
+                          style={{ objectFit: 'cover', borderRadius: '20px' }}
+                          aria-label="Lease Shield AI product demonstration video"
+                        >
+                          <source src="/Product Launch Video_compressed.mp4" type="video/mp4" />
+                          <source src="/Product Launch Video.mp4" type="video/mp4" />
+                          <track 
+                            kind="captions" 
+                            src="/captions.vtt" 
+                            srcLang="en" 
+                            label="English" 
+                            default 
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      )}
                    </Box>
                  </Zoom>
               </Grid>
@@ -847,8 +850,10 @@ const LandingPage = () => {
         </Grid>
       </Container>
 
-      {/* --- START: Interactive AI Element --- */}
-      <InteractiveClauseAnalyzer />
+      {/* --- START: Interactive AI Element (deferred for performance) --- */}
+      <Box sx={{ minHeight: 1 }} id="interactive-ai">
+        <DeferredInteractiveAnalyzer />
+      </Box>
       {/* --- END: Interactive AI Element --- */}
 
       {/* --- START: New Lease Analysis Detail Section --- */}
@@ -1404,5 +1409,40 @@ const LandingPage = () => {
     </Box>
   );
 };
+
+// Lazy-load the heavy interactive component only when visible
+function DeferredInteractiveAnalyzer() {
+  const [shouldRender, setShouldRender] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (shouldRender) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setShouldRender(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: '400px 0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [shouldRender]);
+
+  return (
+    <div ref={containerRef}>
+      {shouldRender ? (
+        <Suspense fallback={null}>
+          <InteractiveClauseAnalyzer />
+        </Suspense>
+      ) : null}
+    </div>
+  );
+}
 
 export default LandingPage; 

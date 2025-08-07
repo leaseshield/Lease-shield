@@ -4,8 +4,8 @@ import { Helmet } from 'react-helmet-async';
 import { Link as RouterLink } from 'react-router-dom';
 
 const NewLandingPage = () => {
-  const optimizedTitle = 'Lease Shield AI: Rapid Lease Analyzer & Contract Review';
-  const optimizedDescription = 'Analyze your lease in minutes with Lease Shield AI. Uncover risks, understand clauses, and negotiate better terms. Start your free analysis today.';
+  const optimizedTitle = 'Lease Shield AI: Fast Lease Analysis & Review';
+  const optimizedDescription = 'Analyze your lease in minutes. Spot risks, understand clauses, and negotiate better terms.';
 
   return (
     <>
