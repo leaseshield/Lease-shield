@@ -58,10 +58,9 @@ import {
   PersonSearch as PersonSearchIcon,
   Upcoming as UpcomingIcon
 } from '@mui/icons-material';
-// Removed duplicate React import to avoid redeclaration
+import BentoFeaturesGrid from '../components/BentoFeaturesGrid';
 const InteractiveClauseAnalyzer = React.lazy(() => import('../components/InteractiveClauseAnalyzer'));
 const Hero = React.lazy(() => import('../components/landing/Hero'));
-import BentoFeaturesGrid from '../components/BentoFeaturesGrid';
 
 const LandingPage = () => {
   const navigate = useNavigate();
