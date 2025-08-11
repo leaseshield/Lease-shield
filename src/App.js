@@ -164,9 +164,7 @@ const buildTheme = (mode) => createTheme({
 const ProtectedRoute = ({ children, requirePaid = false, requireAdmin = false }) => {
   const { user, loading: authLoading } = useAuthState();
   const location = useLocation();
-
-  // Always call useUserProfile at the top level
-  const { profile, loadingProfile } = useUserProfile() || { profile: null, loadingProfile: true }; 
+  const { profile, loadingProfile } = useUserProfile();
 
   // Log initial state
   console.log(`ProtectedRoute (${location.pathname}): Start. AuthLoading=${authLoading}, ProfileLoading=${loadingProfile}, User? ${!!user}, RequirePaid=${requirePaid}, RequireAdmin=${requireAdmin}`);
@@ -189,7 +187,7 @@ const ProtectedRoute = ({ children, requirePaid = false, requireAdmin = false })
   }
 
   // 3. Check if requireAdmin is true and user email matches
-  if (requireAdmin && user.email !== 'leofratu@gmail.com') {
+  if (requireAdmin && user.email !== process.env.REACT_APP_ADMIN_EMAIL) {
     console.log(`ProtectedRoute (${location.pathname}): Admin check failed (User: ${user.email}). Redirecting to /dashboard.`);
     // Redirect non-admins away, perhaps to the main dashboard or home
     return <Navigate to="/dashboard" replace />; 
@@ -227,7 +225,7 @@ const ProtectedRoute = ({ children, requirePaid = false, requireAdmin = false })
 // Component to handle conditional rendering/redirect for the /trial route
 const TrialRouteHandler = () => {
   const { user, loading: authLoading } = useAuthState();
-  const { profile, loadingProfile } = useUserProfile() || { profile: null, loadingProfile: true };
+  const { profile, loadingProfile } = useUserProfile();
 
   console.log(`TrialRouteHandler: AuthLoading=${authLoading}, ProfileLoading=${loadingProfile}, User? ${!!user}, Tier=${profile?.subscriptionTier}`);
 

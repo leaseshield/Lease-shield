@@ -8,10 +8,12 @@ export const useAuthState = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let hasMounted = true; // Flag to track mounted status
     console.log("useAuthState: Setting up onAuthStateChanged listener...");
     const unsubscribe = onAuthStateChanged(
       auth,
       (user) => {
+        if (!hasMounted) return; // Prevent state update on unmounted component
         console.log("useAuthState: onAuthStateChanged fired.");
         if (user) {
           console.log("useAuthState: User found", user.uid);
@@ -24,6 +26,7 @@ export const useAuthState = () => {
         setLoading(false);
       },
       (error) => {
+        if (!hasMounted) return; // Prevent state update on unmounted component
         console.error("useAuthState: onAuthStateChanged error:", error);
         setError(error);
         console.log("useAuthState: Setting loading to false after error.");
@@ -34,6 +37,7 @@ export const useAuthState = () => {
     // Cleanup subscription
     return () => {
       console.log("useAuthState: Cleaning up onAuthStateChanged listener.");
+      hasMounted = false; // Set flag to false on unmount
       unsubscribe();
     };
   }, []);

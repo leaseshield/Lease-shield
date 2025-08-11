@@ -38,7 +38,6 @@ const Hero = ({ onPrimaryClick }) => {
             }}>
               <Box component="video" autoPlay loop muted playsInline preload="auto" poster="/video-poster.jpg" controls={false} style={{ width: '100%', height: 'auto', display: 'block', pointerEvents: 'none' }}>
                 <source src="/Product Launch Video_compressed.mp4" type="video/mp4" />
-                <source src="/Product Launch Video.mp4" type="video/mp4" />
               </Box>
             </Box>
           </Grid>
