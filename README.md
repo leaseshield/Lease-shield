@@ -100,3 +100,10 @@ gcloud run deploy --image gcr.io/lease-shield-ai/backend --platform managed
 - Firebase security rules restrict access to user-specific data
 - PDFs are stored securely in Firebase Storage
 - Authentication required for all API endpoints
+
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
+
+## License
+This project is proprietary; all rights reserved. See [LICENSE](LICENSE) for
+details.
