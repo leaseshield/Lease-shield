@@ -1,0 +1,501 @@
+clauses:
+- id: CLAUSE001
+  pattern: late fee
+  severity: high
+  remedies:
+  - pay within 5 days
+- id: CLAUSE002
+  pattern: placeholder pattern 2
+  severity: low
+  remedies:
+  - placeholder remedy 2
+- id: CLAUSE003
+  pattern: placeholder pattern 3
+  severity: low
+  remedies:
+  - placeholder remedy 3
+- id: CLAUSE004
+  pattern: placeholder pattern 4
+  severity: low
+  remedies:
+  - placeholder remedy 4
+- id: CLAUSE005
+  pattern: placeholder pattern 5
+  severity: low
+  remedies:
+  - placeholder remedy 5
+- id: CLAUSE006
+  pattern: placeholder pattern 6
+  severity: low
+  remedies:
+  - placeholder remedy 6
+- id: CLAUSE007
+  pattern: placeholder pattern 7
+  severity: low
+  remedies:
+  - placeholder remedy 7
+- id: CLAUSE008
+  pattern: placeholder pattern 8
+  severity: low
+  remedies:
+  - placeholder remedy 8
+- id: CLAUSE009
+  pattern: placeholder pattern 9
+  severity: low
+  remedies:
+  - placeholder remedy 9
+- id: CLAUSE010
+  pattern: placeholder pattern 10
+  severity: low
+  remedies:
+  - placeholder remedy 10
+- id: CLAUSE011
+  pattern: placeholder pattern 11
+  severity: low
+  remedies:
+  - placeholder remedy 11
+- id: CLAUSE012
+  pattern: placeholder pattern 12
+  severity: low
+  remedies:
+  - placeholder remedy 12
+- id: CLAUSE013
+  pattern: placeholder pattern 13
+  severity: low
+  remedies:
+  - placeholder remedy 13
+- id: CLAUSE014
+  pattern: placeholder pattern 14
+  severity: low
+  remedies:
+  - placeholder remedy 14
+- id: CLAUSE015
+  pattern: placeholder pattern 15
+  severity: low
+  remedies:
+  - placeholder remedy 15
+- id: CLAUSE016
+  pattern: placeholder pattern 16
+  severity: low
+  remedies:
+  - placeholder remedy 16
+- id: CLAUSE017
+  pattern: placeholder pattern 17
+  severity: low
+  remedies:
+  - placeholder remedy 17
+- id: CLAUSE018
+  pattern: placeholder pattern 18
+  severity: low
+  remedies:
+  - placeholder remedy 18
+- id: CLAUSE019
+  pattern: placeholder pattern 19
+  severity: low
+  remedies:
+  - placeholder remedy 19
+- id: CLAUSE020
+  pattern: placeholder pattern 20
+  severity: low
+  remedies:
+  - placeholder remedy 20
+- id: CLAUSE021
+  pattern: placeholder pattern 21
+  severity: low
+  remedies:
+  - placeholder remedy 21
+- id: CLAUSE022
+  pattern: placeholder pattern 22
+  severity: low
+  remedies:
+  - placeholder remedy 22
+- id: CLAUSE023
+  pattern: placeholder pattern 23
+  severity: low
+  remedies:
+  - placeholder remedy 23
+- id: CLAUSE024
+  pattern: placeholder pattern 24
+  severity: low
+  remedies:
+  - placeholder remedy 24
+- id: CLAUSE025
+  pattern: placeholder pattern 25
+  severity: low
+  remedies:
+  - placeholder remedy 25
+- id: CLAUSE026
+  pattern: placeholder pattern 26
+  severity: low
+  remedies:
+  - placeholder remedy 26
+- id: CLAUSE027
+  pattern: placeholder pattern 27
+  severity: low
+  remedies:
+  - placeholder remedy 27
+- id: CLAUSE028
+  pattern: placeholder pattern 28
+  severity: low
+  remedies:
+  - placeholder remedy 28
+- id: CLAUSE029
+  pattern: placeholder pattern 29
+  severity: low
+  remedies:
+  - placeholder remedy 29
+- id: CLAUSE030
+  pattern: placeholder pattern 30
+  severity: low
+  remedies:
+  - placeholder remedy 30
+- id: CLAUSE031
+  pattern: placeholder pattern 31
+  severity: low
+  remedies:
+  - placeholder remedy 31
+- id: CLAUSE032
+  pattern: placeholder pattern 32
+  severity: low
+  remedies:
+  - placeholder remedy 32
+- id: CLAUSE033
+  pattern: placeholder pattern 33
+  severity: low
+  remedies:
+  - placeholder remedy 33
+- id: CLAUSE034
+  pattern: placeholder pattern 34
+  severity: low
+  remedies:
+  - placeholder remedy 34
+- id: CLAUSE035
+  pattern: placeholder pattern 35
+  severity: low
+  remedies:
+  - placeholder remedy 35
+- id: CLAUSE036
+  pattern: placeholder pattern 36
+  severity: low
+  remedies:
+  - placeholder remedy 36
+- id: CLAUSE037
+  pattern: placeholder pattern 37
+  severity: low
+  remedies:
+  - placeholder remedy 37
+- id: CLAUSE038
+  pattern: placeholder pattern 38
+  severity: low
+  remedies:
+  - placeholder remedy 38
+- id: CLAUSE039
+  pattern: placeholder pattern 39
+  severity: low
+  remedies:
+  - placeholder remedy 39
+- id: CLAUSE040
+  pattern: placeholder pattern 40
+  severity: low
+  remedies:
+  - placeholder remedy 40
+- id: CLAUSE041
+  pattern: placeholder pattern 41
+  severity: low
+  remedies:
+  - placeholder remedy 41
+- id: CLAUSE042
+  pattern: placeholder pattern 42
+  severity: low
+  remedies:
+  - placeholder remedy 42
+- id: CLAUSE043
+  pattern: placeholder pattern 43
+  severity: low
+  remedies:
+  - placeholder remedy 43
+- id: CLAUSE044
+  pattern: placeholder pattern 44
+  severity: low
+  remedies:
+  - placeholder remedy 44
+- id: CLAUSE045
+  pattern: placeholder pattern 45
+  severity: low
+  remedies:
+  - placeholder remedy 45
+- id: CLAUSE046
+  pattern: placeholder pattern 46
+  severity: low
+  remedies:
+  - placeholder remedy 46
+- id: CLAUSE047
+  pattern: placeholder pattern 47
+  severity: low
+  remedies:
+  - placeholder remedy 47
+- id: CLAUSE048
+  pattern: placeholder pattern 48
+  severity: low
+  remedies:
+  - placeholder remedy 48
+- id: CLAUSE049
+  pattern: placeholder pattern 49
+  severity: low
+  remedies:
+  - placeholder remedy 49
+- id: CLAUSE050
+  pattern: placeholder pattern 50
+  severity: low
+  remedies:
+  - placeholder remedy 50
+- id: CLAUSE051
+  pattern: placeholder pattern 51
+  severity: low
+  remedies:
+  - placeholder remedy 51
+- id: CLAUSE052
+  pattern: placeholder pattern 52
+  severity: low
+  remedies:
+  - placeholder remedy 52
+- id: CLAUSE053
+  pattern: placeholder pattern 53
+  severity: low
+  remedies:
+  - placeholder remedy 53
+- id: CLAUSE054
+  pattern: placeholder pattern 54
+  severity: low
+  remedies:
+  - placeholder remedy 54
+- id: CLAUSE055
+  pattern: placeholder pattern 55
+  severity: low
+  remedies:
+  - placeholder remedy 55
+- id: CLAUSE056
+  pattern: placeholder pattern 56
+  severity: low
+  remedies:
+  - placeholder remedy 56
+- id: CLAUSE057
+  pattern: placeholder pattern 57
+  severity: low
+  remedies:
+  - placeholder remedy 57
+- id: CLAUSE058
+  pattern: placeholder pattern 58
+  severity: low
+  remedies:
+  - placeholder remedy 58
+- id: CLAUSE059
+  pattern: placeholder pattern 59
+  severity: low
+  remedies:
+  - placeholder remedy 59
+- id: CLAUSE060
+  pattern: placeholder pattern 60
+  severity: low
+  remedies:
+  - placeholder remedy 60
+- id: CLAUSE061
+  pattern: placeholder pattern 61
+  severity: low
+  remedies:
+  - placeholder remedy 61
+- id: CLAUSE062
+  pattern: placeholder pattern 62
+  severity: low
+  remedies:
+  - placeholder remedy 62
+- id: CLAUSE063
+  pattern: placeholder pattern 63
+  severity: low
+  remedies:
+  - placeholder remedy 63
+- id: CLAUSE064
+  pattern: placeholder pattern 64
+  severity: low
+  remedies:
+  - placeholder remedy 64
+- id: CLAUSE065
+  pattern: placeholder pattern 65
+  severity: low
+  remedies:
+  - placeholder remedy 65
+- id: CLAUSE066
+  pattern: placeholder pattern 66
+  severity: low
+  remedies:
+  - placeholder remedy 66
+- id: CLAUSE067
+  pattern: placeholder pattern 67
+  severity: low
+  remedies:
+  - placeholder remedy 67
+- id: CLAUSE068
+  pattern: placeholder pattern 68
+  severity: low
+  remedies:
+  - placeholder remedy 68
+- id: CLAUSE069
+  pattern: placeholder pattern 69
+  severity: low
+  remedies:
+  - placeholder remedy 69
+- id: CLAUSE070
+  pattern: placeholder pattern 70
+  severity: low
+  remedies:
+  - placeholder remedy 70
+- id: CLAUSE071
+  pattern: placeholder pattern 71
+  severity: low
+  remedies:
+  - placeholder remedy 71
+- id: CLAUSE072
+  pattern: placeholder pattern 72
+  severity: low
+  remedies:
+  - placeholder remedy 72
+- id: CLAUSE073
+  pattern: placeholder pattern 73
+  severity: low
+  remedies:
+  - placeholder remedy 73
+- id: CLAUSE074
+  pattern: placeholder pattern 74
+  severity: low
+  remedies:
+  - placeholder remedy 74
+- id: CLAUSE075
+  pattern: placeholder pattern 75
+  severity: low
+  remedies:
+  - placeholder remedy 75
+- id: CLAUSE076
+  pattern: placeholder pattern 76
+  severity: low
+  remedies:
+  - placeholder remedy 76
+- id: CLAUSE077
+  pattern: placeholder pattern 77
+  severity: low
+  remedies:
+  - placeholder remedy 77
+- id: CLAUSE078
+  pattern: placeholder pattern 78
+  severity: low
+  remedies:
+  - placeholder remedy 78
+- id: CLAUSE079
+  pattern: placeholder pattern 79
+  severity: low
+  remedies:
+  - placeholder remedy 79
+- id: CLAUSE080
+  pattern: placeholder pattern 80
+  severity: low
+  remedies:
+  - placeholder remedy 80
+- id: CLAUSE081
+  pattern: placeholder pattern 81
+  severity: low
+  remedies:
+  - placeholder remedy 81
+- id: CLAUSE082
+  pattern: placeholder pattern 82
+  severity: low
+  remedies:
+  - placeholder remedy 82
+- id: CLAUSE083
+  pattern: placeholder pattern 83
+  severity: low
+  remedies:
+  - placeholder remedy 83
+- id: CLAUSE084
+  pattern: placeholder pattern 84
+  severity: low
+  remedies:
+  - placeholder remedy 84
+- id: CLAUSE085
+  pattern: placeholder pattern 85
+  severity: low
+  remedies:
+  - placeholder remedy 85
+- id: CLAUSE086
+  pattern: placeholder pattern 86
+  severity: low
+  remedies:
+  - placeholder remedy 86
+- id: CLAUSE087
+  pattern: placeholder pattern 87
+  severity: low
+  remedies:
+  - placeholder remedy 87
+- id: CLAUSE088
+  pattern: placeholder pattern 88
+  severity: low
+  remedies:
+  - placeholder remedy 88
+- id: CLAUSE089
+  pattern: placeholder pattern 89
+  severity: low
+  remedies:
+  - placeholder remedy 89
+- id: CLAUSE090
+  pattern: placeholder pattern 90
+  severity: low
+  remedies:
+  - placeholder remedy 90
+- id: CLAUSE091
+  pattern: placeholder pattern 91
+  severity: low
+  remedies:
+  - placeholder remedy 91
+- id: CLAUSE092
+  pattern: placeholder pattern 92
+  severity: low
+  remedies:
+  - placeholder remedy 92
+- id: CLAUSE093
+  pattern: placeholder pattern 93
+  severity: low
+  remedies:
+  - placeholder remedy 93
+- id: CLAUSE094
+  pattern: placeholder pattern 94
+  severity: low
+  remedies:
+  - placeholder remedy 94
+- id: CLAUSE095
+  pattern: placeholder pattern 95
+  severity: low
+  remedies:
+  - placeholder remedy 95
+- id: CLAUSE096
+  pattern: placeholder pattern 96
+  severity: low
+  remedies:
+  - placeholder remedy 96
+- id: CLAUSE097
+  pattern: placeholder pattern 97
+  severity: low
+  remedies:
+  - placeholder remedy 97
+- id: CLAUSE098
+  pattern: placeholder pattern 98
+  severity: low
+  remedies:
+  - placeholder remedy 98
+- id: CLAUSE099
+  pattern: placeholder pattern 99
+  severity: low
+  remedies:
+  - placeholder remedy 99
+- id: CLAUSE100
+  pattern: placeholder pattern 100
+  severity: low
+  remedies:
+  - placeholder remedy 100
