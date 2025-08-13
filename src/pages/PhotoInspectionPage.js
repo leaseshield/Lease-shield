@@ -26,7 +26,8 @@ import {
   TableHead,
   TableRow,
   Container,
-  LinearProgress
+  LinearProgress,
+  Tooltip
 } from '@mui/material';
 import { 
     FileUpload as FileUploadIcon, 
@@ -51,19 +52,19 @@ const fetchInspectionData = async (formData, token) => {
                 fileName: "wall_crack.jpg",
                 imageUrl: "https://via.placeholder.com/300x200.png?text=Wall+Crack", // Placeholder image URL
                 issues: [
-                    { 
-                        id: 'issue-1', 
-                        label: "Hairline Crack", 
-                        severity: "Low", 
-                        location: "Living room, near window", 
+                    {
+                        id: 'issue-1',
+                        label: "Hairline Crack",
+                        severity: "Low",
+                        location: { x: 15, y: 60, description: "Living room, near window" },
                         // annotationBox: { x: 50, y: 100, width: 150, height: 20 } // Example coordinates
                     },
-                     { 
-                        id: 'issue-2', 
-                        label: "Water Stain", 
-                        severity: "Medium", 
-                        location: "Living room, ceiling corner", 
-                        // annotationBox: { x: 200, y: 30, width: 40, height: 40 } 
+                     {
+                        id: 'issue-2',
+                        label: "Water Stain",
+                        severity: "Medium",
+                        location: { x: 70, y: 20, description: "Living room, ceiling corner" },
+                        // annotationBox: { x: 200, y: 30, width: 40, height: 40 }
                     },
                 ]
             },
@@ -71,11 +72,11 @@ const fetchInspectionData = async (formData, token) => {
                 fileName: "rusty_faucet.png",
                 imageUrl: "https://via.placeholder.com/300x200.png?text=Rusty+Faucet", // Placeholder image URL
                 issues: [
-                    { 
-                        id: 'issue-3', 
-                        label: "Rust/Corrosion", 
-                        severity: "Medium", 
-                        location: "Kitchen Sink Faucet", 
+                    {
+                        id: 'issue-3',
+                        label: "Rust/Corrosion",
+                        severity: "Medium",
+                        location: { x: 55, y: 80, description: "Kitchen Sink Faucet" },
                     }
                 ]
             }
@@ -554,15 +555,41 @@ const PhotoInspectionPage = () => {
                  {inspectionResults.map((result, index) => (
                    <Grid item xs={12} md={6} key={index}>
                      <Card elevation={2}>
-                       <CardMedia
-                         component="img"
-                         height="200"
-                         // Use result.imageUrl if available from backend, else placeholder or omit
-                         // image={result.imageUrl && result.imageUrl !== 'placeholder' ? result.imageUrl : `https://via.placeholder.com/300x200.png?text=${encodeURIComponent(result.fileName)}`}
-                         image={`https://via.placeholder.com/300x200.png?text=${encodeURIComponent(result.fileName)}`} // TEMP Placeholder
-                         alt={result.fileName}
-                         sx={{ objectFit: 'contain' }} 
-                       />
+                       <Box sx={{ position: 'relative', height: 200 }}>
+                         <CardMedia
+                           component="img"
+                           // Use result.imageUrl if available from backend, else placeholder or omit
+                           // image={result.imageUrl && result.imageUrl !== 'placeholder' ? result.imageUrl : `https://via.placeholder.com/300x200.png?text=${encodeURIComponent(result.fileName)}`}
+                           image={`https://via.placeholder.com/300x200.png?text=${encodeURIComponent(result.fileName)}`} // TEMP Placeholder
+                           alt={result.fileName}
+                           sx={{ objectFit: 'contain', height: '100%', width: '100%' }}
+                         />
+                         {result.issues && result.issues.map((issue) => {
+                           const loc = issue.location || {};
+                           const x = loc.x;
+                           const y = loc.y;
+                           if (typeof x !== 'number' || typeof y !== 'number') return null;
+                           const tooltip = `${issue.label}${loc.description ? ` - ${loc.description}` : ''}`;
+                           return (
+                             <Tooltip key={issue.id} title={tooltip} arrow>
+                               <Box
+                                 sx={(theme) => ({
+                                   position: 'absolute',
+                                   top: `${y}%`,
+                                   left: `${x}%`,
+                                   transform: 'translate(-50%, -50%)',
+                                   width: 12,
+                                   height: 12,
+                                   borderRadius: '50%',
+                                   bgcolor: theme.palette[getSeverityColor(issue.severity)].main,
+                                   border: `2px solid ${theme.palette.common.white}`,
+                                   cursor: 'pointer'
+                                 })}
+                               />
+                             </Tooltip>
+                           );
+                         })}
+                       </Box>
                        <CardContent>
                          <Typography gutterBottom variant="h6" component="div">
                            {result.fileName}
@@ -578,7 +605,7 @@ const PhotoInspectionPage = () => {
                                  </ListItemIcon>
                                  <ListItemText 
                                    primary={issue.label}
-                                   secondary={issue.location}
+                                   secondary={issue.location?.description || issue.location}
                                  />
                                </ListItem>
                              ))}

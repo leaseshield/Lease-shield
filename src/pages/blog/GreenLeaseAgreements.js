@@ -22,12 +22,13 @@ const GreenLeaseAgreements = () => {
         Commercial landlords and tenants increasingly seek sustainable solutions that reduce operating costs and carbon footprints. Green lease agreements 🌱—contracts that align landlord and tenant responsibilities for energy efficiency—offer a win-win: lower utility bills and a smaller environmental impact. This article dives into the niche of green leasing and how to implement it effectively.
       </Typography>
 
-      {/* TODO: Add relevant image here (e.g., building with green certification logo) 
-          alt="Modern commercial building with a LEED certification logo visible." */}
       <Box component="figure" sx={{ textAlign: 'center', my: 3 }}>
-         <Box sx={{ width: '100%', height: 200, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
-            <Typography color="text.secondary">(Placeholder: Green Building Image)</Typography>
-         </Box>
+        <Box
+          component="img"
+          src="/assets/green-building.svg"
+          alt="Modern commercial building with a LEED certification logo visible."
+          sx={{ width: '100%', borderRadius: 1 }}
+        />
       </Box>
 
       <Divider sx={{ my: 3 }} />
