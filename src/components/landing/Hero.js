@@ -36,7 +36,19 @@ const Hero = ({ onPrimaryClick }) => {
               boxShadow: theme.shadows[8],
               background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'
             }}>
-              <Box component="video" autoPlay loop muted playsInline preload="auto" poster="/video-poster.jpg" controls={false} style={{ width: '100%', height: 'auto', display: 'block', pointerEvents: 'none' }}>
+              <Box
+                component="video"
+                aria-label="Product demonstration video"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                poster="/video-poster.jpg"
+                controls={false}
+                style={{ width: '100%', height: 'auto', display: 'block', pointerEvents: 'none' }}
+              >
+                {/* Future enhancement: add captions or transcript for audio content */}
                 <source src="/Product Launch Video_compressed.mp4" type="video/mp4" />
                 <source src="/Product Launch Video.mp4" type="video/mp4" />
               </Box>
