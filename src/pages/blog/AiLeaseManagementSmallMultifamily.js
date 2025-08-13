@@ -22,12 +22,13 @@ const AiLeaseManagementSmallMultifamily = () => {
         Small-scale multifamily property owners face unique challenges: juggling lease renewals, rent collection, and compliance without the budgets of big management firms. Enter AI-powered lease management software 🤖—a game-changer that automates repetitive tasks, uncovers insights from your data, and helps you stay compliant. In this article, we'll explore how to leverage these tools to streamline operations and keep tenants happy.
       </Typography>
 
-      {/* TODO: Add relevant image here (e.g., dashboard screenshot) 
-          alt="Dashboard of AI lease management software showing key property metrics." */}
       <Box component="figure" sx={{ textAlign: 'center', my: 3 }}>
-         <Box sx={{ width: '100%', height: 200, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
-            <Typography color="text.secondary">(Placeholder: Software Dashboard Image)</Typography>
-         </Box>
+        <Box
+          component="img"
+          src="/assets/ai-dashboard.svg"
+          alt="Dashboard of AI lease management software showing key property metrics."
+          sx={{ width: '100%', borderRadius: 1 }}
+        />
       </Box>
 
       <Divider sx={{ my: 3 }} />
