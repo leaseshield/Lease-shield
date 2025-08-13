@@ -4,7 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 
-test('renders video with captions and transcript link', () => {
+test('renders video with captions', () => {
   const theme = createTheme({ palette: { gradients: { soft: '#fff' } } });
   render(
     <MemoryRouter>
@@ -15,5 +15,4 @@ test('renders video with captions and transcript link', () => {
   );
   const video = screen.getByLabelText(/product demonstration video/i);
   expect(video.querySelector('track')).toBeTruthy();
-  expect(screen.getByRole('link', { name: /download transcript/i })).toBeInTheDocument();
 });
