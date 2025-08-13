@@ -1212,7 +1212,20 @@ function DeferredInteractiveAnalyzer() {
   return (
     <div ref={containerRef}>
       {shouldRender ? (
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <Box
+              sx={{
+                minHeight: 400,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          }
+        >
           <InteractiveClauseAnalyzer />
         </Suspense>
       ) : null}
