@@ -11,7 +11,6 @@ import Alert from '@mui/material/Alert';
 import { getApiBaseUrl } from './utils/api';
 
 // Pages
-import React from 'react';
 import Layout from './components/Layout';
 import { ColorModeContext } from './context/ColorModeContext';
 import RouteErrorBoundary from './components/RouteErrorBoundary';
