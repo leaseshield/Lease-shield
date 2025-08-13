@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const debugLog = (...args) => { if (process.env.NODE_ENV === 'development') console.log(...args); };
 import { Box, Typography, Button, Container, Paper, Grid, Card, CardContent, CardActions, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+
+const debugLog = (...args) => { if (process.env.NODE_ENV === 'development') console.log(...args); };
 
 // Define Plan Details (could be moved to a config file later)
 const plans = [
