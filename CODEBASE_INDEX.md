@@ -279,3 +279,15 @@ mock-server/
 - Conversion funnel design
 
 This codebase represents a comprehensive SaaS platform for lease analysis, combining modern web technologies with AI capabilities to provide valuable insights for tenants and property managers. 
+### Examples (`examples/monetization/`)
+```
+examples/monetization/
+├── README.md                  # Overview and setup instructions
+├── lemonsqueezy_flask_example.py # Flask example server
+├── openapi.yaml               # OpenAPI 3 spec
+├── postman_collection.json    # Postman requests
+├── quick_start.py             # End-to-end demonstration script
+└── sdk/                       # Lightweight SDK examples
+    ├── python_client.py
+    └── typescript_client.ts
+```
