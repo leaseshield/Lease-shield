@@ -1,102 +1,49 @@
 # Lease Shield AI
 
-An intelligent lease analysis application powered by Google's Gemini AI that helps tenants understand their lease agreements.
+Lease Shield AI helps tenants decode their lease agreements using Google's Gemini models. Upload a PDF, and the app highlights key clauses, risks and costs in minutes.
+
+## Architecture
+```mermaid
+graph LR
+    A[React Frontend] -->|REST| B[Python Flask API]
+    B -->|Firestore| C[(Firebase)]
+    B -->|Gemini API| D[Google Gemini]
+```
+
+## 5‑Minute Demo
+1. Copy environment template and fill in your keys:
+   ```bash
+   cp .env.example .env
+   # edit .env to set GEMINI_API_KEY_1 and ADMIN_EMAIL
+   ```
+2. Start everything with one command:
+   ```bash
+   docker compose up
+   ```
+3. Call the Hello API once the containers are running:
+   ```bash
+   curl http://localhost:8081/api/ping
+   # {"status":"pong"}
+   ```
+
+## Demo Video
+[Watch a quick demo](public/Product%20Launch%20Video.mp4)
 
 ## Features
-
-- **Secure Authentication**: User account management via Firebase Authentication
-- **PDF Upload & Processing**: Secure PDF upload to Firebase Storage
-- **AI-Powered Analysis**: Automated lease analysis using Google Gemini AI
-- **Interactive Dashboard**: View extracted lease terms, clause summaries, and risk analysis
-- **Secure Data Storage**: All user data and analysis results stored securely in Firebase Firestore
+- Secure authentication with Firebase
+- PDF upload & AI‑powered analysis
+- Interactive dashboard of lease terms and risks
 
 ## Tech Stack
-
-### Frontend
-- React (with Material UI)
-- Firebase SDK (Authentication, Firestore, Storage)
-
-### Backend
-- Python with Flask/FastAPI
-- Firebase Admin SDK
-- Google Generative AI SDK
-- PyMuPDF for PDF text extraction
-
-## Setup Instructions
-
-### Prerequisites
-- Node.js and npm
-- Python 3.8+
-- Firebase account and project
-- Google AI Studio API key (for Gemini)
-
-### Frontend Setup
-1. Install dependencies:
-   ```
-   npm install
-   ```
-
-2. Create a `.env` file in the root directory with your Firebase configuration:
-   ```
-   REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
-   REACT_APP_API_URL=https://your-backend.example.com
-   REACT_APP_ADMIN_EMAIL=admin@example.com
-   ```
-
-3. Start the development server:
-   ```
-   npm start
-   ```
-
-### Backend Setup
-1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
-
-2. Install Python dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. Create a Firebase Admin SDK service account key and save it as:
-   ```
-   lease-shield-ai-firebase-admin-sdk.json
-   ```
-
-4. Set environment variables:
-   ```
-   export GEMINI_API_KEY_1=your_gemini_key
-   export GEMINI_API_KEY_2=optional_second_key
-   export GEMINI_API_KEY_3=optional_third_key
-   export ADMIN_EMAIL=admin@example.com
-   export MAXELPAY_API_KEY=your_maxelpay_key
-   export MAXELPAY_SECRET_KEY=your_maxelpay_secret
-   ```
-
-5. Start the backend server:
-   ```
-   python app.py
-   ```
+- **Frontend:** React, Material UI, Firebase SDK
+- **Backend:** Flask, Firebase Admin, Google Generative AI SDK
+- **Infrastructure:** Docker, Firebase Firestore & Storage
 
 ## Deployment
+- Frontend: Firebase Hosting
+- Backend: Google Cloud Run
 
-### Frontend
-Deploy to Firebase Hosting:
-```
-npm run build
-firebase deploy --only hosting
-```
-
-### Backend
-Deploy to Google Cloud Run:
-```
-gcloud builds submit --tag gcr.io/lease-shield-ai/backend
-gcloud run deploy --image gcr.io/lease-shield-ai/backend --platform managed
-```
-
-## Security Considerations
-- API keys are stored securely as environment variables
-- Firebase security rules restrict access to user-specific data
-- PDFs are stored securely in Firebase Storage
-- Authentication required for all API endpoints
+## Security
+- API keys via environment variables
+- Firebase rules enforce per-user data isolation
+- All uploads stored securely in Firebase Storage
