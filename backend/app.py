@@ -237,7 +237,8 @@ def extract_pdf_text(file_stream):
         reader = PyPDF2.PdfReader(file_stream)
         for page_num in range(len(reader.pages)):
             page = reader.pages[page_num]
-            text += page.extract_text() + "\\n"
+            # Append a real newline between pages rather than a literal "\n"
+            text += page.extract_text() + "\n"
         return text
     except Exception as e:
         print(f"PDF extraction error: {e}")
