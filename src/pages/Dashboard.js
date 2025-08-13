@@ -498,13 +498,14 @@ const Dashboard = ({ showSnackbar }) => {
                                 <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
                                     <Tooltip title="Delete Analysis">
                                         <span> {/* Span needed for disabled button tooltip */}
-                                            <IconButton 
-                                                size="small" 
+                                            <IconButton
+                                                size="small"
                                                 color="error"
+                                                aria-label="Delete analysis"
                                                 onClick={(e) => {
                                                     e.stopPropagation(); // Prevent card click
                                                     handleDeleteLease(lease.id);
-                                                }} 
+                                                }}
                                                 // disabled={deletingId === lease.id} // If adding delete loading state
                                             >
                                                 <DeleteIcon fontSize="small" />

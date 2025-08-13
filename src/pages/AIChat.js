@@ -195,8 +195,8 @@ const AIChat = () => {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
       e.preventDefault();
       handleSend();
     }
@@ -293,13 +293,25 @@ const AIChat = () => {
               ))}
           </Box>
           <Paper elevation={4} sx={{ p: 1, borderRadius: '20px', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <IconButton component="label">
+            <IconButton component="label" aria-label="Attach files">
               <AttachFileIcon />
               <input type="file" multiple hidden onChange={(e) => onDrop(Array.from(e.target.files))} />
             </IconButton>
-            <TextField fullWidth multiline maxRows={5} variant="standard" placeholder={currentPlaceholder} value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={handleKeyPress} disabled={isSending || limitReached} InputProps={{ disableUnderline: true }} />
-            <IconButton><MicIcon /></IconButton>
-            <IconButton color="primary" onClick={handleSend} disabled={!input.trim() || isSending || limitReached}>
+            <TextField
+              fullWidth
+              multiline
+              maxRows={5}
+              variant="standard"
+              placeholder={currentPlaceholder}
+              aria-label="Message"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isSending || limitReached}
+              InputProps={{ disableUnderline: true }}
+            />
+            <IconButton aria-label="Record audio"><MicIcon /></IconButton>
+            <IconButton color="primary" onClick={handleSend} disabled={!input.trim() || isSending || limitReached} aria-label="Send message">
               <SendIcon />
             </IconButton>
           </Paper>

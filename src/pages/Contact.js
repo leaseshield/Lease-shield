@@ -154,26 +154,29 @@ const Contact = () => {
                   <Box>
                     <Typography variant="h6">Follow Us</Typography>
                     <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                      <IconButton 
-                        href="https://twitter.com/LeaseShieldAI" 
-                        target="_blank" 
+                      <IconButton
+                        href="https://twitter.com/LeaseShieldAI"
+                        target="_blank"
                         rel="noopener noreferrer nofollow"
+                        aria-label="Twitter"
                         sx={{ color: 'text.secondary', '&:hover': { color: '#1DA1F2' } }}
                       >
                         <TwitterIcon />
                       </IconButton>
-                      <IconButton 
-                        href="https://instagram.com/leaseshield" 
-                        target="_blank" 
+                      <IconButton
+                        href="https://instagram.com/leaseshield"
+                        target="_blank"
                         rel="noopener noreferrer nofollow"
+                        aria-label="Instagram"
                         sx={{ color: 'text.secondary', '&:hover': { color: '#E4405F' } }}
                       >
                         <InstagramIcon />
                       </IconButton>
-                      <IconButton 
-                        href="https://linkedin.com/company/lease-shield-ai" 
-                        target="_blank" 
+                      <IconButton
+                        href="https://linkedin.com/company/lease-shield-ai"
+                        target="_blank"
                         rel="noopener noreferrer nofollow"
+                        aria-label="LinkedIn"
                         sx={{ color: 'text.secondary', '&:hover': { color: '#0077B5' } }}
                       >
                         <LinkedInIcon />
