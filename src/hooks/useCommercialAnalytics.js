@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthState } from './useAuthState';
 import { useUserProfile } from '../context/UserProfileContext';
+import { getApiBaseUrl } from '../utils/api';
 
 export const useCommercialAnalytics = () => {
   const { user } = useAuthState();
@@ -19,7 +20,7 @@ export const useCommercialAnalytics = () => {
       setLoading(true);
       try {
         const token = await user.getIdToken();
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081';
+        const apiUrl = getApiBaseUrl();
         const response = await fetch(`${apiUrl}/api/commercial/analytics`, {
           headers: {
             'Authorization': `Bearer ${token}`,

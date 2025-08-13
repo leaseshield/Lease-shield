@@ -3,6 +3,8 @@ import { useAuthState } from '../hooks/useAuthState';
 import { db } from '../firebase/config';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 
+const debugLog = (...args) => { if (process.env.NODE_ENV === 'development') console.log(...args); };
+
 const UserProfileContext = createContext();
 
 export const UserProfileProvider = ({ children }) => {
@@ -11,7 +13,7 @@ export const UserProfileProvider = ({ children }) => {
   const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
-    console.log("UserProfileContext: useEffect triggered.", { userId: user?.uid });
+    debugLog("UserProfileContext: useEffect triggered.", { userId: user?.uid });
     let unsubscribe = () => {};
 
     if (user) {
@@ -22,10 +24,10 @@ export const UserProfileProvider = ({ children }) => {
         (docSnap) => {
           if (docSnap.exists()) {
             const profileData = docSnap.data();
-            console.log("UserProfileContext: Profile snapshot received (exists):", profileData);
+            debugLog("UserProfileContext: Profile snapshot received (exists):", profileData);
             setProfile(profileData);
           } else {
-            console.log("UserProfileContext: No profile document found. Assuming default free tier.");
+            debugLog("UserProfileContext: No profile document found. Assuming default free tier.");
             setProfile({ subscriptionTier: 'free', freeScansUsed: 0 }); // Assume free default if not found
           }
           setLoadingProfile(false);
@@ -38,14 +40,14 @@ export const UserProfileProvider = ({ children }) => {
       );
     } else {
       // No user, clear profile
-      console.log("UserProfileContext: No user logged in. Resetting profile.");
+      debugLog("UserProfileContext: No user logged in. Resetting profile.");
       setProfile(null);
       setLoadingProfile(false);
     }
 
     // Cleanup listener on component unmount or if user changes.
     return () => {
-        console.log("UserProfileContext: Cleaning up profile listener.");
+        debugLog("UserProfileContext: Cleaning up profile listener.");
         unsubscribe();
     };
   }, [user]); // Re-run effect when user auth state changes

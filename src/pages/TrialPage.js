@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+
+const debugLog = (...args) => { if (process.env.NODE_ENV === 'development') console.log(...args); };
 import { Box, Typography, Button, Container, Paper, Grid, Card, CardContent, CardActions, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
@@ -55,7 +57,7 @@ const TrialPage = () => {
   const handleUpgradeClick = (planId) => {
     // Navigate to pricing page, potentially passing the selected plan
     // The pricing page should handle the actual checkout logic
-    console.log(`Navigating to pricing page, selected plan: ${planId}`);
+    debugLog(`Navigating to pricing page, selected plan: ${planId}`);
     navigate(`/pricing?plan=${planId}`); 
   };
 

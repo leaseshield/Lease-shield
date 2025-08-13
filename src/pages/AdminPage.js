@@ -1,9 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuthState } from '../hooks/useAuthState'; // Correct path to the hook
 import { Navigate } from 'react-router-dom'; // For redirecting if not admin
+import { getApiBaseUrl } from '../utils/api';
 
-// --- API Helper Functions --- 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081';
+const API_URL = getApiBaseUrl();
+const ADMIN_EMAIL = process.env.REACT_APP_ADMIN_EMAIL?.toLowerCase();
+
+const debugLog = (...args) => {
+    if (process.env.NODE_ENV === 'development') {
+        console.log(...args);
+    }
+};
 
 const fetchAdminData = async (endpoint, token, options = {}) => {
     const response = await fetch(`${API_URL}${endpoint}`, {
@@ -39,8 +46,7 @@ const createAdminCommercialUser = (token, email, password, limit) => {
 // --- End API Helpers ---
 
 const AdminPage = () => {
-    // Log when the component function body starts executing
-    console.log("AdminPage component mounting..."); 
+    debugLog("AdminPage component mounting...");
 
     const { user, loading: authLoading } = useAuthState();
     const [isAdmin, setIsAdmin] = useState(false);
@@ -69,25 +75,25 @@ const AdminPage = () => {
     // Function to fetch users - wrapped in useCallback
     const loadUsers = useCallback(async () => {
         if (!user) {
-            console.log("AdminPage: loadUsers called but user is null, returning.");
+            debugLog("AdminPage: loadUsers called but user is null, returning.");
             return;
         }
-        
-        console.log("AdminPage: loadUsers starting...");
+
+        debugLog("AdminPage: loadUsers starting...");
         setIsLoadingUsers(true);
         setFetchError('');
         try {
             const token = await user.getIdToken();
-            console.log("AdminPage: loadUsers got token, fetching users...");
+            debugLog("AdminPage: loadUsers got token, fetching users...");
             const fetchedUsers = await getAdminUsers(token);
-            console.log(`AdminPage: loadUsers received ${fetchedUsers?.length || 0} users.`);
+            debugLog(`AdminPage: loadUsers received ${fetchedUsers?.length || 0} users.`);
             setUsers(fetchedUsers || []);
         } catch (err) {
             console.error("AdminPage: Error in loadUsers:", err);
             setFetchError(`Failed to load users: ${err.message}`);
             setUsers([]);
         } finally {
-            console.log("AdminPage: loadUsers finished.");
+            debugLog("AdminPage: loadUsers finished.");
             setIsLoadingUsers(false);
         }
     }, [user]); // Re-create loadUsers only if user object changes
@@ -96,11 +102,10 @@ const AdminPage = () => {
     useEffect(() => {
         if (!authLoading) {
             // Log the user object to inspect its contents
-            console.log('Auth state loaded. User object:', user);
-            
-            // Check if user exists and email matches (case-insensitive)
-            const isAdminUser = user && user.email?.toLowerCase() === 'leofratu@gmail.com';
-            console.log(`Checking admin status: User email is ${user?.email}, isAdminUser = ${isAdminUser}`);
+            debugLog('Auth state loaded. User object:', user);
+
+            const isAdminUser = user && user.email?.toLowerCase() === ADMIN_EMAIL;
+            debugLog(`Checking admin status: User email is ${user?.email}, isAdminUser = ${isAdminUser}`);
             
             if (isAdminUser) {
                 setIsAdmin(true);
@@ -110,7 +115,7 @@ const AdminPage = () => {
                 setIsLoadingUsers(false); // No data to load if not admin
             }
         } else {
-            console.log('Auth state still loading...');
+            debugLog('Auth state still loading...');
             setIsLoadingUsers(true); // Still loading auth state
         }
     }, [user, authLoading, loadUsers]);

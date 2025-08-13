@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useContext } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { 
   AppBar, 
@@ -475,4 +476,10 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
   );
 };
 
-export default Layout; 
+Layout.propTypes = {
+  children: PropTypes.node,
+  showAuthButtons: PropTypes.bool,
+  maxWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.bool])
+};
+
+export default Layout;

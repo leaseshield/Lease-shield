@@ -1,0 +1,9 @@
+version: '3'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8081:8081"
+    environment:
+      - GEMINI_API_KEY_1=${GEMINI_API_KEY_1}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}

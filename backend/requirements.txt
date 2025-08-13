@@ -9,6 +9,6 @@ Werkzeug==2.2.2
 google-cloud-storage==2.5.0
 pillow==9.3.0 # Added for image processing
 google-generativeai==0.5.4 # Added for Gemini API
-PyPDF2
+PyPDF2==3.0.1
 
 #this is for the pdf processing

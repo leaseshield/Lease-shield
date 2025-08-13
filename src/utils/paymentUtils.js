@@ -1,11 +1,17 @@
 // Utility functions related to payment processing
+import { getApiBaseUrl } from './api';
+
+const debugLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
 
 // Function that calls the backend to start Maxelpay checkout
 export const initiateCheckout = async (token, planId) => {
-  console.log(`Attempting to initiate Maxelpay checkout for plan: ${planId}...`);
-  
-  // Get API URL from environment variable, default to localhost
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081'; 
+  debugLog(`Attempting to initiate Maxelpay checkout for plan: ${planId}...`);
+
+  const apiUrl = getApiBaseUrl();
   const endpoint = `${apiUrl}/api/payid/create-checkout-session`;
 
   // Basic validation
@@ -36,7 +42,7 @@ export const initiateCheckout = async (token, planId) => {
       throw new Error('Failed to retrieve checkout URL from server.');
     }
 
-    console.log("Received checkout URL:", responseData.checkoutUrl);
+    debugLog("Received checkout URL:", responseData.checkoutUrl);
     return responseData.checkoutUrl; // Return the URL received from the backend
 
   } catch (error) {

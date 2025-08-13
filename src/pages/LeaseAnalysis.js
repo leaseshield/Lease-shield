@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { getApiBaseUrl } from '../utils/api';
 import { 
   Typography, 
   Box, 
@@ -248,7 +249,7 @@ const LeaseAnalysis = ({ showSnackbar }) => {
         throw new Error('User not authenticated');
       }
 
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081';
+      const apiUrl = getApiBaseUrl();
       const token = await user.getIdToken();
       let response;
 

@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, Button, Box, Typography, CircularProgress, Alert } from '@mui/material';
 import { UploadFile as UploadFileIcon, Description as DescriptionIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAuthState } from '../hooks/useAuthState';
+import { getApiBaseUrl } from '../utils/api';
 
 const ComplianceTemplateManager = () => {
   const { user } = useAuthState();
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081';
+  const apiUrl = getApiBaseUrl();
 
   useEffect(() => {
     const fetchTemplate = async () => {

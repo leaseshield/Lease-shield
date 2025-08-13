@@ -39,6 +39,8 @@ An intelligent lease analysis application powered by Google's Gemini AI that hel
 2. Create a `.env` file in the root directory with your Firebase configuration:
    ```
    REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+   REACT_APP_API_URL=https://your-backend.example.com
+   REACT_APP_ADMIN_EMAIL=admin@example.com
    ```
 
 3. Start the development server:
@@ -64,7 +66,12 @@ An intelligent lease analysis application powered by Google's Gemini AI that hel
 
 4. Set environment variables:
    ```
-   export GEMINI_API_KEY=your_gemini_api_key
+   export GEMINI_API_KEY_1=your_gemini_key
+   export GEMINI_API_KEY_2=optional_second_key
+   export GEMINI_API_KEY_3=optional_third_key
+   export ADMIN_EMAIL=admin@example.com
+   export MAXELPAY_API_KEY=your_maxelpay_key
+   export MAXELPAY_SECRET_KEY=your_maxelpay_secret
    ```
 
 5. Start the backend server:

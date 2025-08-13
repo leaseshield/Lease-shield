@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { auth } from '../firebase/config'; // For potential future authentication needs
+import { getApiBaseUrl } from '../utils/api';
 import {
   Box,
   Typography,
@@ -225,10 +226,10 @@ const PhotoInspectionPage = () => {
         formData.append('photos', fileObj.file, fileObj.file.name); // Use 'photos' as field name
       });
 
-      // --- IMPORTANT: Replace with actual API call to your backend ---
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081'; 
+      const apiUrl = getApiBaseUrl();
       const inspectEndpoint = `${apiUrl}/api/inspect-photos`; // NEW ENDPOINT
-      console.log('Photo Inspection Endpoint:', inspectEndpoint);
+      const debugLog = (...args) => { if (process.env.NODE_ENV === 'development') console.log(...args); };
+      debugLog('Photo Inspection Endpoint:', inspectEndpoint);
 
       const response = await fetch(inspectEndpoint, {
           method: 'POST',
@@ -425,7 +426,7 @@ const PhotoInspectionPage = () => {
                                         alt={result.fileName}
                                         sx={{ objectFit: 'contain', bgcolor: 'grey.100' }} // contain ensures whole image is visible
                                     />
-                                    {/* TODO: Add annotation overlay logic here if needed */}
+                                    {/* Annotation overlay logic can be added here if needed */}
                                     <CardContent sx={{ pt: 1, pb: '8px !important' }}> {/* Reduce padding */}
                                         <Typography variant="subtitle2" gutterBottom noWrap>
                                             {result.fileName}
