@@ -93,19 +93,37 @@ if not gemini_api_keys:
 # --- Flask App and Firebase Initialization --- 
 app = Flask(__name__)
 
+# Allowed origins for CORS requests
+ALLOWED_ORIGINS = [
+    "https://lease-shield-frontend.onrender.com",
+    "http://localhost:3000",
+    "https://leaseshield.eu",
+    "https://leasesheild.eu",
+]
+
 # Configure CORS explicitly
-CORS(app, 
-     origins=[
-         "https://lease-shield-frontend.onrender.com", 
-         "http://localhost:3000",
-         "https://leaseshield.eu",
-         "https://leasesheild.eu"
-     ], 
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], # Explicitly allow methods
-     headers=["Content-Type", "Authorization"],       # Explicitly allow headers
-     supports_credentials=True,
-     # expose_headers=["Content-Length"] # Optional: Add if frontend needs specific headers
+CORS(
+    app,
+    origins=ALLOWED_ORIGINS,
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    supports_credentials=True,
 )
+
+
+@app.after_request
+def apply_cors_headers(response):
+    """Ensure required CORS headers are present on all responses."""
+    origin = request.headers.get("Origin")
+    if origin in ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers.setdefault("Vary", "Origin")
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers[
+        "Access-Control-Allow-Headers"
+    ] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    return response
 
 # --- Initialize Firebase Admin SDK (Handles Local and Deployed) ---
 db = None # Initialize db to None
