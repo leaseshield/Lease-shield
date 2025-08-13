@@ -22,6 +22,7 @@ import {
   Speed as SpeedIcon,
   TrendingUp as TrendingUpIcon,
   Star as StarIcon,
+  Chat as ChatIcon,
 } from '@mui/icons-material';
 import { BentoGridItem, GlassmorphismCard } from './InteractiveComponents';
 
@@ -81,6 +82,16 @@ const BentoFeaturesGrid = () => {
       stats: 'Instant Reports',
       features: ['Issue Detection', 'Cost Estimation', 'Annotated Reports'],
       color: '#42a5f5'
+    },
+    {
+      id: 'ai-chat',
+      title: 'AI Chat',
+      description: 'Get instant answers to your lease questions with our conversational assistant.',
+      icon: <ChatIcon sx={{ fontSize: 40 }} />,
+      link: '/chat',
+      stats: '24/7 Assistant',
+      features: ['Instant Answers', 'Lease Guidance'],
+      color: '#ab47bc'
     },
   ];
 

@@ -63,7 +63,8 @@ import {
   BuildOutlined as BuildIcon,
   AnalyticsOutlined as AnalyticsIcon,
   PersonSearch as PersonSearchIcon,
-  Upcoming as UpcomingIcon
+  Upcoming as UpcomingIcon,
+  Chat as ChatIcon
 } from '@mui/icons-material';
 import BentoFeaturesGrid from '../components/BentoFeaturesGrid';
 const InteractiveClauseAnalyzer = React.lazy(() => import('../components/InteractiveClauseAnalyzer'));
@@ -153,6 +154,12 @@ const LandingPage = () => {
       description: "Upload property photos (walls, fixtures, roof) to detect issues and estimate repair costs—instantly producing annotated reports and budgets.",
       icon: <CameraAltIcon sx={{ fontSize: 40 }} color="primary" />,
       link: "/photo-inspection"
+    },
+    {
+      title: "AI Chat",
+      description: "Get instant answers to your lease questions with our conversational assistant.",
+      icon: <ChatIcon sx={{ fontSize: 40 }} color="primary" />,
+      link: "/chat"
     }
   ];
 
