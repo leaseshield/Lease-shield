@@ -118,22 +118,26 @@ const ScrollytellingChart = () => {
             position: 'relative'
           }}>
             {/* Y-axis labels */}
-            <Box sx={{ 
-              position: 'absolute', 
-              left: -10, 
-              top: 0, 
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              color: 'text.secondary',
-              fontSize: '0.8rem'
-            }}>
-              <span>100%</span>
-              <span>75%</span>
-              <span>50%</span>
-              <span>25%</span>
-              <span>0%</span>
+            <Box
+              sx={{
+                position: 'absolute',
+                left: -10,
+                top: 0,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                color: 'text.secondary',
+                fontSize: '0.8rem'
+              }}
+              aria-labelledby="accuracy-axis-label"
+            >
+              <Typography id="accuracy-axis-label" sx={{ position: 'absolute', width: 1, height: 1, p: 0, m: '-1px', overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0 }}>Accuracy percentage</Typography>
+              <Typography component="span" aria-hidden="true">100%</Typography>
+              <Typography component="span" aria-hidden="true">75%</Typography>
+              <Typography component="span" aria-hidden="true">50%</Typography>
+              <Typography component="span" aria-hidden="true">25%</Typography>
+              <Typography component="span" aria-hidden="true">0%</Typography>
             </Box>
 
             {/* Grid lines */}

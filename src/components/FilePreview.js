@@ -4,6 +4,7 @@ import {
   ListItemIcon,
   ListItemText,
   IconButton,
+  Box,
 } from '@mui/material';
 import {
   Clear as ClearIcon,
@@ -28,18 +29,12 @@ const FilePreview = React.memo(({ file, onRemove, isLoading }) => {
     >
       <ListItemIcon>
         {isImage ? (
-          <img 
-            src={file.preview} 
-            alt={file.name} 
+          <Box
+            component="img"
+            src={file.preview}
+            alt={file.name}
             loading="lazy"
-            width={40}
-            height={40}
-            style={{ 
-              width: 40, 
-              height: 40, 
-              objectFit: 'cover', 
-              borderRadius: '4px' 
-            }} 
+            sx={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 1 }}
           />
         ) : (
           <DescriptionIcon />

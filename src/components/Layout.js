@@ -2,11 +2,11 @@ import React, { useMemo, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { 
-  AppBar, 
-  Box, 
-  Toolbar, 
-  Typography, 
-  Button, 
+  AppBar,
+  Box,
+  Toolbar,
+  Typography,
+  Button,
   Container,
   IconButton,
   Avatar,
@@ -19,14 +19,14 @@ import {
   Divider,
   useMediaQuery,
   useTheme,
-  Link,
   Menu,
   MenuItem,
   Snackbar,
   Alert,
   CircularProgress,
   Link as MuiLink,
-  ListSubheader
+  ListSubheader,
+  TextField
 } from '@mui/material';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -85,6 +85,9 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success' | 'error' | 'warning' | 'info'
 
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterError, setNewsletterError] = useState('');
+
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -97,6 +100,16 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
     setSnackbarOpen(true);
+  };
+  const handleNewsletterSubmit = () => {
+    const valid = /\S+@\S+\.\S+/.test(newsletterEmail);
+    if (!valid) {
+      setNewsletterError('Enter a valid email address');
+      return;
+    }
+    setNewsletterError('');
+    showSnackbar('Subscribed!', 'success');
+    setNewsletterEmail('');
   };
   // --- End Snackbar State ---
 
@@ -381,11 +394,11 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
               
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
                   <LocationIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    Lease Shield AI B.V.<br />
-                    Science Park 123,<br />
-                    1098 XG Amsterdam, Netherlands
-                  </Typography>
+                  <Box component="address" sx={{ fontStyle: 'normal' }}>
+                    <Typography variant="body2" color="text.secondary">Lease Shield AI B.V.</Typography>
+                    <Typography variant="body2" color="text.secondary">Science Park 123</Typography>
+                    <Typography variant="body2" color="text.secondary">1098 XG Amsterdam, Netherlands</Typography>
+                  </Box>
                 </Box>
               
               <Typography variant="body2" color="text.secondary">
@@ -397,60 +410,74 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'flex-start', md: 'flex-end' }, gap: 2, width: { xs: '100%', md: 'auto' } }}>
               {/* Newsletter mini-form */}
               <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', md: 360 } }}>
-                <input type="email" placeholder="Your email" aria-label="Email for newsletter" style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'transparent', color: 'inherit' }} />
-                <Button variant="contained" size="small">Subscribe</Button>
+                <TextField
+                  label="Email address"
+                  type="email"
+                  size="small"
+                  fullWidth
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  error={Boolean(newsletterError)}
+                  helperText={newsletterError}
+                />
+                <Button variant="contained" size="small" onClick={handleNewsletterSubmit}>Subscribe</Button>
               </Box>
               {/* Navigation Links */}
               <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                <Link href="#" color="inherit" underline="hover">Privacy</Link>
-                <Link href="#" color="inherit" underline="hover">Terms</Link>
+                <MuiLink component={RouterLink} to="/privacy" color="inherit" underline="hover">Privacy</MuiLink>
+                <MuiLink component={RouterLink} to="/terms" color="inherit" underline="hover">Terms</MuiLink>
                 <MuiLink component={RouterLink} to="/contact" color="inherit" underline="hover">Contact</MuiLink>
                 <MuiLink component={RouterLink} to="/blog" color="inherit" underline="hover">Blog</MuiLink>
               </Box>
               
               {/* Social Media Links */}
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <IconButton 
-                  href="https://www.facebook.com/leaseshield" 
-                  target="_blank" 
+                <IconButton
+                  href="https://www.facebook.com/leaseshield"
+                  target="_blank"
                   rel="noopener noreferrer nofollow"
                   size="small"
+                  aria-label="Facebook"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#1877F2' } }}
                 >
                   <FacebookIcon />
                 </IconButton>
-                <IconButton 
-                  href="https://twitter.com/LeaseShieldAI" 
-                  target="_blank" 
+                <IconButton
+                  href="https://twitter.com/LeaseShieldAI"
+                  target="_blank"
                   rel="noopener noreferrer nofollow"
                   size="small"
+                  aria-label="Twitter"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#1DA1F2' } }}
                 >
                   <TwitterIcon />
                 </IconButton>
-                <IconButton 
-                  href="https://instagram.com/leaseshield" 
-                  target="_blank" 
+                <IconButton
+                  href="https://instagram.com/leaseshield"
+                  target="_blank"
                   rel="noopener noreferrer nofollow"
                   size="small"
+                  aria-label="Instagram"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#E4405F' } }}
                 >
                   <InstagramIcon />
                 </IconButton>
-                <IconButton 
-                  href="https://linkedin.com/company/lease-shield-ai" 
-                  target="_blank" 
+                <IconButton
+                  href="https://linkedin.com/company/lease-shield-ai"
+                  target="_blank"
                   rel="noopener noreferrer nofollow"
                   size="small"
+                  aria-label="LinkedIn"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#0077B5' } }}
                 >
                   <LinkedInIcon />
                 </IconButton>
-                <IconButton 
-                  href="https://www.youtube.com/@leaseshield" 
-                  target="_blank" 
+                <IconButton
+                  href="https://www.youtube.com/@leaseshield"
+                  target="_blank"
                   rel="noopener noreferrer nofollow"
                   size="small"
+                  aria-label="YouTube"
                   sx={{ color: 'text.secondary', '&:hover': { color: '#FF0000' } }}
                 >
                   <YouTubeIcon />

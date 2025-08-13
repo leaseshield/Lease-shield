@@ -25,7 +25,13 @@ import {
   useTheme,
   Tooltip,
   Link,
-  CircularProgress
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
 } from '@mui/material';
 import {
   SecurityOutlined as SecurityIcon,
@@ -286,7 +292,7 @@ const LandingPage = () => {
   // --- End Schema Data ---
 
   return (
-    <Box sx={{ overflowX: 'hidden' }}>
+    <Box component="main" sx={{ overflowX: 'hidden' }}>
       {/* REMOVE old Blog Link from top right */}
       {/* 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
@@ -985,52 +991,52 @@ const LandingPage = () => {
            </Typography>
           
           <Fade in={true} timeout={1000} style={{ transitionDelay: '300ms' }}>
-            <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 8, borderColor: theme.palette.divider, background: theme.palette.gradients.soft }}>
-              <Grid container sx={{ display: { xs: 'none', md: 'flex' } }}>
-                <Grid item md={4} />
-                <Grid item md={4}>
-                  <Typography variant="subtitle1" fontWeight="bold" align="center" color="text.secondary">Traditional Review</Typography>
-                </Grid>
-                <Grid item md={4}>
-                  <Typography variant="subtitle1" fontWeight="bold" align="center" color="primary">Lease Shield AI</Typography>
-                </Grid>
-              </Grid>
-              
-              <Divider sx={{ my: 2, display: { xs: 'none', md: 'block' } }} />
-              
-              {comparisonData.map((row, index) => (
-                <React.Fragment key={index}>
-                  <Grid container sx={{ py: { xs: 2, md: 1.5 } }} alignItems="center">
-                    <Grid item xs={12} md={4}>
-                      <Typography variant="body1" sx={{ fontWeight: { xs: 'bold', md: 'normal' } }}>{row.feature}</Typography>
-                    </Grid>
-                    <Grid item xs={6} md={4} align="center">
-                      <Typography sx={{ display: { xs: 'block', md: 'none' }, fontSize: '0.8rem', color: 'text.secondary', mb: 0.5 }}>Traditional:</Typography>
-                      {typeof row.traditional === 'boolean' ? (
-                        row.traditional ? 
-                          <CheckIcon sx={{ color: 'success.light' }} /> : 
-                          <CloseIcon sx={{ color: 'error.light' }} />
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">{row.traditional}</Typography>
-                      )}
-                    </Grid>
-                     <Grid item xs={6} md={4} align="center">
-                       <Typography sx={{ display: { xs: 'block', md: 'none' }, fontSize: '0.8rem', color: 'text.secondary', mb: 0.5 }}>Lease Shield AI:</Typography>
-                       {typeof row.leaseShield === 'boolean' ? (
-                        row.leaseShield ? 
-                          <CheckIcon sx={{ color: 'success.main' }} /> : 
-                          <CloseIcon sx={{ color: 'error.main' }} />
-                      ) : (
-                        <Typography variant="body2" fontWeight="bold" color="primary">
-                          {row.leaseShield}
-                        </Typography>
-                      )}
-                    </Grid>
-                  </Grid>
-                  {index < comparisonData.length - 1 && <Divider />} 
-                </React.Fragment>
-              ))}
-            </Paper>
+            <TableContainer component={Paper} elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 8, borderColor: theme.palette.divider, background: theme.palette.gradients.soft }}>
+              <Table aria-label="Feature comparison table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell />
+                    <TableCell align="center">
+                      <Typography variant="subtitle1" fontWeight="bold" color="text.secondary">Traditional Review</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="subtitle1" fontWeight="bold" color="primary">Lease Shield AI</Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {comparisonData.map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell component="th" scope="row">
+                        {row.feature}
+                      </TableCell>
+                      <TableCell align="center">
+                        {typeof row.traditional === 'boolean' ? (
+                          row.traditional ? (
+                            <CheckIcon sx={{ color: 'success.light' }} />
+                          ) : (
+                            <CloseIcon sx={{ color: 'error.light' }} />
+                          )
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">{row.traditional}</Typography>
+                        )}
+                      </TableCell>
+                      <TableCell align="center">
+                        {typeof row.leaseShield === 'boolean' ? (
+                          row.leaseShield ? (
+                            <CheckIcon sx={{ color: 'success.main' }} />
+                          ) : (
+                            <CloseIcon sx={{ color: 'error.main' }} />
+                          )
+                        ) : (
+                          <Typography variant="body2" fontWeight="bold" color="primary">{row.leaseShield}</Typography>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Fade>
         </Container>
       </Box>

@@ -46,12 +46,25 @@ const Hero = ({ onPrimaryClick }) => {
                 preload="auto"
                 poster="/video-poster.jpg"
                 controls={false}
-                style={{ width: '100%', height: 'auto', display: 'block', pointerEvents: 'none' }}
+                sx={{ width: '100%', height: 'auto', display: 'block', pointerEvents: 'none' }}
               >
-                {/* Future enhancement: add captions or transcript for audio content */}
+                <track
+                  kind="captions"
+                  src="/product-video-en.vtt"
+                  srcLang="en"
+                  label="English captions"
+                  default
+                />
                 <source src="/Product Launch Video_compressed.mp4" type="video/mp4" />
                 <source src="/Product Launch Video.mp4" type="video/mp4" />
               </Box>
+              <Link
+                href="/product-video-transcript.txt"
+                download
+                sx={{ mt: 1, display: 'inline-block' }}
+              >
+                Download transcript
+              </Link>
             </Box>
           </Grid>
         </Grid>
