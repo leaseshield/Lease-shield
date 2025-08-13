@@ -15,6 +15,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes # F
 from cryptography.hazmat.backends import default_backend # For Maxelpay encryption
 import time # For timestamp
 import uuid # For unique order ID
+import hmac
+import hashlib
 # Import the specific exception for permission errors
 from google.api_core.exceptions import PermissionDenied, GoogleAPIError 
 import datetime # Needed for daily scan logic
@@ -176,6 +178,15 @@ if db is None:
 
 # Max characters for pasted text analysis
 MAX_TEXT_LENGTH = 50000 # Approx 10-15 pages
+
+# Verify Maxelpay webhook signature using HMAC SHA256
+def verify_maxelpay_signature(payload, signature, secret):
+    try:
+        expected = hmac.new(secret.encode('utf-8'), payload, hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, signature or '')
+    except Exception as e:
+        print(f"Signature verification error: {e}")
+        return False
 
 # Verify Firebase Auth token
 def verify_token(id_token):
@@ -832,25 +843,17 @@ def create_checkout_session():
 
 # --- End Maxelpay Checkout Route ---
 
-# --- Webhook Route (Placeholder) ---
 @app.route('/api/maxelpay/webhook', methods=['POST'])
 def maxelpay_webhook():
     if db is None:
         print("Webhook Error: Firestore database client not initialized.")
-        # Still return 200 to Maxelpay if possible, but log the internal error
-        return jsonify({'status': 'received (internal DB error)'}), 200 
-    # 1. --- IMPORTANT: Verify Webhook Signature ---
-    # Replace this with actual signature verification logic from Maxelpay docs!
-    # This usually involves getting a signature from request headers,
-    # reconstructing a signed message using the payload and your secret key,
-    # and comparing the signatures. Failing this check MUST return an error (e.g., 403 Forbidden).
-    # Example Placeholder:
-    # received_signature = request.headers.get('Maxelpay-Signature') # Check correct header name
-    # if not verify_maxelpay_signature(request.data, received_signature, os.environ.get('MAXELPAY_SECRET_KEY')):
-    #     print("Webhook Error: Invalid signature")
-    #     return jsonify({'error': 'Invalid signature'}), 403
-    print("Webhook Info: Skipping signature verification (PLACEHOLDER - IMPLEMENT THIS!)")
-    # --- End Signature Verification ---
+        return jsonify({'status': 'received (internal DB error)'}), 200
+
+    secret = os.environ.get('MAXELPAY_WEBHOOK_SECRET')
+    received_signature = request.headers.get('Maxelpay-Signature') or request.headers.get('X-Maxelpay-Signature')
+    if not secret or not received_signature or not verify_maxelpay_signature(request.data, received_signature, secret):
+        print("Webhook Error: Invalid signature")
+        return jsonify({'error': 'Invalid signature'}), 403
 
     print("Received Maxelpay Webhook:")
     try:
