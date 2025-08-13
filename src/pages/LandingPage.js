@@ -24,7 +24,8 @@ import {
   useMediaQuery,
   useTheme,
   Tooltip,
-  Link
+  Link,
+  CircularProgress
 } from '@mui/material';
 import {
   SecurityOutlined as SecurityIcon,
@@ -340,7 +341,13 @@ const LandingPage = () => {
       </Helmet>
 
       {/* New Hero Section */}
-      <Suspense fallback={<Box sx={{ height: 320 }} />}> 
+      <Suspense
+        fallback={
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 320 }}>
+            <CircularProgress />
+          </Box>
+        }
+      >
         <Hero onPrimaryClick={handleGetStartedClick} />
       </Suspense>
 
