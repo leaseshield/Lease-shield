@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useMemo, lazy, Suspense } from
 import { useDropzone } from 'react-dropzone';
 import { auth } from '../firebase/config'; // Import Firebase auth
 import { getApiBaseUrl } from '../utils/api';
-const debugLog = (...args) => { if (process.env.NODE_ENV === 'development') console.log(...args); };
 import {
   Box,
   Typography,
@@ -22,11 +21,13 @@ import {
   Alert,
   FormGroup
 } from '@mui/material';
-import { 
-    FileUpload as FileUploadIcon, 
-    Clear as ClearIcon, 
+import {
+    FileUpload as FileUploadIcon,
+    Clear as ClearIcon,
     Description as DescriptionIcon // For non-image files
 } from '@mui/icons-material';
+
+const debugLog = (...args) => { if (process.env.NODE_ENV === 'development') console.log(...args); };
 
 // Helper function to format currency (optional, but nice)
 const formatCurrency = (value) => {
