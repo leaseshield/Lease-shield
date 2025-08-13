@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { CloudUpload, DeleteForever, ReceiptLong } from '@mui/icons-material';
 import { auth } from '../firebase/config';
+import { getApiBaseUrl } from '../utils/api';
 
 const ExpenseScannerPage = () => {
   const [files, setFiles] = useState([]);
@@ -63,7 +64,7 @@ const ExpenseScannerPage = () => {
       const token = user ? await user.getIdToken() : null;
       const form = new FormData();
       files.forEach((f) => form.append('documents', f, f.name));
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081';
+      const apiUrl = getApiBaseUrl();
       const res = await fetch(`${apiUrl}/api/scan-expense`, {
         method: 'POST',
         headers: { ...(token && { Authorization: `Bearer ${token}` }) },

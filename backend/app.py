@@ -25,6 +25,12 @@ import calendar # Added for days in month calculation
 from PIL import Image # Potentially needed for image processing/validation
 import mimetypes # To determine image MIME type
 
+# --- Logging configuration ---
+import logging
+logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"),
+                    format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
+
 # --- Optional OCR and Error Tracking ---
 try:
     from pdf2image import convert_from_bytes
@@ -32,7 +38,7 @@ try:
 except ImportError:
     convert_from_bytes = None
     pytesseract = None
-    print("Warning: pdf2image or pytesseract not available – rich PDF extraction will be limited to text only.")
+    logger.warning("pdf2image or pytesseract not available – rich PDF extraction will be limited to text only.")
 
 # Sentry for error tracking
 try:
@@ -45,21 +51,23 @@ try:
             integrations=[FlaskIntegration()],
             traces_sample_rate=0.2,
         )
-        print("Sentry initialised for error tracking.")
+        logger.info("Sentry initialised for error tracking.")
     else:
-        print("Sentry DSN not set; error tracking disabled.")
+        logger.info("Sentry DSN not set; error tracking disabled.")
 except ImportError:
-    print("Warning: sentry_sdk not installed – error tracking disabled.")
+    logger.info("Warning: sentry_sdk not installed – error tracking disabled.")
 # --- End imports ---
 
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'heic', 'heif'}
 ALLOWED_FINANCE_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
+MAX_IMAGE_SIZE_MB = 5
+MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
 
 # Placeholder for the actual PayID19 library - replace if needed
 try:
     import payid19_python_sdk as payid19 
 except ImportError:
-    print("WARNING: PayID19 SDK placeholder not found. Payment endpoint will fail.")
+    logger.info("WARNING: PayID19 SDK placeholder not found. Payment endpoint will fail.")
     payid19 = None # Define it as None so the app doesn't crash
 
 load_dotenv() # Load environment variables from .env file
@@ -68,18 +76,19 @@ load_dotenv() # Load environment variables from .env file
 # Load all potential keys, filtering out any that aren't set
 gemini_api_keys = [
     key for key in [
-        os.environ.get('GEMINI_API_KEY_1'), 
-        os.environ.get('GEMINI_API_KEY_2'), 
+        os.environ.get('GEMINI_API_KEY_1'),
+        os.environ.get('GEMINI_API_KEY_2'),
         os.environ.get('GEMINI_API_KEY_3'),
         # Keep the original name as a fallback for backward compatibility or single-key use
-        os.environ.get('GEMINI_API_KEY') 
+        os.environ.get('GEMINI_API_KEY')
     ] if key
 ]
-#this is for the gemini api key
-#just to confirm this is the chatgpt
+
 if not gemini_api_keys:
-    print("CRITICAL ERROR: No Gemini API keys found in environment variables (GEMINI_API_KEY_1, _2, _3, or GEMINI_API_KEY).")
-    # Depending on policy, you might exit or let it fail later.
+    logger.critical(
+        "No Gemini API keys found in environment variables (GEMINI_API_KEY_1, _2, _3, or GEMINI_API_KEY)."
+    )
+    raise SystemExit(1)
 
 # --- Flask App and Firebase Initialization --- 
 app = Flask(__name__)
@@ -105,7 +114,7 @@ try:
     
     if firebase_sdk_json_str:
         # Deployed on Render (or env var set manually using JSON content)
-        print("Using Firebase key from environment variable.")
+        logger.info("Using Firebase key from environment variable.")
         firebase_sdk_config = json.loads(firebase_sdk_json_str)
         cred = credentials.Certificate(firebase_sdk_config)
         project_id = firebase_sdk_config.get('project_id')
@@ -113,7 +122,7 @@ try:
         firebase_admin.initialize_app(cred, {
             'storageBucket': f"{project_id}.appspot.com"
         })
-        print("Firebase Admin SDK initialized successfully.")
+        logger.info("Firebase Admin SDK initialized successfully.")
         db = firestore.client()
     else:
         # Running Locally - Check for Render Secret File path OR local path
@@ -121,22 +130,22 @@ try:
         local_key_path = 'lease-shield-ai-firebase-admin-sdk.json'  # Assuming file is in same dir as app.py
 
         if os.path.exists(render_secret_path):
-            print(f"Using Firebase key from Render secret file: {render_secret_path}")
+            logger.info(f"Using Firebase key from Render secret file: {render_secret_path}")
             cred = credentials.Certificate(render_secret_path)
             # Attempt to get project_id from credential object
             try:
                 project_id = cred.project_id
             except Exception as cred_err:
-                print(f"Warning: Could not get project_id from credential object: {cred_err}")
+                logger.warning(f"Could not get project_id from credential object: {cred_err}")
                 try:
                     with open(render_secret_path, 'r') as f:
                         key_data = json.load(f)
                     project_id = key_data.get('project_id')
                 except Exception as parse_err:
-                    print(f"Error parsing secret file for project_id: {parse_err}")
+                    logger.error(f"Error parsing secret file for project_id: {parse_err}")
                     project_id = None
         elif os.path.exists(local_key_path):
-            print(f"Using Firebase key from local file: {local_key_path}")
+            logger.info(f"Using Firebase key from local file: {local_key_path}")
             cred = credentials.Certificate(local_key_path)
             # Attempt to parse the file to get project_id
             try:
@@ -144,7 +153,7 @@ try:
                     key_data = json.load(f)
                 project_id = key_data.get('project_id')
             except Exception as parse_err:
-                print(f"Error parsing local key file for project_id: {parse_err}")
+                logger.error(f"Error parsing local key file for project_id: {parse_err}")
                 project_id = None
         else:
             raise FileNotFoundError(f"Firebase key file not found at {render_secret_path} or {local_key_path}")
@@ -155,22 +164,22 @@ try:
         firebase_admin.initialize_app(cred, {
             'storageBucket': f"{project_id}.appspot.com"
         })
-        print("Firebase Admin SDK initialized successfully.")
+        logger.info("Firebase Admin SDK initialized successfully.")
         db = firestore.client()
 
 except FileNotFoundError as e:
-    print(f"CRITICAL ERROR: Firebase Admin SDK JSON key file not found. {e}")
+    logger.critical(f"Firebase Admin SDK JSON key file not found. {e}")
     db = None # Ensure db is None if init fails
 except ValueError as e:
-    print(f"CRITICAL ERROR: Invalid Firebase Admin SDK JSON content or missing project_id. {e}")
+    logger.critical(f"Invalid Firebase Admin SDK JSON content or missing project_id. {e}")
     db = None # Ensure db is None if init fails
 except Exception as e:
-    print(f"CRITICAL ERROR: Failed to initialize Firebase Admin SDK: {e}")
+    logger.critical(f"Failed to initialize Firebase Admin SDK: {e}")
     db = None # Ensure db is None if init fails
 
 # Only proceed if db was initialized
 if db is None:
-    print("Aborting application startup due to Firebase initialization failure.")
+    logger.critical("Aborting application startup due to Firebase initialization failure.")
     # Optional: exit the application if Firebase is absolutely required
     # sys.exit(1) 
 
@@ -185,7 +194,7 @@ def verify_maxelpay_signature(payload, signature, secret):
         expected = hmac.new(secret.encode('utf-8'), payload, hashlib.sha256).hexdigest()
         return hmac.compare_digest(expected, signature or '')
     except Exception as e:
-        print(f"Signature verification error: {e}")
+        logger.error(f"Signature verification error: {e}")
         return False
 
 # Verify Firebase Auth token
@@ -194,7 +203,7 @@ def verify_token(id_token):
         decoded_token = firebase_admin.auth.verify_id_token(id_token)
         return decoded_token['uid']
     except Exception as e:
-        print(f"Token verification error: {e}")
+        logger.error(f"Token verification error: {e}")
         return None
 
 # Check if user ID belongs to the designated admin email
@@ -203,9 +212,10 @@ def is_admin(user_id):
         return False
     try:
         user = firebase_admin.auth.get_user(user_id)
-        return user.email == 'leofratu@gmail.com'
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        return admin_email and user.email == admin_email
     except Exception as e:
-        print(f"Error checking admin status for {user_id}: {e}")
+        logger.error(f"Error checking admin status for {user_id}: {e}")
         return False
 
 def extract_pdf_rich_content(file_stream):
@@ -220,23 +230,23 @@ def extract_pdf_rich_content(file_stream):
         for page in reader.pages:
             text += page.extract_text() or ""
     except Exception as e:
-        print(f"PyPDF2 error: {e}. Might be a scanned PDF.")
+        logger.info(f"PyPDF2 error: {e}. Might be a scanned PDF.")
 
     # If no text, or if OCR libraries are available, try OCR
     if not text.strip() and convert_from_bytes and pytesseract:
-        print("Falling back to OCR for PDF content.")
+        logger.info("Falling back to OCR for PDF content.")
         try:
             file_stream.seek(0)
             images = convert_from_bytes(file_stream.read())
             for image in images:
                 text += pytesseract.image_to_string(image) + "\n"
         except Exception as ocr_error:
-            print(f"OCR processing failed: {ocr_error}")
+            logger.info(f"OCR processing failed: {ocr_error}")
             # Potentially return a specific error message if OCR fails
             return None
             
     if not text.strip():
-        print("Warning: PDF appears to be empty or unreadable.")
+        logger.info("Warning: PDF appears to be empty or unreadable.")
         return None
         
     return text
@@ -252,7 +262,7 @@ def extract_pdf_text(file_stream):
             text += page.extract_text() + "\n"
         return text
     except Exception as e:
-        print(f"PDF extraction error: {e}")
+        logger.info(f"PDF extraction error: {e}")
         return None
 
 # Analyze lease with Gemini
@@ -322,7 +332,7 @@ def analyze_lease(text):
         cleaned2 = (resp2.text or '').strip().lstrip('```json').rstrip('```').strip()
         return cleaned2
     except Exception as e:
-        print(f"analyze_lease error: {e}")
+        logger.info(f"analyze_lease error: {e}")
         return None
 
 def analyze_compliance(new_lease_text, master_template_text):
@@ -360,7 +370,7 @@ def analyze_compliance(new_lease_text, master_template_text):
         cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
         return json.loads(cleaned_text)
     except Exception as e:
-        print(f"Error during compliance analysis: {e}")
+        logger.info(f"Error during compliance analysis: {e}")
         return {"compliance_report": {
             "summary": "Failed to generate compliance report due to an internal error.",
             "deviations": [],
@@ -392,7 +402,7 @@ def maxelpay_encryption(secret_key, payload_data):
     backend = default_backend()
     # Ensure secret key length is suitable for AES-256 (32 bytes)
     if len(secret_key_bytes) != 32:
-        print(f"Warning: Maxelpay Secret Key length is {len(secret_key_bytes)} bytes, expected 32 for AES-256. Check documentation.")
+        logger.info(f"Warning: Maxelpay Secret Key length is {len(secret_key_bytes)} bytes, expected 32 for AES-256. Check documentation.")
         # Handle error or potentially pad/truncate key if required by Maxelpay (less secure)
         # For now, we'll let Cipher raise an error if length is wrong.
 
@@ -403,7 +413,7 @@ def maxelpay_encryption(secret_key, payload_data):
     result = base64.b64encode(iv + encrypted_data).decode("utf-8")
     return result
   except Exception as e:
-      print(f"Maxelpay encryption error: {e}")
+      logger.info(f"Maxelpay encryption error: {e}")
       raise # Re-raise the exception to be caught in the route
 
 # --- End Maxelpay Encryption Helper ---
@@ -426,10 +436,10 @@ def get_or_create_user_profile(user_id):
             try:
                 user_ref.update({'lastMonthlyScan': profile_data['lastMonthlyScan']})
             except Exception as e:
-                print(f"Warning: could not backfill lastMonthlyScan for {user_id}: {e}")
+                logger.info(f"Warning: could not backfill lastMonthlyScan for {user_id}: {e}")
         return profile_data
     else:
-        print(f"Creating default free profile for user: {user_id}")
+        logger.info(f"Creating default free profile for user: {user_id}")
         default_profile = {
             'userId': user_id, 
             'subscriptionTier': 'free',
@@ -444,7 +454,7 @@ def get_or_create_user_profile(user_id):
             user_ref.set(default_profile)
             return default_profile
         except Exception as e:
-             print(f"Error creating user profile for {user_id}: {e}")
+             logger.info(f"Error creating user profile for {user_id}: {e}")
              return None # Indicate failure
 
 def increment_scan_counts(user_id, tier):
@@ -461,7 +471,7 @@ def increment_scan_counts(user_id, tier):
                 'freeScansUsed': firestore.Increment(1),
                 'lastMonthlyScan': today_str[:7]  # Store YYYY-MM of current month
             })
-            print(f"Incremented monthly scan count for user {user_id} (tier: {tier})")
+            logger.info(f"Incremented monthly scan count for user {user_id} (tier: {tier})")
 
         # Handle daily count for premium tier
         if tier == 'premium':
@@ -476,21 +486,21 @@ def increment_scan_counts(user_id, tier):
                 if last_scan_date == today_str:
                     # Same day, just increment
                     update_data['dailyScansUsed'] = firestore.Increment(1)
-                    print(f"Incremented daily scan count for user {user_id} (tier: {tier})")
+                    logger.info(f"Incremented daily scan count for user {user_id} (tier: {tier})")
                 else:
                     # New day, reset count to 1 and update date
                     update_data['dailyScansUsed'] = 1
                     update_data['lastScanDate'] = today_str
-                    print(f"Reset daily scan count to 1 for user {user_id} (tier: {tier}) on new day {today_str}")
+                    logger.info(f"Reset daily scan count to 1 for user {user_id} (tier: {tier}) on new day {today_str}")
                 
                 user_ref.update(update_data)
             else:
-                 print(f"Error: Could not find user {user_id} to update daily scan count.")
+                 logger.info(f"Error: Could not find user {user_id} to update daily scan count.")
                  return False # Indicate failure if user doc missing
 
         return True
     except Exception as e:
-        print(f"Error incrementing scan counts for {user_id} (tier: {tier}): {e}")
+        logger.info(f"Error incrementing scan counts for {user_id} (tier: {tier}): {e}")
         return False
 
 # --- End Firestore User Helpers --- 
@@ -506,6 +516,8 @@ def _get_today_iso():
 _CHAT_STATS_DOC_ID = 'chat_messages'
 _CHAT_STATS_COLLECTION = 'stats'
 _GLOBAL_CHAT_LIMIT = 500  # messages per UTC day
+_USER_CHAT_COLLECTION = 'user_chat_stats'
+_PER_USER_CHAT_LIMIT = 50  # per-user messages per day
 
 def _increment_chat_count_if_not_limited(limit=_GLOBAL_CHAT_LIMIT):
     """
@@ -515,7 +527,7 @@ def _increment_chat_count_if_not_limited(limit=_GLOBAL_CHAT_LIMIT):
         bool: True if the increment was successful, False if the limit had been reached.
     """
     if db is None:
-        print("Database not initialised; cannot track chat quota.")
+        logger.info("Database not initialised; cannot track chat quota.")
         return False  # Fail open, but log it
 
     stats_ref = db.collection(_CHAT_STATS_COLLECTION).document(_CHAT_STATS_DOC_ID)
@@ -548,8 +560,38 @@ def _increment_chat_count_if_not_limited(limit=_GLOBAL_CHAT_LIMIT):
         # run_transaction will return the value from the decorated function.
         return db.run_transaction(tx_func)
     except Exception as e:
-        print(f"CRITICAL: Chat counter transaction failed: {e}")
+        logger.error(f"Chat counter transaction failed: {e}")
         # Fail open to not block users, but this needs to be monitored.
+        return True
+
+
+def _increment_user_chat_count_if_not_limited(user_id, limit=_PER_USER_CHAT_LIMIT):
+    if db is None:
+        return False
+
+    stats_ref = db.collection(_USER_CHAT_COLLECTION).document(user_id)
+    today_str = _get_today_iso()
+
+    @firestore.transactional
+    def tx_func(transaction):
+        snapshot = stats_ref.get(transaction=transaction)
+        if snapshot.exists:
+            data = snapshot.to_dict()
+            if data.get('date') == today_str:
+                current_count = data.get('count', 0)
+                if current_count >= limit:
+                    return False
+                transaction.update(stats_ref, {'count': firestore.Increment(1)})
+            else:
+                transaction.set(stats_ref, {'date': today_str, 'count': 1})
+        else:
+            transaction.set(stats_ref, {'date': today_str, 'count': 1})
+        return True
+
+    try:
+        return db.run_transaction(tx_func)
+    except Exception as e:
+        logger.error(f"User chat counter transaction failed: {e}")
         return True
 
 # --- End Global Daily Chat Message Limit Helpers ---
@@ -565,11 +607,21 @@ def ping():
 # --- AI Chat Endpoint ---
 @app.route('/api/chat', methods=['POST'])
 def ai_chat():
-    """Endpoint to handle real-time chat messages with a global 500-messages-per-day limit."""
+    """Endpoint to handle real-time chat messages with rate limits."""
     if db is None:
         return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
 
-    # --- Atomically Check & Increment Limit ---
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Unauthorized'}), 401
+    token = auth_header.split('Bearer ')[1]
+    user_id = verify_token(token)
+    if not user_id:
+        return jsonify({'error': 'Invalid token'}), 401
+
+    if not _increment_user_chat_count_if_not_limited(user_id):
+        return jsonify({'error': 'Daily user message limit reached', 'limitReached': True}), 429
+
     if not _increment_chat_count_if_not_limited():
         return jsonify({'error': 'The daily message limit has been reached. Please check back tomorrow.', 'limitReached': True}), 429
 
@@ -604,7 +656,7 @@ def ai_chat():
         use_refinement = True
 
     model_id_to_use = MODEL_MAP.get(base_model_key, 'gemini-2.5-pro')
-    print(f"Chat request using model: {model_id_to_use} (alias {requested_model}), refinement={use_refinement}")
+    logger.info(f"Chat request using model: {model_id_to_use} (alias {requested_model}), refinement={use_refinement}")
 
     # --- Prompt Construction ---
     prompt_parts = []
@@ -622,7 +674,7 @@ def ai_chat():
                     prompt_parts.append(f"\\n--- PDF Content: {file.filename} ---\\n{pdf_text}")
             # Add other file types here if needed
         except Exception as e:
-            print(f"Error processing file {file.filename}: {e}")
+            logger.info(f"Error processing file {file.filename}: {e}")
             # Optionally append an error message to the prompt
             prompt_parts.append(f"\\n[Could not process file: {file.filename}]")
 
@@ -633,19 +685,19 @@ def ai_chat():
     try:
         # Special handling for the enhanced 'gemini-2.5-fly'
         if requested_model == 'gemini-2.5-fly':
-            print("Executing 3-pass creative refinement for gemini-2.5-fly")
+            logger.info("Executing 3-pass creative refinement for gemini-2.5-fly")
 
             # Pass 1: Standard response
             model_standard = get_gemini_model(model_name=model_id_to_use, temperature=0.5) # Lower temp for precision
             pass1_response_obj = model_standard.generate_content(prompt_parts)
             pass1_response = pass1_response_obj.text.strip()
-            print(f"Fly Pass 1 (Standard): {pass1_response[:100]}...")
+            logger.info(f"Fly Pass 1 (Standard): {pass1_response[:100]}...")
 
             # Pass 2: Creative response
             model_creative = get_gemini_model(model_name=model_id_to_use, temperature=1.0) # Higher temp for creativity
             pass2_response_obj = model_creative.generate_content(prompt_parts)
             pass2_response = pass2_response_obj.text.strip()
-            print(f"Fly Pass 2 (Creative): {pass2_response[:100]}...")
+            logger.info(f"Fly Pass 2 (Creative): {pass2_response[:100]}...")
 
             # Pass 3: Synthesize and select the best response
             synthesis_prompt = f"""You have generated two responses to the same prompt.
@@ -667,7 +719,7 @@ Final Answer:"""
             model_synthesis = get_gemini_model(model_name=model_id_to_use) # Use default temp for synthesis
             final_response_obj = model_synthesis.generate_content(synthesis_prompt)
             final_response = final_response_obj.text.strip()
-            print(f"Fly Pass 3 (Synthesis): {final_response[:100]}...")
+            logger.info(f"Fly Pass 3 (Synthesis): {final_response[:100]}...")
 
             # Return only the final synthesized response to the user
             response_data = {'response': final_response}
@@ -700,7 +752,7 @@ Final Answer:"""
         return jsonify(response_data)
 
     except Exception as e:
-        print(f"Gemini chat error with model {model_id_to_use}: {e}")
+        logger.info(f"Gemini chat error with model {model_id_to_use}: {e}")
         return jsonify({'error': 'Failed to generate AI response. Please try a different model or check your input.', 'details': str(e)}), 500
 
 # --- End AI Chat Endpoint ---
@@ -709,7 +761,7 @@ Final Answer:"""
 @app.route('/api/payid/create-checkout-session', methods=['POST']) # Keep route name consistent with frontend for now
 def create_checkout_session():
     if db is None:
-        print("Error: Firestore database client not initialized.")
+        logger.info("Error: Firestore database client not initialized.")
         return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
     # --- Authorization --- 
     auth_header = request.headers.get('Authorization')
@@ -728,7 +780,7 @@ def create_checkout_session():
         user_email = firebase_user.email or user_email
         user_name = firebase_user.display_name or user_name
     except Exception as e:
-        print(f"Could not fetch user details from Firebase: {e}")
+        logger.info(f"Could not fetch user details from Firebase: {e}")
     # --- End Authorization ---
 
     # --- Load API Keys and Config --- 
@@ -738,7 +790,7 @@ def create_checkout_session():
     frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000') 
 
     if not api_key or not secret_key:
-        print("ERROR: Maxelpay API keys not found in environment variables.")
+        logger.info("ERROR: Maxelpay API keys not found in environment variables.")
         return jsonify({'error': 'Server configuration error: Payment keys missing.'}), 500
 
     # --- Construct API Endpoint ---
@@ -759,11 +811,9 @@ def create_checkout_session():
     timestamp = str(int(time.time())) # Current Unix timestamp as string
 
     # Construct dynamic URLs
-    # TODO: Create actual frontend routes for these
-    redirect_url = f"{frontend_url}/payment/success?order_id={order_id}" 
+    redirect_url = f"{frontend_url}/payment/success?order_id={order_id}"
     cancel_url = f"{frontend_url}/pricing?status=cancelled&order_id={order_id}"
-    # TODO: Implement a webhook endpoint in this backend to receive status updates
-    webhook_url = f"{request.url_root}api/maxelpay/webhook" # Assumes root URL + path
+    webhook_url = f"{request.url_root}api/maxelpay/webhook"
 
     payload_data = {
         "orderID": order_id,
@@ -790,22 +840,22 @@ def create_checkout_session():
             "Content-Type": "application/json"
         }
 
-        print(f"Sending request to Maxelpay: {endpoint}") # Log endpoint
-        # print(f"Payload (unencrypted): {payload_data}") # DEBUG - Don't log sensitive data in prod
-        # print(f"Headers: {headers}") # DEBUG
-        # print(f"Body (encrypted): {api_payload}") # DEBUG
+        logger.info(f"Sending request to Maxelpay: {endpoint}") # Log endpoint
+        # logger.info(f"Payload (unencrypted): {payload_data}") # DEBUG - Don't log sensitive data in prod
+        # logger.info(f"Headers: {headers}") # DEBUG
+        # logger.info(f"Body (encrypted): {api_payload}") # DEBUG
 
         response = requests.request("POST", endpoint, headers=headers, data=api_payload, timeout=20) # Add timeout
         response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
 
         response_data = response.json()
-        print(f"Maxelpay Response: {response_data}") # Log response
+        logger.info(f"Maxelpay Response: {response_data}") # Log response
 
         # Extract the checkout URL - Updated to use 'result' key based on logs
         checkout_url = response_data.get('result') 
 
         if not checkout_url:
-            print("ERROR: Maxelpay response did not contain the 'result' key with the checkout URL.") # Updated error message
+            logger.info("ERROR: Maxelpay response did not contain the 'result' key with the checkout URL.") # Updated error message
             return jsonify({'error': 'Failed to get checkout URL from payment provider response.', 'provider_response': response_data}), 500
         
         # --- Store checkout session details for webhook correlation ---
@@ -819,10 +869,10 @@ def create_checkout_session():
                 'amount': amount,
                 'currency': currency
             })
-            print(f"Stored checkout session mapping for order {order_id} and user {user_id}")
+            logger.info(f"Stored checkout session mapping for order {order_id} and user {user_id}")
         except Exception as db_error:
             # Log the error but proceed with returning the checkout URL to the user
-            print(f"Firestore Error: Failed to store checkout session mapping for order {order_id}: {db_error}")
+            logger.info(f"Firestore Error: Failed to store checkout session mapping for order {order_id}: {db_error}")
             # Depending on requirements, you might want to prevent checkout if this fails
             # For now, we let the user proceed to pay. Manual reconciliation might be needed if webhook fails.
         # --- End Store checkout session ---
@@ -830,7 +880,7 @@ def create_checkout_session():
         return jsonify({'checkoutUrl': checkout_url})
 
     except requests.exceptions.RequestException as req_err:
-        print(f"Maxelpay API request failed: {req_err}")
+        logger.info(f"Maxelpay API request failed: {req_err}")
         # Log response body if available
         error_body = None
         if req_err.response is not None:
@@ -838,7 +888,7 @@ def create_checkout_session():
             except: error_body = req_err.response.text
         return jsonify({'error': f'Payment provider communication error: {str(req_err)}', 'details': error_body}), 502 # Bad Gateway
     except Exception as e:
-        print(f"Error creating Maxelpay checkout session: {e}")
+        logger.info(f"Error creating Maxelpay checkout session: {e}")
         return jsonify({'error': f'An internal error occurred during payment processing: {str(e)}'}), 500
 
 # --- End Maxelpay Checkout Route ---
@@ -846,19 +896,19 @@ def create_checkout_session():
 @app.route('/api/maxelpay/webhook', methods=['POST'])
 def maxelpay_webhook():
     if db is None:
-        print("Webhook Error: Firestore database client not initialized.")
+        logger.info("Webhook Error: Firestore database client not initialized.")
         return jsonify({'status': 'received (internal DB error)'}), 200
 
     secret = os.environ.get('MAXELPAY_WEBHOOK_SECRET')
     received_signature = request.headers.get('Maxelpay-Signature') or request.headers.get('X-Maxelpay-Signature')
     if not secret or not received_signature or not verify_maxelpay_signature(request.data, received_signature, secret):
-        print("Webhook Error: Invalid signature")
+        logger.info("Webhook Error: Invalid signature")
         return jsonify({'error': 'Invalid signature'}), 403
 
-    print("Received Maxelpay Webhook:")
+    logger.info("Received Maxelpay Webhook:")
     try:
         data = request.json
-        print(json.dumps(data, indent=2))
+        logger.info(json.dumps(data, indent=2))
 
         # 2. Extract Key Information
         order_id = data.get('orderID')
@@ -866,7 +916,7 @@ def maxelpay_webhook():
         # Potentially other useful fields: transactionId, amount, currency, etc.
 
         if not order_id or not status:
-            print("Webhook Error: Missing orderID or status in payload")
+            logger.info("Webhook Error: Missing orderID or status in payload")
             return jsonify({'error': 'Missing required fields'}), 400
 
         # 3. Update Checkout Session Status (Optional but good practice)
@@ -878,24 +928,24 @@ def maxelpay_webhook():
                 'webhookPayload': data # Store the raw payload for reference
             })
         except Exception as db_error:
-             print(f"Webhook Info: Failed to update checkout_sessions doc for {order_id}: {db_error}")
+             logger.info(f"Webhook Info: Failed to update checkout_sessions doc for {order_id}: {db_error}")
              # Continue processing regardless
 
         # 4. Process Successful Payment
         # Verify the exact status string indicating success from Maxelpay docs (e.g., 'completed', 'paid', 'success')
         if status.upper() == 'COMPLETED': # Assuming 'COMPLETED' means success
-            print(f"Processing successful payment for Order ID: {order_id}")
+            logger.info(f"Processing successful payment for Order ID: {order_id}")
 
             # Find the user associated with this order
             checkout_doc = session_ref.get()
             if not checkout_doc.exists:
-                 print(f"Webhook Error: Could not find checkout session for order {order_id}")
+                 logger.info(f"Webhook Error: Could not find checkout session for order {order_id}")
                  # Decide how to handle - maybe log for manual check?
                  return jsonify({'status': 'received (session not found)'}), 200 # Acknowledge receipt
 
             user_id = checkout_doc.to_dict().get('userId')
             if not user_id:
-                print(f"Webhook Error: Missing userId in checkout session for order {order_id}")
+                logger.info(f"Webhook Error: Missing userId in checkout session for order {order_id}")
                 return jsonify({'status': 'received (user ID missing)'}), 200 # Acknowledge receipt
 
             # Update the user's profile in Firestore
@@ -908,31 +958,31 @@ def maxelpay_webhook():
                     # Optionally clear free scans used:
                     # 'freeScansUsed': 0
                 })
-                print(f"Successfully updated user {user_id} subscription to 'paid' for order {order_id}")
+                logger.info(f"Successfully updated user {user_id} subscription to 'paid' for order {order_id}")
             except Exception as user_update_error:
-                print(f"Webhook Error: Failed to update user profile for user {user_id} (order {order_id}): {user_update_error}")
+                logger.info(f"Webhook Error: Failed to update user profile for user {user_id} (order {order_id}): {user_update_error}")
                 # Log this error seriously - payment received but user not upgraded
                 # Consider adding to a retry queue or manual alert system
                 return jsonify({'error': 'Failed to update user profile'}), 500 # Internal Server Error
 
         elif status.upper() in ['FAILED', 'CANCELLED', 'EXPIRED']: # Handle other statuses if needed
-            print(f"Payment status for Order ID {order_id}: {status}")
+            logger.info(f"Payment status for Order ID {order_id}: {status}")
             # No user update needed, status already logged in checkout_sessions
 
         else:
-            print(f"Webhook Info: Received unhandled status '{status}' for order {order_id}")
+            logger.info(f"Webhook Info: Received unhandled status '{status}' for order {order_id}")
 
 
         return jsonify({'status': 'received'}), 200
     except Exception as e:
-        print(f"Error processing Maxelpay webhook: {e}")
+        logger.info(f"Error processing Maxelpay webhook: {e}")
         return jsonify({'error': 'Failed to process webhook'}), 500
 # --- End Webhook Route ---
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_document():
     if db is None:
-        print("Error: Firestore database client not initialized.")
+        logger.info("Error: Firestore database client not initialized.")
         return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
     # --- Authorization & Subscription Check --- 
     auth_header = request.headers.get('Authorization')
@@ -957,9 +1007,9 @@ def analyze_document():
             })
             user_profile['freeScansUsed'] = 0
             user_profile['lastMonthlyScan'] = current_month_str
-            print(f"Monthly scan count reset for user {user_id} for new month {current_month_str}")
+            logger.info(f"Monthly scan count reset for user {user_id} for new month {current_month_str}")
         except Exception as e:
-            print(f"Error resetting monthly scans for {user_id}: {e}")
+            logger.info(f"Error resetting monthly scans for {user_id}: {e}")
 
     can_analyze = False
     should_increment = False # Unified flag
@@ -981,11 +1031,11 @@ def analyze_document():
     if tier == 'pro': # New Pro tier
         can_analyze = True
         should_increment = False # Unlimited
-        print(f"User {user_id} (Pro) - Access granted (Unlimited)")
+        logger.info(f"User {user_id} (Pro) - Access granted (Unlimited)")
     elif tier == 'paid': # Keep existing paid tier logic (assuming unlimited)
         can_analyze = True
         should_increment = False
-        print(f"User {user_id} (Paid) - Access granted (Unlimited)")
+        logger.info(f"User {user_id} (Paid) - Access granted (Unlimited)")
     elif tier == 'premium': # New Premium tier
         max_monthly_scans = 50 # Defined limit
         max_daily_scans = 3 # Defined limit
@@ -995,42 +1045,42 @@ def analyze_document():
             if current_daily_for_check < max_daily_scans:
                 can_analyze = True
                 should_increment = True # Increment both monthly and daily
-                print(f"User {user_id} (Premium) - Access granted (Monthly: {monthly_scans_used}/{max_monthly_scans}, Daily: {current_daily_for_check}/{max_daily_scans})")
+                logger.info(f"User {user_id} (Premium) - Access granted (Monthly: {monthly_scans_used}/{max_monthly_scans}, Daily: {current_daily_for_check}/{max_daily_scans})")
             else:
-                print(f"User {user_id} (Premium) Daily scan limit reached ({current_daily_for_check}/{max_daily_scans})")
+                logger.info(f"User {user_id} (Premium) Daily scan limit reached ({current_daily_for_check}/{max_daily_scans})")
                 return jsonify({'error': f'Daily analysis limit ({max_daily_scans}) reached for Premium plan.', 'limitReached': 'daily'}), 429 # Too Many Requests
         else:
-             print(f"User {user_id} (Premium) Monthly scan limit reached ({monthly_scans_used}/{max_monthly_scans})")
+             logger.info(f"User {user_id} (Premium) Monthly scan limit reached ({monthly_scans_used}/{max_monthly_scans})")
              return jsonify({'error': f'Monthly analysis limit ({max_monthly_scans}) reached for Premium plan. Upgrade or wait until next cycle.', 'limitReached': 'monthly'}), 429 # Too Many Requests
     elif tier == 'commercial':
         max_scans = user_profile.get('maxAllowedScans', 0)
         if max_scans <= 0:
-            print(f"User {user_id} (Commercial) has max scans set to {max_scans}. Denying access.")
+            logger.info(f"User {user_id} (Commercial) has max scans set to {max_scans}. Denying access.")
             return jsonify({'error': 'Commercial plan has no scans allowed. Contact admin.', 'upgradeRequired': False}), 403
         if monthly_scans_used < max_scans:
             can_analyze = True
             should_increment = True # Increment monthly count
-            print(f"User {user_id} (Commercial) - Access granted ({monthly_scans_used}/{max_scans})")
+            logger.info(f"User {user_id} (Commercial) - Access granted ({monthly_scans_used}/{max_scans})")
         else:
-            print(f"User {user_id} (Commercial) scan limit reached ({monthly_scans_used}/{max_scans}).")
+            logger.info(f"User {user_id} (Commercial) scan limit reached ({monthly_scans_used}/{max_scans}).")
             return jsonify({'error': f'Commercial scan limit reached ({monthly_scans_used}/{max_scans} used). Contact admin for more.', 'limitReached': 'monthly'}), 429
     elif tier == 'free':
         free_limit = 3
         if monthly_scans_used < free_limit:
             can_analyze = True
             should_increment = True # Increment monthly count
-            print(f"User {user_id} (Free) - Access granted ({monthly_scans_used}/{free_limit})")
+            logger.info(f"User {user_id} (Free) - Access granted ({monthly_scans_used}/{free_limit})")
         else:
-             print(f"User {user_id} (Free) scan limit reached ({monthly_scans_used}/{free_limit}).")
+             logger.info(f"User {user_id} (Free) scan limit reached ({monthly_scans_used}/{free_limit}).")
              return jsonify({'error': 'Free analysis limit reached. Please upgrade.', 'upgradeRequired': True, 'limitReached': 'monthly'}), 429
     else:
         # Unknown subscription tier
-        print(f"User {user_id} has unknown subscription tier: {tier}")
+        logger.info(f"User {user_id} has unknown subscription tier: {tier}")
         return jsonify({'error': 'Invalid subscription status.'}), 403
         
     if not can_analyze:
          # Fallback denial
-         print(f"User {user_id} (Tier: {tier}) - Access denied (Fallback check)")
+         logger.info(f"User {user_id} (Tier: {tier}) - Access denied (Fallback check)")
          return jsonify({'error': 'Analysis not permitted with current subscription.'}), 403
     # --- End Authorization & Subscription Check ---
 
@@ -1054,7 +1104,7 @@ def analyze_document():
             try:
                 text = file.read().decode('utf-8')
             except Exception as e:
-                print(f"Error reading text file: {e}")
+                logger.info(f"Error reading text file: {e}")
                 return jsonify({'error': 'Failed to read text file'}), 500
         else:
             return jsonify({'error': 'Unsupported file type. Please upload PDF or TXT.'}), 400
@@ -1065,7 +1115,7 @@ def analyze_document():
         original_filename = "Pasted Text"
         # Add input validation for text length
         if len(text) > MAX_TEXT_LENGTH:
-            print(f"Input text too long: {len(text)} characters")
+            logger.info(f"Input text too long: {len(text)} characters")
             return jsonify({'error': f'Pasted text exceeds the maximum length of {MAX_TEXT_LENGTH} characters.'}), 413 # Payload Too Large
         if not text.strip(): # Check if text is just whitespace
              return jsonify({'error': 'Pasted text cannot be empty.'}), 400
@@ -1086,15 +1136,15 @@ def analyze_document():
             cleaned_text = analysis_result_text.strip().lstrip('```json').rstrip('```')
             result_data = json.loads(cleaned_text)
         except json.JSONDecodeError as json_err:
-            print(f"JSON Decode Error: {json_err}")
-            print(f"Raw Gemini Response: {analysis_result_text}")
+            logger.info(f"JSON Decode Error: {json_err}")
+            logger.info(f"Raw Gemini Response: {analysis_result_text}")
             # If response is not valid JSON, wrap raw text
             result_data = {
                 'raw_analysis': analysis_result_text,
                 'error_message': 'Analysis result was not valid JSON.'
             }
         except Exception as parse_err: # Catch other potential parsing errors
-            print(f"Parsing Error: {parse_err}")
+            logger.info(f"Parsing Error: {parse_err}")
             result_data = {
                 'raw_analysis': analysis_result_text,
                 'error_message': 'An error occurred while parsing the analysis result.'
@@ -1102,7 +1152,7 @@ def analyze_document():
 
         # --- NEW: Compliance Analysis Step ---
         if tier == 'commercial' and user_profile.get('complianceTemplate'):
-            print(f"User {user_id} is commercial with a template. Running compliance check.")
+            logger.info(f"User {user_id} is commercial with a template. Running compliance check.")
             template_info = user_profile['complianceTemplate']
             storage_path = template_info.get('storagePath')
             
@@ -1114,14 +1164,14 @@ def analyze_document():
                     template_text = extract_pdf_rich_content(io.BytesIO(template_bytes))
 
                     if template_text:
-                        print("Successfully extracted text from master template. Analyzing compliance...")
+                        logger.info("Successfully extracted text from master template. Analyzing compliance...")
                         compliance_result = analyze_compliance(text, template_text)
                         # Merge the compliance report into the main analysis result
                         result_data.update(compliance_result)
                     else:
-                        print("Warning: Could not extract text from the stored master template.")
+                        logger.info("Warning: Could not extract text from the stored master template.")
                 except Exception as e:
-                    print(f"CRITICAL: Failed to download or process compliance template for user {user_id}: {e}")
+                    logger.info(f"CRITICAL: Failed to download or process compliance template for user {user_id}: {e}")
                     # Optionally add an error to the report
                     result_data['compliance_report'] = {
                         "summary": "Error: Could not process the master compliance template.",
@@ -1135,7 +1185,7 @@ def analyze_document():
             # Use the new function and pass the tier
             if not increment_scan_counts(user_id, tier):
                  # Log error but proceed - analysis was done, just count failed
-                 print(f"CRITICAL: Failed to increment scan counts for user {user_id} (tier: {tier}) after successful analysis.")
+                 logger.info(f"CRITICAL: Failed to increment scan counts for user {user_id} (tier: {tier}) after successful analysis.")
                  # Consider adding to a retry queue or alert system
         # --- End Increment --- 
 
@@ -1153,7 +1203,7 @@ def analyze_document():
             })
             new_lease_id = lease_ref[1].id # Get the ID of the newly created doc
         except Exception as db_error:
-            print(f"Firestore saving error: {db_error}")
+            logger.info(f"Firestore saving error: {db_error}")
             # Decide if we should fail the request or just return the analysis without saving
             new_lease_id = None # Indicate saving failed
         
@@ -1165,7 +1215,7 @@ def analyze_document():
         })
     
     except Exception as e:
-        print(f"Analysis endpoint error: {e}")
+        logger.info(f"Analysis endpoint error: {e}")
         # Attempt to save error state if possible (might fail if analysis failed early)
         # We don't have a lease_id readily available here unless we create it earlier
         # For simplicity now, just return the error
@@ -1175,7 +1225,7 @@ def analyze_document():
 @app.route('/api/leases/<string:lease_id>', methods=['DELETE'])
 def delete_lease(lease_id):
     if db is None:
-        print("Error: Firestore database client not initialized.")
+        logger.info("Error: Firestore database client not initialized.")
         return jsonify({'error': 'Server configuration error: Database unavailable.'}), 500
     # Check authorization
     auth_header = request.headers.get('Authorization')
@@ -1199,7 +1249,7 @@ def delete_lease(lease_id):
 
         # Security Check: Ensure the user requesting delete owns the document
         if lease_doc.to_dict().get('userId') != user_id:
-            print(f"Unauthorized delete attempt: User {user_id} tried to delete lease {lease_id} owned by {lease_doc.to_dict().get('userId')}")
+            logger.info(f"Unauthorized delete attempt: User {user_id} tried to delete lease {lease_id} owned by {lease_doc.to_dict().get('userId')}")
             return jsonify({'error': 'Forbidden'}), 403
 
         # Delete the document from Firestore
@@ -1212,15 +1262,15 @@ def delete_lease(lease_id):
         #        bucket = storage.bucket() # Get bucket reference if needed
         #        blob = bucket.blob(file_path)
         #        blob.delete()
-        #        print(f"Deleted storage file: {file_path}")
+        #        logger.info(f"Deleted storage file: {file_path}")
         #    except Exception as storage_err:
-        #        print(f"Error deleting storage file {file_path}: {storage_err}") 
+        #        logger.info(f"Error deleting storage file {file_path}: {storage_err}") 
         #        # Continue even if storage delete fails, Firestore doc is main record
 
         return jsonify({'success': True, 'message': 'Lease analysis deleted successfully'}), 200
 
     except Exception as e:
-        print(f"Error deleting lease {lease_id}: {e}")
+        logger.info(f"Error deleting lease {lease_id}: {e}")
         return jsonify({'error': 'An error occurred while deleting the analysis'}), 500
 # --- End DELETE Endpoint --- 
 
@@ -1242,7 +1292,7 @@ def get_all_users():
 
     # 2. Check if the user is the admin
     if not is_admin(user_id):
-        print(f"Forbidden access attempt to /api/admin/users by user: {user_id}")
+        logger.info(f"Forbidden access attempt to /api/admin/users by user: {user_id}")
         return jsonify({'error': 'Forbidden: Admin access required'}), 403
 
     # 3. Fetch users from Firestore
@@ -1258,7 +1308,7 @@ def get_all_users():
                 auth_user = firebase_admin.auth.get_user(doc.id)
                 user_data['email'] = auth_user.email
             except Exception as auth_err:
-                print(f"Could not fetch email for user {doc.id}: {auth_err}")
+                logger.info(f"Could not fetch email for user {doc.id}: {auth_err}")
                 user_data['email'] = user_data.get('email', 'N/A') # Use stored email or N/A
             
             # Convert Timestamps to strings for JSON serialization if necessary
@@ -1273,7 +1323,7 @@ def get_all_users():
             
         return jsonify(users_list), 200
     except Exception as e:
-        print(f"Error fetching users from Firestore: {e}")
+        logger.info(f"Error fetching users from Firestore: {e}")
         return jsonify({'error': 'Failed to retrieve users'}), 500
 
 @app.route('/api/admin/set-scans', methods=['POST'])
@@ -1327,11 +1377,11 @@ def set_user_scans():
             # 'subscriptionTier': 'commercial' # Or another tier name
         })
         
-        print(f"Admin {user_id} set scan limit for user {target_user_id} to {scan_limit}")
+        logger.info(f"Admin {user_id} set scan limit for user {target_user_id} to {scan_limit}")
         return jsonify({'success': True, 'message': f'Scan limit updated to {scan_limit} for user {target_user_id}'}), 200
         
     except Exception as e:
-        print(f"Error updating scan limit for {target_user_id}: {e}")
+        logger.info(f"Error updating scan limit for {target_user_id}: {e}")
         return jsonify({'error': 'Failed to update user scan limit'}), 500
         
 @app.route('/api/admin/create-commercial', methods=['POST'])
@@ -1378,12 +1428,12 @@ def create_commercial_user():
             email_verified=True # Optional: mark as verified since admin created
         )
         new_user_uid = new_user.uid
-        print(f"Admin {requesting_user_id} created new Auth user {email} ({new_user_uid})")
+        logger.info(f"Admin {requesting_user_id} created new Auth user {email} ({new_user_uid})")
     except firebase_admin.auth.EmailAlreadyExistsError:
-        print(f"Failed to create user: Email {email} already exists.")
+        logger.info(f"Failed to create user: Email {email} already exists.")
         return jsonify({'error': 'Email already exists'}), 409 # Conflict
     except Exception as e:
-        print(f"Error creating Firebase Auth user {email}: {e}")
+        logger.info(f"Error creating Firebase Auth user {email}: {e}")
         return jsonify({'error': 'Failed to create user authentication'}), 500
         
     # 4. Create User Profile in Firestore
@@ -1400,7 +1450,7 @@ def create_commercial_user():
                 'lastMonthlyScan': datetime.date.today().strftime('%Y-%m')
             }
             user_ref.set(profile_data)
-            print(f"Created Firestore profile for commercial user {email} ({new_user_uid}) with scan limit {scan_limit}")
+            logger.info(f"Created Firestore profile for commercial user {email} ({new_user_uid}) with scan limit {scan_limit}")
             return jsonify({
                 'success': True, 
                 'message': 'Commercial user created successfully', 
@@ -1408,7 +1458,7 @@ def create_commercial_user():
                 'email': email
             }), 201 # Created
         except Exception as e:
-            print(f"CRITICAL: Failed to create Firestore profile for user {new_user_uid} after Auth creation: {e}")
+            logger.info(f"CRITICAL: Failed to create Firestore profile for user {new_user_uid} after Auth creation: {e}")
             # Consider deleting the Auth user here or adding manual cleanup process
             return jsonify({'error': 'User authentication created, but failed to create user profile data.'}), 500
     else:
@@ -1435,7 +1485,7 @@ def get_commercial_analytics():
 
     user_profile = get_or_create_user_profile(user_id)
     if not user_profile or user_profile.get('subscriptionTier') != 'commercial':
-        print(f"Forbidden access attempt to /api/commercial/analytics by user: {user_id}")
+        logger.info(f"Forbidden access attempt to /api/commercial/analytics by user: {user_id}")
         return jsonify({'error': 'Forbidden: Commercial access required'}), 403
 
     # 2. --- Data Fetching ---
@@ -1452,7 +1502,7 @@ def get_commercial_analytics():
             }), 200
 
     except Exception as e:
-        print(f"Error fetching leases for commercial analytics (user: {user_id}): {e}")
+        logger.info(f"Error fetching leases for commercial analytics (user: {user_id}): {e}")
         return jsonify({'error': 'Failed to retrieve lease data for analytics.'}), 500
 
     # 3. --- Data Processing & Calculations ---
@@ -1497,7 +1547,7 @@ def get_commercial_analytics():
                             'date': end_date.isoformat()
                         })
                 except (ValueError, TypeError):
-                    print(f"Could not parse date '{end_date_str}' for lease {doc.id}")
+                    logger.info(f"Could not parse date '{end_date_str}' for lease {doc.id}")
 
 
         # --- Final Data Aggregation ---
@@ -1524,7 +1574,7 @@ def get_commercial_analytics():
     except Exception as e:
         import traceback
         traceback.print_exc()
-        print(f"Error processing analytics data for user {user_id}: {e}")
+        logger.info(f"Error processing analytics data for user {user_id}: {e}")
         return jsonify({'error': 'An error occurred while processing analytics data.'}), 500
 
 # --- End Commercial Analytics Endpoint ---
@@ -1598,7 +1648,7 @@ def upload_compliance_template():
         return jsonify({'success': True, 'template': {'fileName': file.filename}}), 200
 
     except Exception as e:
-        print(f"Error uploading compliance template for user {user_id}: {e}")
+        logger.info(f"Error uploading compliance template for user {user_id}: {e}")
         return jsonify({'error': 'Failed to upload template.'}), 500
 
 @app.route('/api/compliance/template', methods=['DELETE'])
@@ -1636,7 +1686,7 @@ def delete_compliance_template():
         return jsonify({'success': True}), 200
 
     except Exception as e:
-        print(f"Error deleting compliance template for user {user_id}: {e}")
+        logger.info(f"Error deleting compliance template for user {user_id}: {e}")
         return jsonify({'error': 'Failed to delete template.'}), 500
 
 # --- End Compliance Template Management Endpoints ---
@@ -1666,7 +1716,7 @@ def inspect_photos():
         return jsonify({'error': 'No photo files provided'}), 400
 
     uploaded_files = request.files.getlist('photos')
-    
+
     if not uploaded_files or len(uploaded_files) == 0 or uploaded_files[0].filename == '':
          return jsonify({'error': 'No photos selected for upload'}), 400
 
@@ -1676,17 +1726,25 @@ def inspect_photos():
     # --- Gemini Vision Analysis Logic ---
     for file in uploaded_files:
         if not file or not allowed_image_file(file.filename):
-            print(f"Skipped invalid file type: {file.filename}")
+            logger.warning(f"Skipped invalid file type: {file.filename}")
             continue
 
-        print(f"Processing photo for inspection: {file.filename}")
+        if not file.mimetype.startswith('image/'):
+            logger.warning(f"Rejected non-image MIME type: {file.mimetype}")
+            continue
+
+        file.stream.seek(0, os.SEEK_END)
+        size = file.stream.tell()
+        file.stream.seek(0)
+        if size > MAX_IMAGE_SIZE_BYTES:
+            return jsonify({'error': f'File {file.filename} exceeds size limit of {MAX_IMAGE_SIZE_MB}MB'}), 400
+
+        logger.info(f"Processing photo for inspection: {file.filename}")
         try:
-            # Read image data
             image_bytes = file.read()
-            # Determine MIME type
             mime_type = mimetypes.guess_type(file.filename)[0]
             if not mime_type or not mime_type.startswith('image/'):
-                print(f"Skipping file with undetermined or non-image MIME type: {file.filename}")
+                logger.warning(f"Skipping file with undetermined or non-image MIME type: {file.filename}")
                 continue
                 
             # Prepare image part for Gemini
@@ -1714,7 +1772,7 @@ def inspect_photos():
             last_error = None
             # Iterate through API keys (similar to analyze_lease)
             for i, api_key in enumerate(gemini_api_keys):
-                print(f"Attempting Gemini Vision with API key #{i+1} for {file.filename}")
+                logger.info(f"Attempting Gemini Vision with API key #{i+1} for {file.filename}")
                 try:
                     genai.configure(api_key=api_key)
                     # Use a model that supports vision, e.g., gemini-pro-vision or 1.5 flash/pro
@@ -1727,30 +1785,30 @@ def inspect_photos():
                     cleaned_text = response.text.strip().lstrip('```json').rstrip('```').strip()
                     analysis_result_json = json.loads(cleaned_text)
                     
-                    print(f"Gemini Vision successful with API key #{i+1} for {file.filename}")
+                    logger.info(f"Gemini Vision successful with API key #{i+1} for {file.filename}")
                     break # Success, exit key loop
                     
                 except json.JSONDecodeError as json_err:
-                    print(f"JSON Decode Error (key #{i+1}) for {file.filename}: {json_err}")
-                    print(f"Raw Gemini Response: {response.text}")
+                    logger.info(f"JSON Decode Error (key #{i+1}) for {file.filename}: {json_err}")
+                    logger.info(f"Raw Gemini Response: {response.text}")
                     last_error = json_err # Store error and try next key
                     continue
                 except PermissionDenied as e:
                     if "API key not valid" in str(e) or "invalid" in str(e).lower():
-                        print(f"Warning: Gemini API key #{i+1} failed (Invalid Key): {e}")
+                        logger.info(f"Warning: Gemini API key #{i+1} failed (Invalid Key): {e}")
                         last_error = e
                         continue # Try next key
                     else:
-                        print(f"Gemini API Permission Error (key #{i+1}) for {file.filename}: {e}")
+                        logger.info(f"Gemini API Permission Error (key #{i+1}) for {file.filename}: {e}")
                         last_error = e
                         break # Non-key permission error, stop trying
                 except GoogleAPIError as e: 
-                    print(f"Gemini API Error (key #{i+1}) for {file.filename}: {e}")
+                    logger.info(f"Gemini API Error (key #{i+1}) for {file.filename}: {e}")
                     last_error = e
                     # Potentially retry on specific errors like rate limits, but stop for now
                     break
                 except Exception as e:
-                    print(f"Unexpected Error during Gemini vision (key #{i+1}) for {file.filename}: {e}")
+                    logger.info(f"Unexpected Error during Gemini vision (key #{i+1}) for {file.filename}: {e}")
                     last_error = e
                     break # Stop on unexpected errors
 
@@ -1772,14 +1830,14 @@ def inspect_photos():
                             found_issues.append(validated_issue)
                             all_issues.append(validated_issue) # Add to overall list for estimate
                         else:
-                            print(f"Warning: Skipping malformed issue object in response for {file.filename}: {issue}")
+                            logger.info(f"Warning: Skipping malformed issue object in response for {file.filename}: {issue}")
                 else:
-                     print(f"Warning: 'identified_issues' is not a list in response for {file.filename}")
+                     logger.info(f"Warning: 'identified_issues' is not a list in response for {file.filename}")
             elif last_error:
-                 print(f"Gemini Vision failed for {file.filename} after trying all keys. Last error: {last_error}")
+                 logger.info(f"Gemini Vision failed for {file.filename} after trying all keys. Last error: {last_error}")
                  # Optionally add an error marker to the result for this file
             else:
-                 print(f"No issues identified or analysis failed for {file.filename}")
+                 logger.info(f"No issues identified or analysis failed for {file.filename}")
                  
             all_results.append({
                 "fileName": file.filename,
@@ -1789,7 +1847,7 @@ def inspect_photos():
             })
 
         except Exception as file_proc_err:
-             print(f"Error processing file {file.filename}: {file_proc_err}")
+             logger.info(f"Error processing file {file.filename}: {file_proc_err}")
              # Add a result indicating this file failed processing
              all_results.append({
                 "fileName": file.filename,
@@ -1827,9 +1885,9 @@ def inspect_photos():
             'createdAt': firestore.SERVER_TIMESTAMP
         })
         inspection_id = inspection_ref[1].id
-        print(f"Saved inspection {inspection_id} for user {user_id}")
+        logger.info(f"Saved inspection {inspection_id} for user {user_id}")
     except Exception as db_error:
-        print(f"Firestore saving error for inspection (user {user_id}): {db_error}")
+        logger.info(f"Firestore saving error for inspection (user {user_id}): {db_error}")
         # Proceed without saving, but log the error
     # --- End Save to Firestore ---
 
@@ -1875,10 +1933,10 @@ def scan_expense_documents():
     for file in uploaded_files:
         try:
             if not file or not allowed_finance_file(file.filename):
-                print(f"Skipped invalid file type: {file.filename}")
+                logger.info(f"Skipped invalid file type: {file.filename}")
                 continue
 
-            print(f"Processing expense document: {file.filename}")
+            logger.info(f"Processing expense document: {file.filename}")
             file.seek(0)
             file_bytes = file.read()
             mime_type = mimetypes.guess_type(file.filename)[0] or 'application/octet-stream'
@@ -1898,7 +1956,7 @@ def scan_expense_documents():
                             images[0].save(img_io, format='PNG')
                             image_fallback_bytes = img_io.getvalue()
                             mime_type = 'image/png'  # Treat as image for downstream logic
-                            print(f"Falling back to image analysis for {file.filename} (first page converted to PNG).")
+                            logger.info(f"Falling back to image analysis for {file.filename} (first page converted to PNG).")
                         else:
                             raise ValueError("PDF to image conversion produced no pages.")
                     except Exception as img_err:
@@ -1933,7 +1991,7 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
             last_error = None
 
             for i, api_key in enumerate(gemini_api_keys):
-                print(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
+                logger.info(f"Attempting Expense Analysis with API key #{i+1} for {file.filename}")
                 try:
                     genai.configure(api_key=api_key)
                     model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
@@ -1953,12 +2011,12 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                     # Treat an empty JSON object (i.e. {}) as a failure so we can retry with the next key
                     if isinstance(analysis_result_json, dict) and len(analysis_result_json) == 0:
                         raise ValueError("The AI model returned an empty JSON object (no data extracted).")
-                    print(f"Expense Analysis successful for {file.filename}")
+                    logger.info(f"Expense Analysis successful for {file.filename}")
                     last_error = None
                     break
                 except Exception as e:
                     last_error = e
-                    print(f"Error with API key #{i+1} for {file.filename}: {e}")
+                    logger.info(f"Error with API key #{i+1} for {file.filename}: {e}")
                     continue
 
             if analysis_result_json:
@@ -1966,11 +2024,11 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                 all_extracted_data.append(analysis_result_json)
             else:
                 error_message = f"Analysis failed for {file.filename}. Last error: {last_error}"
-                print(error_message)
+                logger.info(error_message)
                 processing_errors.append({"fileName": file.filename, "error": str(last_error)})
 
         except Exception as file_proc_err:
-             print(f"Error processing file {file.filename}: {file_proc_err}")
+             logger.info(f"Error processing file {file.filename}: {file_proc_err}")
              import traceback
              traceback.print_exc()
              processing_errors.append({
@@ -1981,7 +2039,7 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
     # --- Save to Firestore ---
     saved_expense_ids = []
     if all_extracted_data:
-        print(f"Saving {len(all_extracted_data)} successfully extracted expense documents.")
+        logger.info(f"Saving {len(all_extracted_data)} successfully extracted expense documents.")
         for data in all_extracted_data:
             try:
                 expense_ref = db.collection('expenses').add({
@@ -1994,7 +2052,7 @@ If the document is not a receipt/invoice or is unreadable, return an empty JSON 
                 expense_id = expense_ref[1].id
                 saved_expense_ids.append(expense_id)
             except Exception as db_error:
-                print(f"Firestore saving error for expense: {db_error}")
+                logger.info(f"Firestore saving error for expense: {db_error}")
                 processing_errors.append({"fileName": data.get('fileName', 'Unknown'), "error": f"Database save failed: {db_error}"})
 
     # --- Final Response ---
@@ -2116,7 +2174,7 @@ def calculate_lease_costs():
     except ValueError as ve:
         return jsonify({'error': f"Invalid input data: {ve}"}), 400
     except Exception as e:
-        print(f"Error during lease calculation: {e}")
+        logger.info(f"Error during lease calculation: {e}")
         return jsonify({'error': 'An unexpected error occurred during calculation.'}), 500
 # --- End Lease Calculator Endpoint ---
 
@@ -2142,7 +2200,7 @@ def get_gemini_model(model_name="gemini-2.5-flash-preview-05-20", temperature=No
     model_key_id = f"{model_name}_{current_key_index}{temp_suffix}"
 
     if model_key_id not in gemini_models:
-        print(f"Initializing Gemini model {model_name} with key index {current_key_index} and temperature {temperature or 'default'}")
+        logger.info(f"Initializing Gemini model {model_name} with key index {current_key_index} and temperature {temperature or 'default'}")
         genai.configure(api_key=key_to_use)
         
         generation_config = {}
@@ -2206,7 +2264,7 @@ def analyze_image(image_file_storage):
         model = get_gemini_model(model_name="gemini-2.5-flash-preview-05-20") # Updated model name
 
         # Generate content
-        print(f"Sending image ({image_parts[0]['mime_type']}) to Gemini 2.5 Flash Preview for analysis...")
+        logger.info(f"Sending image ({image_parts[0]['mime_type']}) to Gemini 2.5 Flash Preview for analysis...")
         response = model.generate_content(prompt)
 
         # Check for response and valid text part
@@ -2215,27 +2273,27 @@ def analyze_image(image_file_storage):
              # Corrected line: Ensure the join method has a valid string to join elements
              full_text = "".join(part.text for part in response.parts if hasattr(part, 'text')) 
              if full_text:
-                 print("Gemini image analysis successful.")
+                 logger.info("Gemini image analysis successful.")
                  # Try to parse as JSON if the prompt requested it, otherwise return text
                  # For now, just returning the text description.
                  # Modify prompt and this section if structured JSON output is desired.
                  return full_text 
              else:
                  # Handle cases where response exists but has no text (e.g., safety block)
-                 print(f"Gemini response missing text. Block reason: {response.prompt_feedback.block_reason if response.prompt_feedback else 'Unknown'}")
+                 logger.info(f"Gemini response missing text. Block reason: {response.prompt_feedback.block_reason if response.prompt_feedback else 'Unknown'}")
                  raise ValueError("Analysis blocked or failed to generate text.")
         else:
             # Handle empty or invalid response object
-            print("Gemini returned an empty or invalid response.")
+            logger.info("Gemini returned an empty or invalid response.")
             raise ValueError("Failed to get a valid response from the analysis model.")
 
     except (genai.types.BlockedPromptException, genai.types.StopCandidateException) as safety_error:
-         print(f"Gemini safety block during image analysis: {safety_error}")
+         logger.info(f"Gemini safety block during image analysis: {safety_error}")
          raise ValueError(f"Analysis blocked due to safety settings: {safety_error}")
     except Exception as e:
-        print(f"Error during image analysis: {e}")
+        logger.info(f"Error during image analysis: {e}")
         # Log the specific error type and message
-        print(f"Error type: {type(e).__name__}, Message: {str(e)}")
+        logger.info(f"Error type: {type(e).__name__}, Message: {str(e)}")
         raise # Re-raise the exception to be caught by the route handler
 
 # --- New Route for Image Analysis ---
@@ -2268,9 +2326,9 @@ def analyze_image_route():
             })
             user_profile['freeScansUsed'] = 0
             user_profile['lastMonthlyScan'] = current_month_str
-            print(f"Monthly scan count reset for user {user_id} for new month {current_month_str}")
+            logger.info(f"Monthly scan count reset for user {user_id} for new month {current_month_str}")
         except Exception as e:
-            print(f"Error resetting monthly scans for {user_id}: {e}")
+            logger.info(f"Error resetting monthly scans for {user_id}: {e}")
 
     can_analyze = False
     should_increment = False # Unified flag
@@ -2292,11 +2350,11 @@ def analyze_image_route():
     if tier == 'pro': # New Pro tier
         can_analyze = True
         should_increment = False # Unlimited
-        print(f"User {user_id} (Pro) - Image Analysis Access granted (Unlimited)")
+        logger.info(f"User {user_id} (Pro) - Image Analysis Access granted (Unlimited)")
     elif tier == 'paid': # Keep existing paid tier logic (assuming unlimited)
         can_analyze = True
         should_increment = False
-        print(f"User {user_id} (Paid) - Image Analysis Access granted (Unlimited)")
+        logger.info(f"User {user_id} (Paid) - Image Analysis Access granted (Unlimited)")
     elif tier == 'premium': # New Premium tier
         max_monthly_scans = 50 # Defined limit
         max_daily_scans = 3 # Defined limit
@@ -2306,42 +2364,42 @@ def analyze_image_route():
             if current_daily_for_check < max_daily_scans:
                 can_analyze = True
                 should_increment = True # Increment both monthly and daily
-                print(f"User {user_id} (Premium) - Image Analysis Access granted (Monthly: {monthly_scans_used}/{max_monthly_scans}, Daily: {current_daily_for_check}/{max_daily_scans})")
+                logger.info(f"User {user_id} (Premium) - Image Analysis Access granted (Monthly: {monthly_scans_used}/{max_monthly_scans}, Daily: {current_daily_for_check}/{max_daily_scans})")
             else:
-                print(f"User {user_id} (Premium) Daily image scan limit reached ({current_daily_for_check}/{max_daily_scans})")
+                logger.info(f"User {user_id} (Premium) Daily image scan limit reached ({current_daily_for_check}/{max_daily_scans})")
                 return jsonify({'error': f'Daily analysis limit ({max_daily_scans}) reached for Premium plan.', 'limitReached': 'daily'}), 429 # Too Many Requests
         else:
-             print(f"User {user_id} (Premium) Monthly image scan limit reached ({monthly_scans_used}/{max_monthly_scans})")
+             logger.info(f"User {user_id} (Premium) Monthly image scan limit reached ({monthly_scans_used}/{max_monthly_scans})")
              return jsonify({'error': f'Monthly analysis limit ({max_monthly_scans}) reached for Premium plan. Upgrade or wait until next cycle.', 'limitReached': 'monthly'}), 429 # Too Many Requests
     elif tier == 'commercial':
         max_scans = user_profile.get('maxAllowedScans', 0)
         if max_scans <= 0:
-            print(f"User {user_id} (Commercial) has max scans set to {max_scans}. Denying image analysis access.")
+            logger.info(f"User {user_id} (Commercial) has max scans set to {max_scans}. Denying image analysis access.")
             return jsonify({'error': 'Commercial plan has no scans allowed. Contact admin.', 'upgradeRequired': False}), 403
         if monthly_scans_used < max_scans:
             can_analyze = True
             should_increment = True # Increment monthly count
-            print(f"User {user_id} (Commercial) - Image Analysis Access granted ({monthly_scans_used}/{max_scans})")
+            logger.info(f"User {user_id} (Commercial) - Image Analysis Access granted ({monthly_scans_used}/{max_scans})")
         else:
-            print(f"User {user_id} (Commercial) image scan limit reached ({monthly_scans_used}/{max_scans}).")
+            logger.info(f"User {user_id} (Commercial) image scan limit reached ({monthly_scans_used}/{max_scans}).")
             return jsonify({'error': f'Commercial scan limit reached ({monthly_scans_used}/{max_scans} used). Contact admin for more.', 'limitReached': 'monthly'}), 429
     elif tier == 'free':
         free_limit = 3
         if monthly_scans_used < free_limit:
             can_analyze = True
             should_increment = True # Increment monthly count
-            print(f"User {user_id} (Free) - Image Analysis Access granted ({monthly_scans_used}/{free_limit})")
+            logger.info(f"User {user_id} (Free) - Image Analysis Access granted ({monthly_scans_used}/{free_limit})")
         else:
-             print(f"User {user_id} (Free) image scan limit reached ({monthly_scans_used}/{free_limit}).")
+             logger.info(f"User {user_id} (Free) image scan limit reached ({monthly_scans_used}/{free_limit}).")
              return jsonify({'error': 'Free analysis limit reached. Please upgrade.', 'upgradeRequired': True, 'limitReached': 'monthly'}), 429
     else:
         # Unknown subscription tier
-        print(f"User {user_id} has unknown subscription tier for image analysis: {tier}")
+        logger.info(f"User {user_id} has unknown subscription tier for image analysis: {tier}")
         return jsonify({'error': 'Invalid subscription status.'}), 403
         
     if not can_analyze:
          # Fallback denial
-         print(f"User {user_id} (Tier: {tier}) - Image Analysis Access denied (Fallback check)")
+         logger.info(f"User {user_id} (Tier: {tier}) - Image Analysis Access denied (Fallback check)")
          return jsonify({'error': 'Analysis not permitted with current subscription.'}), 403
     # --- End Authorization & Subscription Check ---
 
@@ -2367,7 +2425,7 @@ def analyze_image_route():
             # Use the new function and pass the tier
             if not increment_scan_counts(user_id, tier):
                  # Log error but proceed - analysis was done, just count failed
-                 print(f"CRITICAL: Failed to increment scan counts for user {user_id} (tier: {tier}) after successful image analysis.")
+                 logger.info(f"CRITICAL: Failed to increment scan counts for user {user_id} (tier: {tier}) after successful image analysis.")
                  # Consider adding to a retry queue or alert system
         # --- End Increment ---
 
@@ -2382,17 +2440,17 @@ def analyze_image_route():
         })
 
     except ImportError as e:
-         print(f"ImportError in /api/analyze-image: {e}")
+         logger.info(f"ImportError in /api/analyze-image: {e}")
          return jsonify({'error': f'Server configuration error: {e}'}), 500
     except ValueError as e: # Catch specific errors from analyze_image
-        print(f"ValueError in /api/analyze-image: {e}")
+        logger.info(f"ValueError in /api/analyze-image: {e}")
         return jsonify({'error': f'Analysis Error: {e}'}), 400 # Bad Request or specific error
     except GoogleAPIError as e: # Catch Google API specific errors (rate limits, auth)
-         print(f"GoogleAPIError in /api/analyze-image: {e}")
+         logger.info(f"GoogleAPIError in /api/analyze-image: {e}")
          # Provide a more generic error to the user
          return jsonify({'error': 'Failed to communicate with the analysis service. Please try again later.'}), 503 # Service Unavailable
     except Exception as e:
-        print(f"Unexpected error in /api/analyze-image: {e}")
+        logger.info(f"Unexpected error in /api/analyze-image: {e}")
         # Log the full traceback for debugging if possible
         import traceback
         traceback.print_exc() 
@@ -2404,7 +2462,7 @@ def handle_unexpected_error(e):
     try:
         import sentry_sdk
         event_id = sentry_sdk.capture_exception(e)
-        print(f"Unhandled error caught. Sentry Event ID: {event_id}")
+        logger.info(f"Unhandled error caught. Sentry Event ID: {event_id}")
         # Also log the traceback for local debugging
         import traceback
         traceback.print_exc()
@@ -2415,11 +2473,11 @@ def handle_unexpected_error(e):
     except Exception as sentry_error:
         # If Sentry itself fails, log to console and return a basic 500
         import traceback
-        print("--- CRITICAL: Sentry logging failed ---")
+        logger.info("--- CRITICAL: Sentry logging failed ---")
         traceback.print_exc()
-        print("--- ORIGINAL EXCEPTION ---")
+        logger.info("--- ORIGINAL EXCEPTION ---")
         traceback.print_exc()
-        print("------------------------------------")
+        logger.info("------------------------------------")
         return jsonify({'error': 'An unexpected server error occurred and the error logging facility failed.'}), 500
 
 if __name__ == '__main__':

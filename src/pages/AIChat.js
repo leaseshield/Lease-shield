@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { auth } from '../firebase/config';
+import { getApiBaseUrl } from '../utils/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -111,7 +112,7 @@ const AIChat = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const bottomRef = useRef(null);
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081';
+  const apiUrl = getApiBaseUrl();
 
   // --- Effects ---
 

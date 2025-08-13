@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { auth } from '../firebase/config'; // Import Firebase auth
+import { getApiBaseUrl } from '../utils/api';
+const debugLog = (...args) => { if (process.env.NODE_ENV === 'development') console.log(...args); };
 import {
   Box,
   Typography,
@@ -264,16 +266,16 @@ const RealEstateAgentPage = () => {
             endpoint = '/api/analyze';
             fileKey = 'leaseFile';
             formData.append(fileKey, fileToSubmit, fileToSubmit.name);
-            console.log(`Appending ${fileToSubmit.name} (${fileToSubmit.type}) for TEXT analysis.`);
+            debugLog(`Appending ${fileToSubmit.name} (${fileToSubmit.type}) for TEXT analysis.`);
         } else if (analysisType === 'image') {
             endpoint = '/api/analyze-image';
             fileKey = 'imageFile';
             formData.append(fileKey, fileToSubmit, fileToSubmit.name);
-            console.log(`Appending ${fileToSubmit.name} (${fileToSubmit.type}) for IMAGE analysis.`);
+            debugLog(`Appending ${fileToSubmit.name} (${fileToSubmit.type}) for IMAGE analysis.`);
         } else {
-            console.log("Submitting preferences only (no file analysis).");
+            debugLog("Submitting preferences only (no file analysis).");
             if (!fileToSubmit) {
-                console.log("Simulating preference save without backend call.");
+                debugLog("Simulating preference save without backend call.");
                 setExtractedInfo("Preferences noted (no document/image analyzed).");
                 setIsLoading(false);
                 return;
@@ -285,8 +287,8 @@ const RealEstateAgentPage = () => {
             throw new Error("Could not determine the correct API endpoint.");
         }
 
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8081';
-        console.log(`Calling API URL: ${apiUrl}${endpoint}`);
+        const apiUrl = getApiBaseUrl();
+        debugLog(`Calling API URL: ${apiUrl}${endpoint}`);
         const response = await fetch(`${apiUrl}${endpoint}`, {
             method: 'POST',
             headers: {
