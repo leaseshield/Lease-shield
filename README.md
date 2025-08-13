@@ -18,7 +18,7 @@ graph LR
    ```
 2. Start everything with one command:
    ```bash
-   docker compose up
+   make dev
    ```
 3. Call the Hello API once the containers are running:
    ```bash
