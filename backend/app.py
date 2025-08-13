@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 import google.generativeai as genai
 import firebase_admin
@@ -30,6 +30,8 @@ import logging
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"),
                     format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
+from tasks import queue, analyze, redis_conn
+
 
 # --- Optional OCR and Error Tracking ---
 try:
@@ -2495,6 +2497,41 @@ def analyze_image_route():
         import traceback
         traceback.print_exc() 
         return jsonify({'error': 'An unexpected server error occurred during image analysis.'}), 500
+
+
+# --- Async PDF analysis endpoints ---
+@app.route('/api/analyze', methods=['POST'])
+def enqueue_analyze():
+    if 'file' not in request.files:
+        return jsonify({'error': 'file required'}), 400
+    pdf_bytes = request.files['file'].read()
+    idem_key = request.headers.get('Idempotency-Key')
+    if idem_key:
+        existing = redis_conn.get(f'idempotency:{idem_key}')
+        if existing:
+            job = queue.fetch_job(existing)
+            if job:
+                return jsonify({'job_id': job.id}), 202
+    job = queue.enqueue(analyze, pdf_bytes, retry=3, result_ttl=86400)
+    if idem_key:
+        redis_conn.setex(f'idempotency:{idem_key}', 3600, job.id)
+    return jsonify({'job_id': job.id}), 202
+
+@app.route('/api/progress/<job_id>')
+def job_progress(job_id):
+    def generate():
+        while True:
+            job = queue.fetch_job(job_id)
+            if not job:
+                yield f"data: {{\"state\": \"not_found\", \"progress\": 0}}\n\n"
+                break
+            state = job.get_status()
+            progress = job.meta.get('progress', 0)
+            yield f"data: {{\"state\": \"{state}\", \"progress\": {progress}}}\n\n"
+            if state in ('finished', 'failed', 'stopped'):
+                break
+            time.sleep(1)
+    return Response(generate(), mimetype='text/event-stream')
 
 @app.errorhandler(Exception)
 def handle_unexpected_error(e):
