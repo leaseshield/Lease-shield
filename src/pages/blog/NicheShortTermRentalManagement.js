@@ -22,12 +22,13 @@ const NicheShortTermRentalManagement = () => {
         The short-term rental (STR) market is booming, but competition is fierce. Stand out and maximize revenue by targeting niche markets 🎯. Tailoring your leases and management to specific guest needs can command premium rates and secure longer bookings. Let's explore some high-potential niches.
       </Typography>
 
-      {/* TODO: Add relevant image here (e.g., collage of diverse niche rental settings) 
-          alt="Collage showing a modern apartment for corporate stays, a cozy home near a hospital, and a garden suite welcoming pets." */}
       <Box component="figure" sx={{ textAlign: 'center', my: 3 }}>
-         <Box sx={{ width: '100%', height: 200, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
-            <Typography color="text.secondary">(Placeholder: Niche Rentals Image)</Typography>
-         </Box>
+        <Box
+          component="img"
+          src="/assets/niche-rentals.svg"
+          alt="Collage showing a modern apartment for corporate stays, a cozy home near a hospital, and a garden suite welcoming pets."
+          sx={{ width: '100%', borderRadius: 1 }}
+        />
       </Box>
 
       <Divider sx={{ my: 3 }} />

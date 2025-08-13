@@ -22,13 +22,14 @@ const UsingLeaseShieldAIEffectively = () => {
         Lease Shield AI is a powerful tool for understanding your lease agreement, but like any tool, knowing how to use it effectively maximizes its benefits. Follow these tips to get the best possible analysis.
       </Typography>
 
-      {/* TODO: Add relevant image here (e.g., screenshot of the Lease Shield AI upload interface) 
-          alt="Lease Shield AI interface showing document upload options." */}
       <Box component="figure" sx={{ textAlign: 'center', my: 3 }}>
-         <Box sx={{ width: '100%', height: 200, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
-            <Typography color="text.secondary">(Placeholder: Upload Interface Image)</Typography>
-         </Box>
-         <Typography component="figcaption" variant="caption" color="text.secondary">Start by uploading a clear copy of your lease.</Typography>
+        <Box
+          component="img"
+          src="/assets/leaseshield-interface.svg"
+          alt="Lease Shield AI interface showing document upload options."
+          sx={{ width: '100%', borderRadius: 1 }}
+        />
+        <Typography component="figcaption" variant="caption" color="text.secondary">Start by uploading a clear copy of your lease.</Typography>
       </Box>
 
       <Divider sx={{ my: 3 }} />
@@ -73,13 +74,14 @@ const UsingLeaseShieldAIEffectively = () => {
           </ListItem>
       </List>
 
-      {/* TODO: Add relevant image here (e.g., sample report section with annotations) 
-          alt="Example Lease Shield AI report showing clause summaries and risk flags." */}
-       <Box component="figure" sx={{ textAlign: 'center', my: 3 }}>
-         <Box sx={{ width: '100%', height: 150, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
-            <Typography color="text.secondary">(Placeholder: Sample Report Snippet)</Typography>
-         </Box>
-       </Box>
+      <Box component="figure" sx={{ textAlign: 'center', my: 3 }}>
+        <Box
+          component="img"
+          src="/assets/report-snippet.svg"
+          alt="Example Lease Shield AI report showing clause summaries and risk flags."
+          sx={{ width: '100%', borderRadius: 1 }}
+        />
+      </Box>
        <Divider sx={{ my: 3 }} />
 
       <Typography variant="h2" component="h3" gutterBottom>3. Focus on the Risks</Typography>

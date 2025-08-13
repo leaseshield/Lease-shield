@@ -24,10 +24,13 @@ const UnderstandingCommonClauses = () => {
       </Typography>
 
       <Box component="figure" sx={{ textAlign: 'center', my: 3 }}>
-         <Box sx={{ width: '100%', height: 200, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
-            <Typography color="text.secondary">(Placeholder: Lease Document Image)</Typography>
-         </Box>
-         <Typography component="figcaption" variant="caption" color="text.secondary">Understanding your lease is the first step.</Typography>
+        <Box
+          component="img"
+          src="/assets/lease-document.svg"
+          alt="Lease document with highlighted clauses."
+          sx={{ width: '100%', borderRadius: 1 }}
+        />
+        <Typography component="figcaption" variant="caption" color="text.secondary">Understanding your lease is the first step.</Typography>
       </Box>
 
       <Divider sx={{ my: 3 }} />
@@ -63,10 +66,13 @@ const UnderstandingCommonClauses = () => {
       </Typography>
 
       <Box component="figure" sx={{ textAlign: 'center', my: 3 }}>
-         <Box sx={{ width: '100%', height: 150, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
-            <Typography color="text.secondary">(Placeholder: Lease Clause Icons)</Typography>
-         </Box>
-       </Box>
+        <Box
+          component="img"
+          src="/assets/lease-clause-icons.svg"
+          alt="Icons representing different lease clauses."
+          sx={{ width: '100%', borderRadius: 1 }}
+        />
+      </Box>
        <Divider sx={{ my: 3 }} />
 
       <Typography variant="h2" component="h3" gutterBottom>6. Pet Policy</Typography>

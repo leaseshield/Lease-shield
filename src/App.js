@@ -43,6 +43,8 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const AIChat = lazy(() => import('./pages/AIChat'));
 const CompliancePage = lazy(() => import('./pages/CompliancePage'));
 const Contact = lazy(() => import('./pages/Contact'));
+const PaymentSuccess = lazy(() => import('./pages/payment/Success'));
+const PaymentCancel = lazy(() => import('./pages/payment/Cancel'));
 
 // Build theme dynamically based on color mode
 const buildTheme = (mode) => createTheme({
@@ -366,7 +368,18 @@ function App() {
                </Layout>
             } />
             <Route path="/trial" element={<TrialRouteHandler />} />
-            
+
+            <Route path="/payment/success" element={
+               <Layout showAuthButtons={true}>
+                  <PaymentSuccess />
+               </Layout>
+            } />
+            <Route path="/payment/cancel" element={
+               <Layout showAuthButtons={true}>
+                  <PaymentCancel />
+               </Layout>
+            } />
+
             {/* Public Blog Routes */}
             <Route path="/blog" element={
               <Layout showAuthButtons={true}>
