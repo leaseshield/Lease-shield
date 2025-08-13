@@ -143,17 +143,17 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
     {
        title: 'Lease Tools',
        items: [
-         { text: 'Lease Analysis', icon: <Description />, path: '/analysis' },
-         { text: 'Lease Calculator', icon: <Calculate />, path: '/calculator' },
-         { text: 'AI Chat', icon: <ChatIcon />, path: '/ai-chat' },
-       ]
+        { text: 'Lease Analysis', icon: <Description />, path: '/analysis' },
+        { text: 'Lease Calculator', icon: <Calculate />, path: '/calculator' },
+        { text: 'AI Chat', icon: <ChatIcon />, path: '/chat' },
+      ]
     },
     {
        title: 'Property Tools',
        items: [
-         { text: 'Tenant Matcher', icon: <HomeWork />, path: '/real-estate-agent' }, // Renamed slightly for clarity
-         { text: 'Expense Scanner', icon: <ReceiptIcon />, path: '/expense-scanner' },
-         { text: 'Photo Inspector', icon: <CameraAltIcon />, path: '/photo-inspection' },
+         { text: 'Tenant Matcher', icon: <HomeWork />, path: '/agent' }, // Renamed slightly for clarity
+         { text: 'Expense Scanner', icon: <ReceiptIcon />, path: '/scan-expense' },
+         { text: 'Photo Inspector', icon: <CameraAltIcon />, path: '/inspect-photos' },
        ]
     }
     // Add more groups here as needed
