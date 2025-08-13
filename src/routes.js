@@ -34,6 +34,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const AIChat = lazy(() => import('./pages/AIChat'));
 const CompliancePage = lazy(() => import('./pages/CompliancePage'));
 const Contact = lazy(() => import('./pages/Contact'));
+const ApiUsage = lazy(() => import('./pages/ApiUsage'));
 const PaymentSuccess = lazy(() => import('./pages/payment/Success'));
 const PaymentCancel = lazy(() => import('./pages/payment/Cancel'));
 
@@ -105,6 +106,7 @@ export const AppRoutes = () => (
       <Route path="/register" element={<Register />} />
       <Route path="/pricing" element={<Layout showAuthButtons={true}><Pricing /></Layout>} />
       <Route path="/contact" element={<Layout showAuthButtons={true}><Contact /></Layout>} />
+      <Route path="/api-usage" element={<Layout showAuthButtons={true}><ApiUsage /></Layout>} />
       <Route path="/trial" element={<TrialRouteHandler />} />
 
       {/* Protected routes */}

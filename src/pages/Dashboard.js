@@ -42,7 +42,8 @@ import {
   Article as ArticleIcon,
   HomeWork as HomeWorkIcon,
   ReceiptLong as ReceiptIcon,
-  CameraAlt as CameraAltIcon
+  CameraAlt as CameraAltIcon,
+  Api as ApiIcon
 } from '@mui/icons-material';
 import { collection, query, where, orderBy, getDocs, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../firebase/config';
@@ -401,7 +402,7 @@ const Dashboard = ({ showSnackbar }) => {
                         </Typography>
                     </CardContent>
                     <CardActions sx={{ justifyContent: 'center' }}>
-                        <Button 
+                        <Button
                           variant="contained"
                           color="warning"
                           startIcon={<CameraAltIcon />}
@@ -409,6 +410,30 @@ const Dashboard = ({ showSnackbar }) => {
                           sx={{ m: 1 }}
                         >
                             Inspect Photos
+                        </Button>
+                    </CardActions>
+                </Card>
+            </Grid>
+
+            {/* API Usage Card */}
+            <Grid item xs={12} sm={6} md={4}>
+                <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-5px)' } }}>
+                    <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
+                        <ApiIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
+                        <Typography variant="h6" component="h2" gutterBottom>API Usage</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Integrate lease analysis into your own applications using our API.
+                        </Typography>
+                    </CardContent>
+                    <CardActions sx={{ justifyContent: 'center' }}>
+                        <Button
+                          variant="contained"
+                          color="info"
+                          startIcon={<ApiIcon />}
+                          onClick={() => navigate('/api-usage')}
+                          sx={{ m: 1 }}
+                        >
+                            API Guide
                         </Button>
                     </CardActions>
                 </Card>
