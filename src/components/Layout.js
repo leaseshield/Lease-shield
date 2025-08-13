@@ -155,7 +155,7 @@ const Layout = ({ children, showAuthButtons = false, maxWidth = 'lg' }) => {
         <Typography variant="h6" component="div">
           Lease Shield AI
         </Typography>
-        <IconButton onClick={handleDrawerToggle}>
+        <IconButton onClick={handleDrawerToggle} aria-label="Close navigation menu">
           <ChevronRight />
         </IconButton>
       </Box>
