@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Grid, Typography, Button, Stack, Chip, useTheme, Link } from '@mui/material';
+import { Box, Container, Grid, Typography, Button, Stack, Chip, useTheme } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
 import LanguageIcon from '@mui/icons-material/Translate';
 import PsychologyIcon from '@mui/icons-material/PsychologyOutlined';
@@ -58,13 +58,6 @@ const Hero = ({ onPrimaryClick }) => {
                 <source src="/Product Launch Video_compressed.mp4" type="video/mp4" />
                 <source src="/Product Launch Video.mp4" type="video/mp4" />
               </Box>
-              <Link
-                href="/product-video-transcript.txt"
-                download
-                sx={{ mt: 1, display: 'inline-block' }}
-              >
-                Download transcript
-              </Link>
             </Box>
           </Grid>
         </Grid>
