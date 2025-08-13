@@ -43,7 +43,3 @@ graph LR
 - Frontend: Firebase Hosting
 - Backend: Google Cloud Run
 
-## Security
-- API keys via environment variables
-- Firebase rules enforce per-user data isolation
-- All uploads stored securely in Firebase Storage
