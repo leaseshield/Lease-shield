@@ -622,6 +622,28 @@ def ping():
     return jsonify({'status': 'pong'}), 200
 # --- End Ping Endpoint ---
 
+# --- Public API Example Endpoint ---
+@app.route('/api/public-info', methods=['GET'])
+def public_api_info():
+    """Example endpoint for external API consumers.
+
+    Requires a simple API key via the `X-API-KEY` header. If the key matches
+    the `PUBLIC_API_KEY` environment variable (default: 'demo-key'), a short
+    message is returned. This demonstrates how third parties can integrate
+    with the platform and also where to obtain access.
+    """
+    api_key = request.headers.get('X-API-KEY')
+    expected_key = os.environ.get('PUBLIC_API_KEY', 'demo-key')
+    if api_key != expected_key:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    return jsonify({
+        'message': 'Lease Shield API is running',
+        'contact': 'contact@leaseshield.eu'
+    }), 200
+
+# --- End Public API Example Endpoint ---
+
 # --- AI Chat Endpoint ---
 @app.route('/api/chat', methods=['POST'])
 def ai_chat():

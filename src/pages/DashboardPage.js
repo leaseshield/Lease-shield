@@ -21,7 +21,7 @@ import {
   Button
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { 
+import {
     Dashboard as DashboardIcon,
     Description as DescriptionIcon,
     CameraAlt as CameraAltIcon,
@@ -29,7 +29,8 @@ import {
     Calculate as CalculateIcon,
     PersonSearch as PersonSearchIcon,
     BarChart as BarChartIcon, // Icon for analytics
-    Gavel as GavelIcon // Icon for compliance
+    Gavel as GavelIcon, // Icon for compliance
+    Api as ApiIcon // Icon for API access
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 
@@ -272,6 +273,22 @@ const DashboardPage = () => {
               )}
             </CardContent>
           </Card>
+          </motion.div>
+        </Grid>
+        {/* API Usage Card */}
+        <Grid item xs={12} md={4}>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.3 }}>
+            <Card>
+              <CardHeader avatar={<ApiIcon />} title="API Access" />
+              <CardContent>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Use our API to integrate lease analysis into your applications.
+                </Typography>
+                <Button variant="contained" component={Link} to="/api-usage">
+                  API Usage Guide
+                </Button>
+              </CardContent>
+            </Card>
           </motion.div>
         </Grid>
       </Grid>
