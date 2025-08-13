@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: Lemon Squeezy Monetization Example
+  version: 0.1.0
+servers:
+  - url: http://localhost:5001
+paths:
+  /checkout:
+    post:
+      summary: Create a checkout session
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                variant_id:
+                  type: string
+                customer_email:
+                  type: string
+      responses:
+        '200':
+          description: Checkout session created
+  /webhook:
+    post:
+      summary: Lemon Squeezy webhook endpoint
+      responses:
+        '200':
+          description: Webhook processed
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key

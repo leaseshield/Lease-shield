@@ -1,0 +1,23 @@
+{
+  "info": {
+    "name": "Lemon Squeezy Example",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Checkout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "X-API-Key", "value": "{{apiKey}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "url": {"raw": "http://localhost:5001/checkout"},
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"variant_id\": \"VARIANT_ID\",\n  \"customer_email\": \"user@example.com\"\n}"
+        }
+      }
+    }
+  ]
+}
